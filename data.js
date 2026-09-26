@@ -127,6 +127,18 @@ const CAMPUS_LOCATIONS = [
     keywords: ["cột cờ", "sân cờ", "sân trường", "chào cờ", "sân chính", "flag"],
     description: "Cột cờ trung tâm sân trường, nơi tổ chức các sự kiện chào cờ"
   },
+  {
+    id: "mai_tam_giac",
+    name: "Mái Che Tam Giác (Lối vào trung tâm)",
+    category: "Ngoại cảnh",
+    floor: "Mặt đất",
+    building: "Sân chính",
+    x: 720,
+    y: 530,
+    node: "node_triangle_roof",
+    keywords: ["mái tam giác", "mai tam giac", "sảnh chính", "lối vào", "mái kính", "canopy"],
+    description: "Mái che kính hình tam giác đặc trưng dẫn vào sảnh hành lang trung tâm"
+  },
 
   // --- DÃY NHÀ LỚP HỌC SAU (TẦNG TRỆT, 1, 2, 3) ---
   // Tầng trệt (Ở MẶT ĐẤT)
@@ -751,159 +763,195 @@ const CAMPUS_LOCATIONS = [
   }
 ];
 
-// 2. MẠNG LƯỚI ĐỒ THỊ LỐI ĐI CHUẨN XÁC THEO MẶT ĐẤT & CẦU THANG NỘI BỘ
+// 2. MẠNG LƯỚI ĐỒ THỊ LỐI ĐI CHUẨN XÁC THEO MẶT ĐẤT, HÀNH LANG & CẦU THANG NỘI BỘ
+// Toàn bộ đường đi bám sát các lối hành lang, hẻm ngoài tường và sân trường. KHÔNG đi xuyên phòng.
 const CAMPUS_GRAPH_NODES = {
   // --- A. TRỤC SÂN TRƯỜNG CHÍNH (GROUND LEVEL - MẶT ĐẤT) ---
-  node_gate_front: { x: 660, y: 980, name: "Cổng trường" },
+  node_gate_front: { x: 660, y: 980, name: "Cổng trường (Cổng chính)" },
   node_main_split: { x: 660, y: 925, name: "Sảnh vào từ Cổng trường" },
-  node_courtyard_south: { x: 720, y: 800, name: "Sân trường phía Nam" },
+  node_courtyard_south: { x: 720, y: 780, name: "Sân trường phía Nam" },
   node_flagpole: { x: 720, y: 720, name: "Khu vực Cột Cờ trung tâm" },
-  node_courtyard_mid: { x: 720, y: 550, name: "Khoảng sân trung tâm rộng lớn" },
+  node_triangle_roof: { x: 720, y: 530, name: "Sảnh Mái Tam Giác (Lối vào trung tâm)" },
   node_courtyard_north: { x: 720, y: 340, name: "Sân trường trước Dãy Lớp Sau" },
 
-  // --- B. CÁC LỐI ĐI VÀO BÃI XE & NGOẠI CẢNH (MẶT ĐẤT) ---
-  node_bike_front_entry: { x: 920, y: 925, name: "Lối rẽ vào bãi xe học sinh trước" },
-  node_bike_front: { x: 1160, y: 925, name: "Nhà xe HS gần cổng trước" },
-  node_bike_gv_entry: { x: 350, y: 925, name: "Lối vào nhà xe Giáo viên" },
-  node_bike_gv: { x: 170, y: 903, name: "Nhà xe Giáo Viên" },
-
-  // --- C. HÀNH LANG TẦNG TRỆT DÃY LỚP SAU (MẶT ĐẤT - Y: 340) ---
-  node_back_g_library: { x: 537, y: 340, name: "Sân trước Thư Viện (Tầng trệt)" },
-  node_back_g_c1: { x: 390, y: 340, name: "Chân Cầu Thang 1 Dãy Sau (Tầng trệt)" },
-  node_back_g_rooms_left: { x: 302, y: 340, name: "Hành lang phòng P.03, P.04 (Tầng trệt)" },
-  node_back_g_wc: { x: 240, y: 340, name: "Hành lang WC Dãy Sau (Tầng trệt)" },
-  node_back_g_c2: { x: 625, y: 340, name: "Chân Cầu Thang 2 Dãy Sau (Tầng trệt)" },
-  node_back_g_rooms_right: { x: 740, y: 340, name: "Hành lang phòng P.05, P.06 (Tầng trệt)" },
-
-  // Cổng sau & Dãy để xe Tây
-  node_gate_back_walk: { x: 280, y: 200, name: "Đường ra Cổng Sau" },
+  // --- B. KHU VỰC CỔNG SAU & HẺM PHÍA BẮC (MẶT ĐẤT - NGOÀI TƯỜNG) ---
   node_gate_back: { x: 280, y: 88, name: "Cổng Sau" },
+  node_gate_back_turn: { x: 210, y: 88, name: "Lối đi phía ngoài Cổng Sau" },
   node_bike_back: { x: 120, y: 112, name: "Nhà xe Cổng Sau" },
-  node_bike_west_corner: { x: 115, y: 165, name: "Khúc cua nhà xe Tây" },
-  node_bike_west: { x: 72, y: 430, name: "Dãy để xe Học sinh phía Tây" },
+  node_west_corner_north: { x: 210, y: 165, name: "Khúc cua Hẻm Tây - Cổng Sau" },
+  node_bike_west_corner: { x: 115, y: 165, name: "Lối rẽ vào Dãy xe Tây" },
+  node_bike_west_north: { x: 72, y: 220, name: "Đầu phía Bắc Dãy xe Tây" },
 
-  // --- D. CÁC TẦNG CẦU THANG NỘI BỘ DÃY LỚP SAU (CHỈ ĐI THẲNG ĐỨNG) ---
-  // Cầu Thang 1 (Phía Tây):
-  node_back_stair1_t1: { x: 390, y: 253, name: "Cầu Thang 1 - Tầng 1 Dãy Sau" },
-  node_back_stair1_t2: { x: 390, y: 207, name: "Cầu Thang 1 - Tầng 2 Dãy Sau (lên P.09, P.10, P.11)" },
-  node_back_stair1_t3: { x: 390, y: 161, name: "Cầu Thang 1 - Tầng 3 Dãy Sau (lên P.18)" },
-  // Cầu Thang 2 (Phía Đông):
-  node_back_stair2_t1: { x: 625, y: 253, name: "Cầu Thang 2 - Tầng 1 Dãy Sau (lên P.07, P.08, P.18, P.19)" },
-  node_back_stair2_t2: { x: 625, y: 207, name: "Cầu Thang 2 - Tầng 2 Dãy Sau (lên P.12, P.13, P.14, P.20)" },
-  node_back_stair2_t3: { x: 625, y: 161, name: "Cầu Thang 2 - Tầng 3 Dãy Sau (lên P.15, P.16, P.17)" },
+  // --- C. DÃY ĐỂ XE HỌC SINH PHÍA TÂY & LỐI THÔNG XUỐNG PHÍA NAM VÀO NHÀ XE GV (YÊU CẦU NGƯỜI DÙNG) ---
+  node_bike_west: { x: 72, y: 430, name: "Dãy để xe học sinh (Phía Tây)" },
+  node_bike_west_south: { x: 72, y: 680, name: "Đầu phía Nam Dãy xe Tây" },
+  node_bike_west_exit_south: { x: 65, y: 740, name: "Lối ra phía Nam Dãy xe Tây" },
+  node_bike_gv_corner: { x: 65, y: 830, name: "Khúc cua lối vào Nhà xe GV" },
+  node_bike_gv_west_entry: { x: 135, y: 830, name: "Lối vào phía Tây Nhà xe GV" },
+  node_bike_gv: { x: 170, y: 903, name: "Nhà xe Giáo Viên" },
+  node_bike_gv_east_exit: { x: 250, y: 925, name: "Lối ra phía Đông Nhà xe GV" },
+  node_bike_gv_front_path: { x: 350, y: 925, name: "Đường nội bộ vào Nhà xe GV" },
+  node_bike_gv_entry_mid: { x: 570, y: 925, name: "Lối rẽ vào Nhà xe GV từ Cổng chính" },
 
-  // --- E. HÀNH LANG TẦNG TRỆT DÃY LỚP TRƯỚC (MẶT ĐẤT - Y: 575) ---
-  node_front_g_entry: { x: 540, y: 575, name: "Lối vào Tầng trệt Dãy Lớp Trước từ sân cờ" },
-  node_front_g_rooms_right: { x: 465, y: 575, name: "Hành lang phòng P.01, P.03 Dãy Trước (Tầng trệt)" },
-  node_front_g_stair: { x: 350, y: 575, name: "Chân Cầu Thang giữa Dãy Trước (Tầng trệt)" },
-  node_front_g_rooms_left: { x: 290, y: 575, name: "Hành lang phòng P.01, P.02 Dãy Trước (Tầng trệt)" },
+  // --- D. TRỤC HÀNH LANG TÂY (KẾT NỐI DÃY XE VÀ CÁC KHỐI NHÀ, KHÔNG ĐI XUYÊN TƯỜNG) ---
+  node_west_corridor_north: { x: 180, y: 340, name: "Hành lang Tây - Cạnh Dãy Lớp Sau" },
+  node_west_corridor_mid: { x: 180, y: 575, name: "Hành lang Tây - Cạnh Dãy Lớp Trước" },
+  node_west_corridor_south: { x: 180, y: 700, name: "Hành lang Tây - Cạnh Dãy Hành Chính" },
+
+  // --- E. HÀNH LANG TẦNG TRỆT DÃY LỚP SAU (MẶT ĐẤT - Y: 340) ---
+  node_back_g_wc: { x: 240, y: 340, name: "Hành lang WC Dãy Sau (Tầng trệt)" },
+  node_back_g_rooms_left: { x: 302, y: 340, name: "Hành lang phòng P.03, P.04 (Tầng trệt)" },
+  node_back_g_c1: { x: 420, y: 340, name: "Chân Cầu Thang 1 Dãy Sau (Tầng trệt)" },
+  node_back_g_library: { x: 537, y: 340, name: "Sân trước Thư Viện (Tầng trệt)" },
+  node_back_g_c2: { x: 655, y: 340, name: "Chân Cầu Thang 2 Dãy Sau (Tầng trệt)" },
+  node_back_g_rooms_right: { x: 745, y: 340, name: "Hành lang phòng P.05, P.06 (Tầng trệt)" },
+
+  // Cầu thang nội bộ Dãy Lớp Sau (CHỈ DÙNG ĐỂ LÊN LẦU CỦA DÃY SAU)
+  node_back_stair1_t1: { x: 420, y: 253, name: "Cầu Thang 1 - Tầng 1 Dãy Sau" },
+  node_back_stair1_t2: { x: 420, y: 207, name: "Cầu Thang 1 - Tầng 2 Dãy Sau" },
+  node_back_stair1_t3: { x: 420, y: 161, name: "Cầu Thang 1 - Tầng 3 Dãy Sau" },
+  node_back_stair2_t1: { x: 655, y: 253, name: "Cầu Thang 2 - Tầng 1 Dãy Sau" },
+  node_back_stair2_t2: { x: 655, y: 207, name: "Cầu Thang 2 - Tầng 2 Dãy Sau" },
+  node_back_stair2_t3: { x: 655, y: 161, name: "Cầu Thang 2 - Tầng 3 Dãy Sau" },
+
+  // --- F. HÀNH LANG TẦNG TRỆT DÃY LỚP TRƯỚC (MẶT ĐẤT - Y: 575) ---
   node_front_g_wc: { x: 212, y: 575, name: "Hành lang WC Dãy Trước (Tầng trệt)" },
+  node_front_g_rooms_left: { x: 290, y: 575, name: "Hành lang phòng P.01, P.02 Dãy Trước (Tầng trệt)" },
+  node_front_g_stair: { x: 350, y: 575, name: "Chân Cầu Thang giữa Dãy Trước (Tầng trệt)" },
+  node_front_g_rooms_right: { x: 465, y: 575, name: "Hành lang phòng P.01, P.03 Dãy Trước (Tầng trệt)" },
+  node_front_g_entry: { x: 540, y: 575, name: "Lối vào Tầng trệt Dãy Lớp Trước từ sân cờ" },
 
-  // Cầu thang nội bộ Dãy Lớp Trước (CHỈ ĐI THẲNG ĐỨNG)
-  node_front_stair_t1: { x: 350, y: 507, name: "Cầu Thang - Tầng 1 Dãy Trước (P.04, P.05, P.06, P.07)" },
-  node_front_stair_t2: { x: 350, y: 462, name: "Cầu Thang - Tầng 2 Dãy Trước (P.02, P.08, P.09, P.10)" },
-  node_front_stair_t3: { x: 350, y: 417, name: "Cầu Thang - Tầng 3 Dãy Trước (P.11, P.12, P.13, P.14)" },
+  // Cầu thang nội bộ Dãy Lớp Trước (CHỈ LÊN LẦU DÃY TRƯỚC)
+  node_front_stair_t1: { x: 350, y: 507, name: "Cầu Thang - Tầng 1 Dãy Trước" },
+  node_front_stair_t2: { x: 350, y: 462, name: "Cầu Thang - Tầng 2 Dãy Trước" },
+  node_front_stair_t3: { x: 350, y: 417, name: "Cầu Thang - Tầng 3 Dãy Trước" },
 
-  // --- F. DÃY HÀNH CHÍNH & PHÒNG HỘI ĐỒNG ---
-  node_admin_g_entry: { x: 520, y: 700, name: "Lối vào Dãy Hành chính Tầng trệt" },
-  node_admin_g_corridor: { x: 430, y: 700, name: "Văn phòng Hành chính Tầng trệt" },
+  // --- G. DÃY HÀNH CHÍNH & PHÒNG HỘI ĐỒNG ---
   node_admin_g_stair: { x: 350, y: 700, name: "Chân Cầu Thang Dãy Hành chính (Tầng trệt)" },
+  node_admin_g_corridor: { x: 430, y: 700, name: "Văn phòng Hành chính Tầng trệt" },
+  node_admin_g_entry: { x: 520, y: 700, name: "Lối vào Dãy Hành chính Tầng trệt" },
   node_admin_stair_t1: { x: 350, y: 640, name: "Cầu Thang Tầng 1 - Phòng Hội Đồng" },
 
-  // --- G. KHỐI CHỨC NĂNG, THIẾT BỊ & HỘI TRƯỜNG ---
+  // --- H. KHỐI CHỨC NĂNG, THIẾT BỊ & HỘI TRƯỜNG ---
   node_hall_g_entry: { x: 860, y: 712, name: "Cửa vào Hội Trường (Tầng trệt)" },
   node_func_g_yte: { x: 978, y: 601, name: "Phòng Y Tế (+) (Tầng trệt)" },
   node_func_g_lab: { x: 1133, y: 601, name: "Phòng Thí Nghiệm (Tầng trệt)" },
-  node_func_g_stair: { x: 890, y: 601, name: "Chân Cầu Thang Dãy Thiết Bị (Tầng trệt)" },
-  // Cầu thang nội bộ khối chức năng
+  node_func_g_stair: { x: 890, y: 601, name: "Chân Cầu Thang Dãy Thiết BỊ (Tầng trệt)" },
   node_func_stair_t1: { x: 890, y: 529, name: "Cầu Thang Tầng 1 - Tin Học 1, 2 & VP Đoàn" },
   node_func_stair_t2: { x: 890, y: 446, name: "Cầu Thang Tầng 2 - Dãy Nhà Thiết Bị" },
 
-  // Phía Đông (Sân bóng, Dãy xe Đông)
+  // --- I. BÃI XE PHÍA ĐÔNG & SÂN BÓNG & NHÀ LỢP TÔN ---
+  node_bike_front_entry: { x: 920, y: 925, name: "Lối rẽ vào bãi xe học sinh trước" },
+  node_bike_front: { x: 1160, y: 925, name: "Nhà xe HS gần cổng trước" },
   node_east_walk_soccer: { x: 860, y: 580, name: "Lối sang khu thể thao phía Đông" },
   node_east_turn_soccer: { x: 1300, y: 580, name: "Lối vào Sân Bóng" },
   node_soccer_entrance: { x: 1400, y: 580, name: "Sân Bóng Đá" },
   node_bike_east: { x: 1445, y: 450, name: "Khu vực xe Học sinh phía Đông" },
+  node_east_turn_north: { x: 1370, y: 240, name: "Lối đi phía Bắc Bãi xe Đông" },
+  node_east_turn_corner: { x: 1370, y: 175, name: "Khúc cua phía Đông Bắc" },
+  node_metal_roof_approach: { x: 1260, y: 175, name: "Đường vào Nhà Lợp Tôn" },
   node_metal_roof: { x: 1095, y: 95, name: "Nhà Lợp Tôn" }
 };
 
-// 3. MẠNG LƯỚI ĐƯỜNG ĐI (EDGES) - ĐẢM BẢO KHÔNG LÊN LẦU SAI VỊ TRÍ
+// 3. MẠNG LƯỚI ĐƯỜNG ĐI (EDGES) - TỐI ƯU HÓA QUÃNG ĐƯỜNG, ĐI THẲNG, KHÔNG XUYÊN TƯỜNG
 const CAMPUS_GRAPH_EDGES = [
-  // --- TRỤC CHÍNH SÂN TRƯỜNG (HOÀN TOÀN MẶT ĐẤT) ---
-  { from: "node_gate_front", to: "node_main_split", desc: "Đi thẳng qua Cổng chính vào trường" },
-  { from: "node_main_split", to: "node_courtyard_south", desc: "Đi thẳng qua trục đường chính hướng về sân cờ" },
-  { from: "node_courtyard_south", to: "node_flagpole", desc: "Đi thẳng qua khu vực Cột Cờ trung tâm" },
-  { from: "node_flagpole", to: "node_courtyard_mid", desc: "Đi thẳng qua khoảng sân trung tâm giữa các tòa nhà" },
-  { from: "node_courtyard_mid", to: "node_courtyard_north", desc: "Đi thẳng trên sân trường đến trước Dãy Lớp Sau" },
+  // 1. TRỤC SÂN TRƯỜNG CHÍNH (HOÀN TOÀN MẶT ĐẤT)
+  { from: "node_gate_front", to: "node_main_split", desc: "Đi thẳng qua Cổng chính vào trường", descRev: "Đi thẳng ra Cổng chính của trường" },
+  { from: "node_main_split", to: "node_courtyard_south", desc: "Đi thẳng qua trục đường chính hướng về sân cờ", descRev: "Đi theo trục đường chính hướng về Cổng trường" },
+  { from: "node_courtyard_south", to: "node_flagpole", desc: "Đi thẳng qua khu Cột Cờ trung tâm", descRev: "Đi qua khu Cột Cờ hướng về phía Nam" },
+  { from: "node_flagpole", to: "node_triangle_roof", desc: "Từ Cột Cờ đi thẳng lên Sảnh Mái Tam Giác", descRev: "Từ Sảnh Mái Tam Giác đi thẳng xuống Cột Cờ" },
+  { from: "node_triangle_roof", to: "node_courtyard_north", desc: "Đi qua Mái Tam Giác đến trước Dãy Lớp Sau", descRev: "Từ trước Dãy Lớp Sau ra khu Mái Tam Giác" },
 
-  // --- TỪ SÂN TRƯỜNG VÀO THƯ VIỆN & CÁC PHÒNG TẦNG TRỆT DÃY SAU ---
-  // (ĐI HOÀN TOÀN TRÊN MẶT ĐẤT, KHÔNG HỀ LÊN CẦU THANG!)
-  { from: "node_courtyard_north", to: "node_back_g_library", desc: "Rẽ sang sảnh trước Thư Viện (Tầng trệt)" },
-  { from: "node_back_g_library", to: "node_back_g_c1", desc: "Đi dọc hành lang Tầng trệt đến Chân Cầu Thang 1" },
-  { from: "node_back_g_c1", to: "node_back_g_rooms_left", desc: "Đi tiếp hành lang Tầng trệt qua phòng P.03, P.04" },
-  { from: "node_back_g_rooms_left", to: "node_back_g_wc", desc: "Đi đến khu WC Tầng trệt phía Tây" },
+  // Kết nối sảnh Dãy Trước và Khối Chức Năng với Mái Tam Giác
+  { from: "node_front_g_entry", to: "node_triangle_roof", desc: "Đi ra khu vực Mái Tam Giác trung tâm", descRev: "Rẽ vào sảnh Tầng trệt Dãy Lớp Trước" },
+  { from: "node_triangle_roof", to: "node_east_walk_soccer", desc: "Đi theo lối hành lang sang khu thể thao phía Đông", descRev: "Từ lối sang khu thể thao về khu Mái Tam Giác" },
+  { from: "node_east_walk_soccer", to: "node_func_g_yte", desc: "Rẽ vào Phòng Y Tế (+) (Tầng trệt)", descRev: "Từ Phòng Y Tế ra lối hành lang Đông" },
 
-  { from: "node_courtyard_north", to: "node_back_g_c2", desc: "Rẽ sang sảnh Chân Cầu Thang 2 Dãy Sau (Tầng trệt)" },
-  { from: "node_back_g_c2", to: "node_back_g_rooms_right", desc: "Đi dọc hành lang Tầng trệt qua phòng P.05, P.06" },
+  // Kết nối Dãy Hành chính & Hội trường với sân Nam
+  { from: "node_courtyard_south", to: "node_admin_g_entry", desc: "Rẽ vào sảnh Dãy Hành chính", descRev: "Từ sảnh Dãy Hành chính ra sân Nam" },
+  { from: "node_courtyard_south", to: "node_hall_g_entry", desc: "Rẽ vào cửa Hội Trường Lớn (Tầng trệt)", descRev: "Từ Hội Trường đi ra sân trường phía Nam" },
 
-  // Cổng sau & Dãy xe Tây (từ tầng trệt)
-  { from: "node_back_g_c1", to: "node_gate_back_walk", desc: "Đi ra lối Cổng Sau" },
-  { from: "node_gate_back_walk", to: "node_gate_back", desc: "Đi thẳng ra Cổng Sau" },
-  { from: "node_gate_back", to: "node_bike_back", desc: "Rẽ vào Nhà xe Cổng Sau" },
-  { from: "node_gate_back_walk", to: "node_bike_west_corner", desc: "Đi qua khúc cua vào Dãy xe Tây" },
-  { from: "node_bike_west_corner", to: "node_bike_west", desc: "Đi dọc Dãy để xe học sinh phía Tây" },
+  // 2. KHU VỰC CỔNG SAU & HẺM PHÍA BẮC (ĐI NGOÀI TƯỜNG, KHÔNG XUYÊN PHÒNG)
+  { from: "node_gate_back", to: "node_gate_back_turn", desc: "Đi dọc lối bên ngoài Cổng Sau", descRev: "Đi thẳng ra Cổng Sau" },
+  { from: "node_gate_back_turn", to: "node_bike_back", desc: "Rẽ vào Nhà xe gần Cổng Sau", descRev: "Từ Nhà xe Cổng Sau ra lối đi chính" },
+  { from: "node_gate_back_turn", to: "node_west_corner_north", desc: "Đi theo hẻm phía Tây hướng về Dãy xe", descRev: "Đi dọc hẻm phía Tây hướng về Cổng Sau" },
+  { from: "node_west_corner_north", to: "node_bike_west_corner", desc: "Rẽ qua khúc cua vào Dãy xe Tây", descRev: "Ra khỏi Dãy xe Tây về phía khúc cua hẻm" },
+  { from: "node_bike_west_corner", to: "node_bike_west_north", desc: "Đi vào đầu phía Bắc Dãy xe học sinh", descRev: "Từ đầu Dãy xe Tây ra lối khúc cua" },
 
-  // --- CẦU THANG NỘI BỘ DÃY LỚP SAU (CHỈ DÙNG ĐỂ LÊN LẦU CỦA DÃY SAU) ---
-  // Cầu Thang 1:
-  { from: "node_back_g_c1", to: "node_back_stair1_t1", desc: "Bước lên Cầu Thang 1 lên Tầng 1" },
-  { from: "node_back_stair1_t1", to: "node_back_stair1_t2", desc: "Tiếp tục lên Tầng 2 bằng Cầu Thang 1" },
-  { from: "node_back_stair1_t2", to: "node_back_stair1_t3", desc: "Tiếp tục lên Tầng 3 bằng Cầu Thang 1" },
+  // 3. DÃY ĐỂ XE HỌC SINH PHÍA TÂY & LỐI ĐI THẲNG XUỐNG PHÍA NAM VÀO NHÀ XE GV (YÊU CẦU NGƯỜI DÙNG)
+  { from: "node_bike_west_north", to: "node_bike_west", desc: "Đi dọc theo Dãy để xe học sinh phía Tây", descRev: "Đi dọc Dãy xe Tây ngược lên phía Bắc" },
+  { from: "node_bike_west", to: "node_bike_west_south", desc: "Đi thẳng tiếp xuống phía Nam dọc Dãy xe Tây", descRev: "Đi dọc theo Dãy xe Tây hướng lên phía Bắc" },
+  { from: "node_bike_west_south", to: "node_bike_west_exit_south", desc: "Đi ra khỏi cuối Dãy xe học sinh phía Tây", descRev: "Đi vào lối phía Nam của Dãy xe Tây" },
+  { from: "node_bike_west_exit_south", to: "node_bike_gv_corner", desc: "Đi thẳng xuống theo lối Khúc cua phía Nam", descRev: "Đi ngược lên phía Bắc về Dãy xe học sinh" },
+  { from: "node_bike_gv_corner", to: "node_bike_gv_west_entry", desc: "Rẽ sang lối vào Nhà xe Giáo Viên", descRev: "Rẽ ra lối Khúc cua phía Tây" },
+  { from: "node_bike_gv_west_entry", to: "node_bike_gv", desc: "Đi thẳng vào Nhà xe Giáo Viên", descRev: "Đi ra cổng phía Tây Nhà xe Giáo Viên" },
 
-  // Cầu Thang 2:
-  { from: "node_back_g_c2", to: "node_back_stair2_t1", desc: "Bước lên Cầu Thang 2 lên Tầng 1" },
-  { from: "node_back_stair2_t1", to: "node_back_stair2_t2", desc: "Tiếp tục lên Tầng 2 bằng Cầu Thang 2" },
-  { from: "node_back_stair2_t2", to: "node_back_stair2_t3", desc: "Tiếp tục lên Tầng 3 bằng Cầu Thang 2" },
+  // Lối vào/ra Nhà xe GV từ phía Cổng trường (trục Nam)
+  { from: "node_bike_gv", to: "node_bike_gv_east_exit", desc: "Đi theo lối ra phía Đông Nhà xe GV", descRev: "Đi vào lối phía Đông Nhà xe GV" },
+  { from: "node_bike_gv_east_exit", to: "node_bike_gv_front_path", desc: "Đi ra đường nội bộ Nhà xe GV", descRev: "Rẽ vào Nhà xe Giáo Viên" },
+  { from: "node_bike_gv_front_path", to: "node_bike_gv_entry_mid", desc: "Đi dọc lối vào Nhà xe GV", descRev: "Đi dọc đường nội bộ hướng về Nhà xe GV" },
+  { from: "node_bike_gv_entry_mid", to: "node_main_split", desc: "Ra tới sảnh chính trước Cổng trường", descRev: "Rẽ trái theo lối đi nhà xe giáo viên (Học sinh không đi lối này)" },
 
-  // --- TỪ SÂN TRƯỜNG VÀO DÃY LỚP TRƯỚC (TẦNG TRỆT) ---
-  { from: "node_courtyard_mid", to: "node_front_g_entry", desc: "Rẽ vào sảnh Tầng trệt Dãy Lớp Trước" },
-  { from: "node_front_g_entry", to: "node_front_g_rooms_right", desc: "Đi qua phòng P.01, P.03 Tầng trệt" },
-  { from: "node_front_g_rooms_right", to: "node_front_g_stair", desc: "Đến Chân Cầu Thang giữa Dãy Trước" },
-  { from: "node_front_g_stair", to: "node_front_g_rooms_left", desc: "Đi tiếp hành lang Tầng trệt qua phòng P.01, P.02" },
-  { from: "node_front_g_rooms_left", to: "node_front_g_wc", desc: "Đến khu WC Tầng trệt Dãy Trước" },
+  // 4. KẾT NỐI HÀNH LANG TÂY VỚI CÁC KHỐI NHÀ (TIỆN LỢI, KHÔNG ĐI XUYÊN TƯỜNG)
+  { from: "node_west_corner_north", to: "node_west_corridor_north", desc: "Đi dọc hành lang Tây về phía Dãy Lớp Sau", descRev: "Đi lên phía Bắc theo hẻm Tây" },
+  { from: "node_west_corridor_north", to: "node_back_g_wc", desc: "Rẽ vào hành lang trước Dãy Lớp Sau", descRev: "Rẽ ra hành lang phía Tây" },
+  { from: "node_bike_west", to: "node_west_corridor_north", desc: "Từ Dãy xe Tây qua hành lang Dãy Lớp Sau", descRev: "Từ hành lang Dãy Lớp Sau ra Dãy xe Tây" },
+  { from: "node_bike_west", to: "node_west_corridor_mid", desc: "Từ Dãy xe Tây qua hành lang Dãy Lớp Trước", descRev: "Từ hành lang Dãy Lớp Trước ra Dãy xe Tây" },
+  { from: "node_west_corridor_north", to: "node_west_corridor_mid", desc: "Đi dọc hành lang giữa Dãy Sau và Dãy Trước", descRev: "Đi ngược lên phía Dãy Sau theo hành lang Tây" },
+  { from: "node_west_corridor_mid", to: "node_front_g_wc", desc: "Rẽ vào hành lang Tầng trệt Dãy Lớp Trước", descRev: "Từ Dãy Lớp Trước ra hành lang phía Tây" },
+  { from: "node_west_corridor_mid", to: "node_west_corridor_south", desc: "Đi dọc hành lang Tây về phía Dãy Hành Chính", descRev: "Đi ngược lên phía Bắc theo hành lang Tây" },
+  { from: "node_west_corridor_south", to: "node_admin_g_stair", desc: "Rẽ vào sảnh Dãy Hành Chính", descRev: "Từ Dãy Hành Chính ra hành lang phía Tây" },
+  { from: "node_bike_west_south", to: "node_west_corridor_south", desc: "Từ cuối Dãy xe Tây sang Dãy Hành Chính", descRev: "Từ Dãy Hành Chính ra cuối Dãy xe Tây" },
 
-  // Cầu thang nội bộ Dãy Lớp Trước (CHỈ DÙNG ĐỂ LÊN LẦU DÃY TRƯỚC)
-  { from: "node_front_g_stair", to: "node_front_stair_t1", desc: "Đi Cầu Thang giữa lên Tầng 1" },
-  { from: "node_front_stair_t1", to: "node_front_stair_t2", desc: "Tiếp tục lên Tầng 2 Dãy Trước" },
-  { from: "node_front_stair_t2", to: "node_front_stair_t3", desc: "Tiếp tục lên Tầng 3 Dãy Trước" },
+  // 5. HÀNH LANG TẦNG TRỆT DÃY LỚP SAU (ĐI DỌC TRÊN SÂN/HÀNH LANG TRỆT)
+  { from: "node_back_g_wc", to: "node_back_g_rooms_left", desc: "Đi qua khu WC Tầng trệt Dãy Sau", descRev: "Đi về phía khu WC Tầng trệt Dãy Sau" },
+  { from: "node_back_g_rooms_left", to: "node_back_g_c1", desc: "Đi qua phòng P.03, P.04 đến Chân Cầu Thang 1", descRev: "Đi dọc hành lang qua phòng P.04, P.03" },
+  { from: "node_back_g_c1", to: "node_back_g_library", desc: "Đi dọc hành lang đến sảnh Thư Viện", descRev: "Từ Thư Viện đi về Chân Cầu Thang 1" },
+  { from: "node_back_g_library", to: "node_back_g_c2", desc: "Đi tiếp hành lang đến Chân Cầu Thang 2", descRev: "Từ Cầu Thang 2 đi sang sảnh Thư Viện" },
+  { from: "node_back_g_c2", to: "node_back_g_rooms_right", desc: "Đi qua phòng P.05, P.06 Dãy Sau", descRev: "Từ phòng P.05, P.06 về Chân Cầu Thang 2" },
+  { from: "node_back_g_library", to: "node_courtyard_north", desc: "Đi thẳng ra sân trường trước Dãy Lớp Sau", descRev: "Từ sân trường vào sảnh Thư Viện (Tầng trệt)" },
+  { from: "node_back_g_c2", to: "node_courtyard_north", desc: "Đi ra sân trường từ Cầu Thang 2", descRev: "Từ sân trường vào Chân Cầu Thang 2 Dãy Sau" },
 
-  // --- DÃY HÀNH CHÍNH & PHÒNG HỘI ĐỒNG ---
-  { from: "node_flagpole", to: "node_admin_g_entry", desc: "Rẽ sang Dãy Hành chính" },
-  { from: "node_admin_g_entry", to: "node_admin_g_corridor", desc: "Vào các văn phòng Hành chính Tầng trệt" },
-  { from: "node_admin_g_corridor", to: "node_admin_g_stair", desc: "Đến Chân Cầu Thang Dãy Hành chính" },
-  { from: "node_admin_g_stair", to: "node_admin_stair_t1", desc: "Lên Tầng 1 Dãy Hành chính (Phòng Hội Đồng)" },
+  // Cầu thang nội bộ Dãy Lớp Sau (CHỈ DÙNG ĐỂ LÊN LẦU CỦA DÃY SAU)
+  { from: "node_back_g_c1", to: "node_back_stair1_t1", desc: "Bước lên Cầu Thang 1 lên Tầng 1", descRev: "Đi xuống Tầng trệt bằng Cầu Thang 1" },
+  { from: "node_back_stair1_t1", to: "node_back_stair1_t2", desc: "Tiếp tục lên Tầng 2 bằng Cầu Thang 1", descRev: "Đi xuống Tầng 1 bằng Cầu Thang 1" },
+  { from: "node_back_stair1_t2", to: "node_back_stair1_t3", desc: "Tiếp tục lên Tầng 3 bằng Cầu Thang 1", descRev: "Đi xuống Tầng 2 bằng Cầu Thang 1" },
+  { from: "node_back_g_c2", to: "node_back_stair2_t1", desc: "Bước lên Cầu Thang 2 lên Tầng 1", descRev: "Đi xuống Tầng trệt bằng Cầu Thang 2" },
+  { from: "node_back_stair2_t1", to: "node_back_stair2_t2", desc: "Tiếp tục lên Tầng 2 bằng Cầu Thang 2", descRev: "Đi xuống Tầng 1 bằng Cầu Thang 2" },
+  { from: "node_back_stair2_t2", to: "node_back_stair2_t3", desc: "Tiếp tục lên Tầng 3 bằng Cầu Thang 2", descRev: "Đi xuống Tầng 2 bằng Cầu Thang 2" },
 
-  // --- KHỐI CHỨC NĂNG, THIẾT BỊ & HỘI TRƯỜNG ---
-  { from: "node_flagpole", to: "node_hall_g_entry", desc: "Rẽ vào cửa Hội Trường Lớn (Tầng trệt)" },
-  { from: "node_courtyard_mid", to: "node_func_g_yte", desc: "Rẽ vào Phòng Y Tế (+) (Tầng trệt)" },
-  { from: "node_func_g_yte", to: "node_func_g_lab", desc: "Đi sang Phòng Thí Nghiệm (Kế bên phòng Y tế)" },
-  { from: "node_func_g_yte", to: "node_func_g_stair", desc: "Đến Chân Cầu Thang Khối Chức Năng" },
+  // 6. HÀNH LANG TẦNG TRỆT DÃY LỚP TRƯỚC
+  { from: "node_front_g_wc", to: "node_front_g_rooms_left", desc: "Đi qua WC Dãy Trước vào hành lang trệt", descRev: "Đi ra khu WC Tầng trệt Dãy Trước" },
+  { from: "node_front_g_rooms_left", to: "node_front_g_stair", desc: "Đi qua phòng P.01, P.02 đến Chân Cầu Thang giữa", descRev: "Từ Cầu Thang giữa đi qua phòng P.02, P.01" },
+  { from: "node_front_g_stair", to: "node_front_g_rooms_right", desc: "Đi tiếp hành lang qua phòng P.01, P.03", descRev: "Từ phòng P.03, P.01 về Chân Cầu Thang giữa" },
+  { from: "node_front_g_rooms_right", to: "node_front_g_entry", desc: "Đến sảnh ra vào Tầng trệt Dãy Trước", descRev: "Từ sảnh vào hành lang Tầng trệt Dãy Trước" },
 
-  // Cầu thang nội bộ Khối chức năng (CHỈ DÙNG ĐỂ LÊN LẦU TIN HỌC / THIẾT BỊ)
-  { from: "node_func_g_stair", to: "node_func_stair_t1", desc: "Đi Cầu Thang lên Tầng 1 (Phòng Tin Học 1, 2 & VP Đoàn)" },
-  { from: "node_func_stair_t1", to: "node_func_stair_t2", desc: "Tiếp tục lên Tầng 2 (Dãy Nhà Thiết Bị)" },
+  // Cầu thang nội bộ Dãy Lớp Trước (CHỈ LÊN LẦU DÃY TRƯỚC)
+  { from: "node_front_g_stair", to: "node_front_stair_t1", desc: "Đi Cầu Thang giữa lên Tầng 1", descRev: "Đi Cầu Thang giữa xuống Tầng trệt" },
+  { from: "node_front_stair_t1", to: "node_front_stair_t2", desc: "Tiếp tục lên Tầng 2 Dãy Trước", descRev: "Đi xuống Tầng 1 Dãy Trước" },
+  { from: "node_front_stair_t2", to: "node_front_stair_t3", desc: "Tiếp tục lên Tầng 3 Dãy Trước", descRev: "Đi xuống Tầng 2 Dãy Trước" },
 
-  // --- KHU VỰC NHÀ XE & SÂN THỂ THAO ---
-  { from: "node_main_split", to: "node_bike_front_entry", desc: "Rẽ phải theo lối vào nhà xe học sinh" },
-  { from: "node_bike_front_entry", to: "node_bike_front", desc: "Đi thẳng vào Nhà xe học sinh gần cổng trước" },
-  { from: "node_main_split", to: "node_bike_gv_entry", desc: "Rẽ trái theo lối đi nhà xe giáo viên" },
-  { from: "node_bike_gv_entry", to: "node_bike_gv", desc: "Đi thẳng vào Nhà xe Giáo Viên" },
+  // 7. DÃY HÀNH CHÍNH & PHÒNG HỘI ĐỒNG
+  { from: "node_admin_g_stair", to: "node_admin_g_corridor", desc: "Đi dọc hành lang Dãy Hành chính", descRev: "Đi dọc hành lang về phía Cầu Thang Hành chính" },
+  { from: "node_admin_g_corridor", to: "node_admin_g_entry", desc: "Đến cửa sảnh Dãy Hành chính", descRev: "Vào các văn phòng Hành chính Tầng trệt" },
+  { from: "node_admin_g_stair", to: "node_admin_stair_t1", desc: "Lên Tầng 1 Dãy Hành chính (Phòng Hội Đồng)", descRev: "Đi xuống Tầng trệt Dãy Hành chính" },
 
-  // Sân bóng & Xe phía Đông
-  { from: "node_courtyard_mid", to: "node_east_walk_soccer", desc: "Đi theo lối hành lang sang khu thể thao phía Đông" },
-  { from: "node_east_walk_soccer", to: "node_east_turn_soccer", desc: "Đi thẳng đến lối vào Sân Bóng" },
-  { from: "node_east_turn_soccer", to: "node_soccer_entrance", desc: "Đi vào Sân Bóng Đá" },
-  { from: "node_east_turn_soccer", to: "node_bike_east", desc: "Đi vào Khu vực gửi xe học sinh phía Đông" },
-  { from: "node_bike_east", to: "node_metal_roof", desc: "Đi tiếp đến khu Nhà Lợp Tôn" }
+  // 8. KHỐI CHỨC NĂNG, THIẾT BỊ
+  { from: "node_func_g_yte", to: "node_func_g_lab", desc: "Đi sang Phòng Thí Nghiệm (Kế bên phòng Y tế)", descRev: "Từ Phòng Thí Nghiệm đi sang Phòng Y Tế" },
+  { from: "node_func_g_yte", to: "node_func_g_stair", desc: "Đến Chân Cầu Thang Khối Chức Năng", descRev: "Từ Cầu Thang Khối Chức Năng sang sảnh Y Tế" },
+  { from: "node_func_g_stair", to: "node_func_stair_t1", desc: "Đi Cầu Thang lên Tầng 1 (Tin Học 1, 2 & VP Đoàn)", descRev: "Đi Cầu Thang xuống Tầng trệt Khối Chức Năng" },
+  { from: "node_func_stair_t1", to: "node_func_stair_t2", desc: "Tiếp tục lên Tầng 2 (Dãy Nhà Thiết Bị)", descRev: "Đi xuống Tầng 1 Khối Chức Năng" },
+
+  // 9. BÃI XE PHÍA ĐÔNG & SÂN BÓNG & NHÀ LỢP TÔN
+  { from: "node_main_split", to: "node_bike_front_entry", desc: "Rẽ phải theo lối vào nhà xe học sinh trước", descRev: "Từ lối vào bãi xe ra sảnh Cổng trường" },
+  { from: "node_bike_front_entry", to: "node_bike_front", desc: "Đi thẳng vào Nhà xe học sinh gần cổng trước", descRev: "Đi ra lối rẽ bãi xe cổng trước" },
+  { from: "node_east_walk_soccer", to: "node_east_turn_soccer", desc: "Đi thẳng đến lối vào Sân Bóng", descRev: "Đi theo lối hành lang về phía sân trung tâm" },
+  { from: "node_east_turn_soccer", to: "node_soccer_entrance", desc: "Đi vào Sân Bóng Đá", descRev: "Từ Sân Bóng Đá ra lối đi chung" },
+  { from: "node_east_turn_soccer", to: "node_bike_east", desc: "Đi vào Khu vực gửi xe học sinh phía Đông", descRev: "Từ Khu gửi xe Đông ra lối vào Sân Bóng" },
+  { from: "node_bike_east", to: "node_east_turn_north", desc: "Đi lên phía Bắc dọc Khu gửi xe Đông", descRev: "Đi xuống phía Nam dọc Khu gửi xe Đông" },
+  { from: "node_east_turn_north", to: "node_east_turn_corner", desc: "Đến khúc cua phía Đông Bắc", descRev: "Từ khúc cua đi vào Khu gửi xe phía Đông" },
+  { from: "node_east_turn_corner", to: "node_metal_roof_approach", desc: "Rẽ sang đường vào Nhà Lợp Tôn", descRev: "Từ đường Nhà Lợp Tôn ra khúc cua" },
+  { from: "node_metal_roof_approach", to: "node_metal_roof", desc: "Đến khu Nhà Lợp Tôn", descRev: "Từ Nhà Lợp Tôn ra đường tiếp cận" }
 ];
 
 // Xuất các biến toàn cục cho các module JS
