@@ -159,11 +159,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const normDesc = removeVietnameseTones(loc.description || "");
         const normFloor = removeVietnameseTones(loc.floor);
         const normKeywords = (loc.keywords || []).map(k => removeVietnameseTones(k)).join(" ");
-        
+
         return normName.includes(normalizedSearch) ||
-               normDesc.includes(normalizedSearch) ||
-               normFloor.includes(normalizedSearch) ||
-               normKeywords.includes(normalizedSearch);
+          normDesc.includes(normalizedSearch) ||
+          normFloor.includes(normalizedSearch) ||
+          normKeywords.includes(normalizedSearch);
       });
 
       if (this.filteredItems.length === 0) {
@@ -410,14 +410,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 5. TƯƠNG TÁC CLICK VÀO CÁC PHÒNG TRÊN BẢN ĐỒ SVG
   function setupMapRoomInteractions() {
-    // Duyệt qua tất cả các phòng và gán hover/click
+    // 1. Bắt sự kiện click trực tiếp trên tất cả các phòng / ô để xe có data-loc-id
+    mainMapSvg.addEventListener("click", (e) => {
+      const target = e.target.closest("[data-loc-id]");
+      if (target) {
+        const locId = target.getAttribute("data-loc-id");
+        const loc = window.CAMPUS_LOCATIONS.find(l => l.id === locId);
+        if (loc) {
+          e.stopPropagation();
+          if (!selectedStartLoc) {
+            startCombobox.selectLocation(loc);
+          } else if (selectedStartLoc.id === loc.id) {
+            return;
+          } else {
+            destCombobox.selectLocation(loc);
+            handleCalculateRoute();
+          }
+        }
+      }
+    });
+
+    // 2. Duyệt qua tất cả các vị trí tạo vùng clickable hỗ trợ tooltip
     window.CAMPUS_LOCATIONS.forEach(loc => {
-      // Tìm phần tử text hoặc rect gần tọa độ (loc.x, loc.y)
-      // Tạo một vùng clickable vô hình dạng SVG circle/rect quanh phòng
       const hitArea = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       hitArea.setAttribute("cx", loc.x);
       hitArea.setAttribute("cy", loc.y);
-      hitArea.setAttribute("r", "24");
+      hitArea.setAttribute("r", "20");
       hitArea.setAttribute("fill", "transparent");
       hitArea.setAttribute("cursor", "pointer");
       hitArea.setAttribute("class", "map-room-hitarea");
@@ -428,14 +446,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       hitArea.addEventListener("click", (e) => {
         e.stopPropagation();
-        // Nếu chưa chọn điểm xuất phát, đặt là điểm xuất phát; ngược lại đặt là đích đến
         if (!selectedStartLoc) {
           startCombobox.selectLocation(loc);
         } else if (selectedStartLoc.id === loc.id) {
-          return; // Bấm trùng điểm hiện tại thì không chọn
+          return;
         } else {
           destCombobox.selectLocation(loc);
-          // Tự động tìm đường luôn khi đã có cả 2 điểm
           handleCalculateRoute();
         }
       });

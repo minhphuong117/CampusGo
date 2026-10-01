@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
   <title>Bản Đồ Chỉ Đường Khuôn Viên Trường Học | Smart Campus Wayfinding</title>
-  <meta name="description" content="Hệ thống chỉ đường nội bộ khuôn viên trường học thông minh, hỗ trợ quét mã QR tại chỗ, tìm kiếm phòng học, cầu thang và dẫn đường trực quan.">
+  <meta name="description"
+    content="Hệ thống chỉ đường nội bộ khuôn viên trường học thông minh, hỗ trợ quét mã QR tại chỗ, tìm kiếm phòng học, cầu thang và dẫn đường trực quan.">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <!-- Nút điều khiển nhanh bản đồ trên iPhone / Mobile -->
@@ -53,7 +57,7 @@
         <!-- FORM CHỈ ĐƯỜNG & 2 COMBOBOX TÌM KIẾM -->
         <section class="route-card" aria-label="Khung tìm kiếm lộ trình">
           <div class="form-inputs-group">
-            
+
             <!-- COMBOBOX 1: VỊ TRÍ HIỆN TẠI -->
             <div class="combobox-group">
               <label class="combobox-label label-start" for="start-location-input">
@@ -62,13 +66,8 @@
               <div class="combobox-container">
                 <div class="combobox-input-wrapper">
                   <span class="combobox-icon">📍</span>
-                  <input
-                    type="text"
-                    id="start-location-input"
-                    class="combobox-input"
-                    placeholder="Gõ tìm kiếm (Cổng, Cột cờ, P.01...)"
-                    autocomplete="off"
-                  >
+                  <input type="text" id="start-location-input" class="combobox-input"
+                    placeholder="Gõ tìm kiếm (Cổng, Cột cờ, P.01...)" autocomplete="off">
                   <button type="button" id="start-clear-btn" class="btn-clear-input" title="Xóa">✕</button>
                 </div>
                 <div id="start-location-dropdown" class="combobox-dropdown" role="listbox"></div>
@@ -90,13 +89,8 @@
               <div class="combobox-container">
                 <div class="combobox-input-wrapper">
                   <span class="combobox-icon">🎯</span>
-                  <input
-                    type="text"
-                    id="dest-location-input"
-                    class="combobox-input"
-                    placeholder="Tìm phòng học, y tế, hội trường..."
-                    autocomplete="off"
-                  >
+                  <input type="text" id="dest-location-input" class="combobox-input"
+                    placeholder="Tìm phòng học, y tế, hội trường..." autocomplete="off">
                   <button type="button" id="dest-clear-btn" class="btn-clear-input" title="Xóa">✕</button>
                 </div>
                 <div id="dest-location-dropdown" class="combobox-dropdown" role="listbox"></div>
@@ -132,7 +126,9 @@
                 <span id="route-time" class="badge-tag badge-time">~2 phút</span>
               </div>
             </div>
-            <div id="route-floor-badge" style="display:none; margin-top:8px; font-size:11px; font-weight:700; color:#4338ca; background:#e0e7ff; padding:3px 8px; border-radius:6px; width:fit-content;"></div>
+            <div id="route-floor-badge"
+              style="display:none; margin-top:8px; font-size:11px; font-weight:700; color:#4338ca; background:#e0e7ff; padding:3px 8px; border-radius:6px; width:fit-content;">
+            </div>
           </div>
 
           <!-- TIMELINE TỪNG BƯỚC -->
@@ -171,441 +167,709 @@
          ====================================================================== -->
     <main id="map-viewport" class="map-viewport" aria-label="Bản đồ khuôn viên trường học">
       <!-- THANH CHUYỂN ĐỔI CHẾ ĐỘ 2D / 3D KHÔNG GIAN -->
-      <div class="view-mode-bar" style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; gap: 8px; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(10px); padding: 6px 12px; border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 8px 24px rgba(0,0,0,0.25);">
-        <button type="button" class="view-mode-btn active" style="background: #0284c7; color: white; border: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+      <div class="view-mode-bar"
+        style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; gap: 8px; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(10px); padding: 6px 12px; border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 8px 24px rgba(0,0,0,0.25);">
+        <button type="button" class="view-mode-btn active"
+          style="background: #0284c7; color: white; border: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
           <span>🗺️</span> 2D Mặt Bằng
         </button>
-        <a href="so_do_3d.html" class="view-mode-btn" style="background: rgba(255,255,255,0.08); color: white; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        <a href="so_do_3d.html" class="view-mode-btn"
+          style="background: rgba(255,255,255,0.08); color: white; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
           <span>🏢</span> 3D Không Gian (Nổi Bật)
         </a>
       </div>
 
-      <div id="map-svg-wrapper">
-        <svg id="main-map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1120" style="background-color: #f8fafc; font-family: 'Segoe UI', -apple-system, sans-serif;">
+      <!-- BẢNG CHÚ THÍCH PHÂN MÀU CÁC KHỐI LỚP (KHỐI 10, 11, 12) -->
+      <div class="grade-legend-bar"
+        style="position: absolute; bottom: 20px; left: 24px; z-index: 20; display: flex; align-items: center; gap: 14px; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); padding: 7px 16px; border-radius: 24px; border: 1px solid #cbd5e1; box-shadow: 0 4px 14px rgba(0,0,0,0.08); font-size: 12px; font-weight: 700; color: #1e293b;">
+        <span style="font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; font-weight: 800;">Phân màu khối:</span>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="width: 14px; height: 14px; border-radius: 3px; background: #fef08a; border: 1.5px solid #ca8a04; display: inline-block;"></span>
+          <span>Khối 10</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="width: 14px; height: 14px; border-radius: 3px; background: #dbeafe; border: 1.5px solid #0284c7; display: inline-block;"></span>
+          <span>Khối 11</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="width: 14px; height: 14px; border-radius: 3px; background: #fed7aa; border: 1.5px solid #ea580c; display: inline-block;"></span>
+          <span>Khối 12</span>
+        </div>
+      </div>
+
+                  <div id="map-svg-wrapper">
+        <svg id="main-map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1120" width="1600" height="1120" style="background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
           <defs>
-            <!-- Pattern gạch chéo cho dãy thiết bị -->
-            <pattern id="diagonalHatch" width="16" height="16" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-              <line x1="0" y1="0" x2="0" y2="16" stroke="#cbd5e1" stroke-width="1.5" />
-            </pattern>
-            <!-- Mũi tên chỉ hướng -->
-            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0f172a" />
-            </marker>
-            <!-- Gradients & Filter cho Mái Kính Tam Giác Cột Cờ -->
-            <linearGradient id="triangleGlassLeft" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.9" />
-              <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.8" />
-              <stop offset="100%" stop-color="#0284c7" stop-opacity="0.85" />
-            </linearGradient>
-            <linearGradient id="triangleGlassRight" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9" />
-              <stop offset="50%" stop-color="#0284c7" stop-opacity="0.85" />
-              <stop offset="100%" stop-color="#0369a1" stop-opacity="0.9" />
-            </linearGradient>
-            <linearGradient id="beamGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#0284c7" />
-              <stop offset="50%" stop-color="#38bdf8" />
-              <stop offset="100%" stop-color="#0369a1" />
-            </linearGradient>
-            <filter id="flagShadow" x="-10%" y="-10%" width="130%" height="130%">
-              <feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-color="#0f172a" flood-opacity="0.25"/>
+            <filter id="boxShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.08"/>
             </filter>
+            <filter id="flagShadow" x="-15%" y="-15%" width="130%" height="130%">
+              <feDropShadow dx="1" dy="3" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.25"/>
+            </filter>
+            <linearGradient id="roofGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="50%" stop-color="#0284c7"/>
+              <stop offset="100%" stop-color="#0369a1"/>
+            </linearGradient>
+            <linearGradient id="canopyLeftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="60%" stop-color="#0284c7"/>
+              <stop offset="100%" stop-color="#0369a1"/>
+            </linearGradient>
+            <linearGradient id="canopyRightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0284c7"/>
+              <stop offset="50%" stop-color="#0369a1"/>
+              <stop offset="100%" stop-color="#075985"/>
+            </linearGradient>
+            <linearGradient id="canopyFrontGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#7dd3fc"/>
+              <stop offset="100%" stop-color="#0284c7"/>
+            </linearGradient>
             <style>
-              .center-text { text-anchor: middle; dominant-baseline: middle; }
-              .title { font-size: 22px; font-weight: bold; fill: #0f172a; text-anchor: middle; dominant-baseline: middle; }
-              .room-text { font-size: 12px; font-weight: 600; fill: #1e293b; text-anchor: middle; dominant-baseline: middle; }
-              .room-highlight { fill: #fef08a; stroke: #ca8a04; stroke-width: 1.2; }
-              .room-normal { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.2; }
-              .room-gray { fill: #f1f5f9; stroke: #94a3b8; stroke-width: 1.2; }
-              .wc-box { fill: #ccfbf1; stroke: #0d9488; stroke-width: 1.2; }
-              .wc-text { font-size: 10px; font-weight: bold; fill: #0f766e; text-anchor: middle; dominant-baseline: middle; }
-              .stair-box { fill: #e2e8f0; stroke: #64748b; stroke-width: 1.2; }
-              .stair-text { font-size: 11px; font-weight: bold; fill: #334155; text-anchor: middle; dominant-baseline: middle; }
-              .floor-label { font-size: 12px; font-weight: bold; fill: #475569; text-anchor: end; dominant-baseline: middle; }
-              .facility-box { fill: #ffffff; stroke: #334155; stroke-width: 1.8; }
-              .facility-text { font-size: 13px; font-weight: bold; fill: #0f172a; text-anchor: middle; dominant-baseline: middle; }
-              .traffic-text { font-size: 12px; font-weight: 600; fill: #0f172a; text-anchor: middle; dominant-baseline: middle; }
-              .turn-text { font-size: 11px; font-weight: 600; fill: #334155; }
+              .center-text { text-anchor: middle; dominant-baseline: central; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+              .title-main { font-size: 20px; font-weight: 800; fill: #0f172a; text-anchor: middle; dominant-baseline: central; letter-spacing: 0.5px; }
+              .fl-label { font-size: 11px; font-weight: 700; fill: #334155; text-anchor: middle; dominant-baseline: central; }
+              .rm-text { font-size: 10.5px; font-weight: 700; fill: #1e293b; text-anchor: middle; dominant-baseline: central; }
+              .rm-red { fill: #dc2626 !important; font-weight: 800; }
+              .rm-blue { fill: #0369a1 !important; font-weight: 800; }
+              .rm-purple { fill: #6d28d9 !important; font-weight: 800; }
+              
+              /* Phong cách phòng chuẩn kiến trúc */
+              .rm-norm { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.1px; rx: 2px; }
+              .rm-gray { fill: #cbd5e1; stroke: #94a3b8; stroke-width: 1.1px; rx: 2px; }
+              
+              /* PHÂN MÀU CÁC KHỐI LỚP HỌC CHUẨN THẨM MỸ (CHỮ ĐEN DỄ NHÌN) */
+              .rm-k10, .rm-hl-yellow { fill: #fef08a; stroke: #ca8a04; stroke-width: 1.1px; rx: 2px; } /* Khối 10: Vàng tươi pastel */
+              .rm-k11 { fill: #dbeafe; stroke: #0284c7; stroke-width: 1.1px; rx: 2px; } /* Khối 11: Xanh da trời pastel */
+              .rm-k12 { fill: #fed7aa; stroke: #ea580c; stroke-width: 1.1px; rx: 2px; } /* Khối 12: Cam đào pastel */
+              
+              .wc-box { fill: #ccfbf1; stroke: #0d9488; stroke-width: 1.1px; rx: 2px; }
+              .wc-text { font-size: 10px; font-weight: 800; fill: #0f766e; text-anchor: middle; dominant-baseline: central; }
+              
+              .stair-pill { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.1px; rx: 2px; }
+              .stair-text { font-size: 11px; font-weight: 700; fill: #1e293b; text-anchor: middle; dominant-baseline: central; }
+              
+              /* Dải Hành Lang Kiến Trúc - MÀU VÀNG BE NHÀN NHẠT THEO YÊU CẦU */
+              .hallway-band { fill: #fef9c3; stroke: #64748b; stroke-width: 1.3px; }
+              .hallway-text { font-size: 11px; font-weight: 800; fill: #0f172a; text-anchor: middle; dominant-baseline: central; letter-spacing: 0.5px; }
+              
+              /* Bồn cây xanh cảnh quan hai bên kẹp chỗ để xe 10A13 */
+              .bon-cay { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.2px; }
+              .bon-cay-text { font-size: 10px; font-weight: 800; fill: #15803d; text-anchor: middle; dominant-baseline: central; letter-spacing: 0.5px; }
+
+              
+              .park-box { fill: #ffffff; stroke: #334155; stroke-width: 1.5px; rx: 4px; }
+              .park-cell { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.1px; }
+              .park-red-text { font-size: 10.5px; font-weight: 800; fill: #dc2626; text-anchor: middle; dominant-baseline: central; }
+              .park-label { font-size: 11px; font-weight: 800; fill: #0f172a; text-anchor: middle; dominant-baseline: central; }
+              
+              .arrow-line { stroke: #0f172a; stroke-width: 2.2px; fill: none; stroke-linecap: round; }
+              .arrow-head { fill: #0f172a; }
+              
+              .map-interactive-room { cursor: pointer; transition: transform 0.15s, fill 0.15s; }
+              .map-interactive-room:hover { fill-opacity: 0.85; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15)); }
             </style>
           </defs>
 
-          <!-- Khung viền bản đồ -->
-          <rect x="20" y="20" width="1560" height="1080" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" rx="10" />
+          <!-- KHUNG BẢN ĐỒ NGOÀI CÙNG -->
+          <rect x="12" y="12" width="1576" height="1096" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
 
-          <!-- Tiêu đề bản đồ -->
-          <text x="800" y="52" class="title">SƠ ĐỒ TỔNG THỂ KHUÔN VIÊN &amp; VỊ TRÍ PHÒNG HỌC</text>
+          <!-- ========================================================================= -->
+          <!-- I. HỆ THỐNG NHÀ XE NGOẠI VI THEO ẢNH 3 (AN TOÀN TUYỆT ĐỐI, KHÔNG ĐÈ TÒA) -->
+          <!-- ========================================================================= -->
 
-          <!-- ============================================================= -->
-          <!-- 1. NGOẠI CẢNH & KHÚC CUA -->
-          <!-- ============================================================= -->
-          <!-- Cổng sau & Nhà xe cổng sau -->
-          <rect x="230" y="70" width="100" height="35" fill="#f8fafc" stroke="#dc2626" stroke-width="1.8" rx="3" />
-          <text x="280" y="88" font-size="12px" font-weight="bold" fill="#dc2626" class="center-text">CỔNG SAU</text>
+          <!-- 1. GÓC TRÊN BÊN TRÁI: NHÀ XE GẦN CỔNG SAU & CỔNG SAU -->
+          <g id="parking-top-left">
+            <rect x="42" y="32" width="150" height="138" class="park-box" />
+            <text x="117" y="60" class="park-label" font-size="12">NHÀ XE GẦN</text>
+            <text x="117" y="78" class="park-label" font-size="12">CỔNG SAU</text>
+            
+            <g transform="translate(42, 102)">
+              <rect x="0" y="0" width="150" height="17" class="park-cell map-interactive-room" data-loc-id="park_12a5" />
+              <text x="115" y="8.5" class="park-red-text">12A5</text>
 
-          <rect x="50" y="70" width="140" height="85" class="facility-box" />
-          <text x="120" y="105" class="facility-text center-text">NHÀ XE GẦN</text>
-          <text x="120" y="125" class="facility-text center-text">CỔNG SAU</text>
+              <rect x="0" y="17" width="150" height="17" class="park-cell map-interactive-room" data-loc-id="park_12a6" />
+              <text x="115" y="25.5" class="park-red-text">12A6</text>
 
-          <rect x="50" y="180" width="45" height="500" class="facility-box" />
-          <text x="72" y="430" class="facility-text center-text" transform="rotate(-90 72 430)">DÃY ĐỂ XE HỌC SINH</text>
+              <rect x="0" y="34" width="150" height="17" class="park-cell map-interactive-room" data-loc-id="park_12a7" />
+              <text x="115" y="42.5" class="park-red-text">12A7</text>
 
-          <path d="M 210 165 L 115 165 L 115 220" fill="none" stroke="#0f172a" stroke-width="2.5" marker-end="url(#arrow)" />
-          <text x="135" y="185" class="turn-text">Khúc cua</text>
-
-          <!-- Nhà xe GV & Khúc cua góc dưới trái -->
-          <path d="M 65 740 L 65 830 L 135 830" fill="none" stroke="#0f172a" stroke-width="2.5" marker-end="url(#arrow)" />
-          <text x="80" y="805" class="turn-text">Khúc cua</text>
-
-          <rect x="90" y="870" width="160" height="65" class="facility-box" fill="#f1f5f9" />
-          <text x="170" y="903" class="facility-text center-text">NHÀ XE GV</text>
-
-          <line x1="570" y1="925" x2="350" y2="925" stroke="#0f172a" stroke-width="2.5" marker-end="url(#arrow)" />
-          <text x="460" y="905" class="traffic-text">Lối vào nhà xe GV</text>
-          <text x="460" y="945" font-size="11px" fill="#dc2626" font-weight="bold" class="center-text">(Học sinh không đi lối này)</text>
-
-          <!-- Cổng trước & Nhà xe cổng trước -->
-          <rect x="580" y="980" width="160" height="55" fill="#ffffff" stroke="#0f172a" stroke-width="2.5" rx="4" />
-          <text x="660" y="1008" class="facility-text center-text" font-size="15px">CỔNG TRƯỜNG</text>
-          
-          <line x1="750" y1="925" x2="920" y2="925" stroke="#0f172a" stroke-width="2.5" marker-end="url(#arrow)" />
-          <text x="835" y="910" class="traffic-text">Lối vào nhà xe học sinh</text>
-
-          <rect x="930" y="890" width="460" height="70" class="facility-box" fill="#f8fafc" />
-          <text x="1160" y="920" class="facility-text center-text">NHÀ XE HỌC SINH GẦN CỔNG TRƯỚC</text>
-          <text x="1160" y="940" font-size="12px" fill="#64748b" class="center-text">(Khu vực để xe tập trung)</text>
-
-          <!-- Nhà lợp tôn & Khúc cua phía Đông -->
-          <rect x="910" y="70" width="370" height="50" class="facility-box" fill="#f1f5f9" />
-          <text x="1095" y="95" class="facility-text center-text">NHÀ LỢP TÔN</text>
-
-          <path d="M 1370 240 L 1370 175 L 1260 175" fill="none" stroke="#0f172a" stroke-width="2.5" marker-end="url(#arrow)" />
-          <text x="1310" y="160" class="turn-text">Khúc cua</text>
-
-          <rect x="1410" y="240" width="70" height="420" class="facility-box" fill="#ffffff" />
-          <text x="1445" y="450" class="facility-text center-text" transform="rotate(90 1445 450)">KHU VỰC XE HỌC SINH</text>
-
-          <line x1="1300" y1="580" x2="1490" y2="580" stroke="#0284c7" stroke-width="3" marker-end="url(#arrow)" />
-          <text x="1395" y="565" font-size="12px" font-weight="bold" fill="#0369a1" class="center-text">Lối vào Sân Bóng</text>
-
-          <path d="M 1320 815 L 1380 815 L 1380 710" fill="none" stroke="#0f172a" stroke-width="2.5" marker-end="url(#arrow)" />
-          <text x="1340" y="775" class="turn-text">Khúc cua</text>
-
-          <!-- ============================================================= -->
-          <!-- 2. DÃY NHÀ LỚP HỌC SAU -->
-          <!-- ============================================================= -->
-          <g transform="translate(160, 130)">
-            <text x="60" y="32" class="floor-label">Tầng 3</text>
-            <text x="60" y="78" class="floor-label">Tầng 2</text>
-            <text x="60" y="124" class="floor-label">Tầng 1</text>
-            <text x="60" y="170" class="floor-label">Tầng trệt</text>
-
-            <!-- WC góc trái -->
-            <rect x="75" y="12" width="35" height="38" class="wc-box" rx="3"/><text x="92" y="31" class="wc-text">WC</text>
-            <rect x="75" y="58" width="35" height="38" class="wc-box" rx="3"/><text x="92" y="77" class="wc-text">WC</text>
-            <rect x="75" y="104" width="35" height="38" class="wc-box" rx="3"/><text x="92" y="123" class="wc-text">WC</text>
-            <rect x="75" y="150" width="35" height="38" class="wc-box" rx="3"/><text x="92" y="169" class="wc-text">WC</text>
-
-            <!-- Khối phòng trái -->
-            <rect x="115" y="12" width="55" height="38" class="room-gray" /><text x="142" y="31" class="room-text">-</text>
-            <rect x="170" y="12" width="55" height="38" class="room-gray" /><text x="197" y="31" class="room-text">-</text>
-            <rect x="115" y="58" width="55" height="38" class="room-highlight" /><text x="142" y="77" class="room-text">P.09</text>
-            <rect x="170" y="58" width="55" height="38" class="room-highlight" /><text x="197" y="77" class="room-text">P.10</text>
-            <rect x="115" y="104" width="55" height="38" class="room-normal" /><text x="142" y="123" class="room-text">P.15</text>
-            <rect x="170" y="104" width="55" height="38" class="room-normal" /><text x="197" y="123" class="room-text">P.16</text>
-            <rect x="115" y="150" width="55" height="38" class="room-highlight" /><text x="142" y="169" class="room-text">P.03</text>
-            <rect x="170" y="150" width="55" height="38" class="room-highlight" /><text x="197" y="169" class="room-text">P.04</text>
-
-            <!-- Cầu thang 1 -->
-            <rect x="230" y="12" width="60" height="176" class="stair-box" rx="4"/>
-            <text x="260" y="100" class="stair-text">Cầu Thang</text>
-
-            <!-- Khối phòng giữa -->
-            <rect x="295" y="12" width="55" height="38" class="room-gray" /><text x="322" y="31" class="room-text">-</text>
-            <rect x="350" y="12" width="55" height="38" class="room-highlight" /><text x="377" y="31" class="room-text">P.18</text>
-            <rect x="405" y="12" width="55" height="38" class="room-highlight" /><text x="432" y="31" class="room-text">P.17</text>
-
-            <rect x="295" y="58" width="55" height="38" class="room-highlight" /><text x="322" y="77" class="room-text">P.11</text>
-            <rect x="350" y="58" width="55" height="38" class="room-highlight" /><text x="377" y="77" class="room-text">P.12</text>
-            <rect x="405" y="58" width="55" height="38" class="room-normal" /><text x="432" y="77" class="room-text">P.20</text>
-
-            <rect x="295" y="104" width="55" height="38" class="room-normal" /><text x="322" y="123" class="room-text">P.17</text>
-            <rect x="350" y="104" width="55" height="38" class="room-normal" /><text x="377" y="123" class="room-text">P.18</text>
-            <rect x="405" y="104" width="55" height="38" class="room-normal" /><text x="432" y="123" class="room-text">P.19</text>
-
-            <!-- Thư viện tầng trệt -->
-            <rect x="295" y="150" width="165" height="38" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5" rx="3"/>
-            <text x="377" y="169" class="facility-text center-text" fill="#0369a1">THƯ VIỆN</text>
-
-            <!-- Cầu thang 2 -->
-            <rect x="465" y="12" width="60" height="176" class="stair-box" rx="4"/>
-            <text x="495" y="100" class="stair-text">Cầu Thang</text>
-
-            <!-- Khối phòng phải -->
-            <rect x="530" y="12" width="55" height="38" class="room-highlight" /><text x="557" y="31" class="room-text">P.16</text>
-            <rect x="585" y="12" width="55" height="38" class="room-highlight" /><text x="612" y="31" class="room-text">P.15</text>
-            <rect x="530" y="58" width="55" height="38" class="room-highlight" /><text x="557" y="77" class="room-text">P.13</text>
-            <rect x="585" y="58" width="55" height="38" class="room-highlight" /><text x="612" y="77" class="room-text">P.14</text>
-            <rect x="530" y="104" width="55" height="38" class="room-highlight" /><text x="557" y="123" class="room-text">P.08</text>
-            <rect x="585" y="104" width="55" height="38" class="room-highlight" /><text x="612" y="123" class="room-text">P.07</text>
-            <rect x="530" y="150" width="55" height="38" class="room-highlight" /><text x="557" y="169" class="room-text">P.05</text>
-            <rect x="585" y="150" width="55" height="38" class="room-highlight" /><text x="612" y="169" class="room-text">P.06</text>
-          </g>
-
-          <!-- HÀNH LANG NỐI DÃY LỚP SAU VÀ DÃY LỚP TRƯỚC (GÓC TÂY BẮC) -->
-          <g id="corridor-nw-connection">
-            <rect x="185" y="306" width="50" height="88" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4,2"/>
-            <text x="210" y="350" font-size="9px" font-weight="bold" fill="#64748b" class="center-text" transform="rotate(-90 210 350)">HÀNH LANG TÂY BẮC</text>
-          </g>
-
-          <!-- HÀNH LANG NỐI DÃY LỚP SAU VÀ DÃY THIẾT BỊ (GÓC ĐÔNG BẮC) -->
-          <g id="corridor-ne-connection">
-            <path d="M 745 306 L 745 390 L 860 390" fill="none" stroke="#94a3b8" stroke-width="3.5" stroke-dasharray="4,2"/>
-            <text x="800" y="380" font-size="9px" font-weight="bold" fill="#64748b" class="center-text">HÀNH LANG ĐÔNG BẮC</text>
-          </g>
-
-          <!-- ============================================================= -->
-          <!-- 3. DÃY NHÀ LỚP HỌC TRƯỚC -->
-          <!-- ============================================================= -->
-          <g transform="translate(130, 390)">
-            <text x="50" y="27" class="floor-label">Tầng 3</text>
-            <text x="50" y="72" class="floor-label">Tầng 2</text>
-            <text x="50" y="117" class="floor-label">Tầng 1</text>
-            <text x="50" y="162" class="floor-label">Tầng trệt</text>
-
-            <!-- WC góc trái -->
-            <rect x="65" y="8" width="35" height="38" class="wc-box" rx="3"/><text x="82" y="27" class="wc-text">WC</text>
-            <rect x="65" y="53" width="35" height="38" class="wc-box" rx="3"/><text x="82" y="72" class="wc-text">WC</text>
-            <rect x="65" y="98" width="35" height="38" class="wc-box" rx="3"/><text x="82" y="117" class="wc-text">WC</text>
-            <rect x="65" y="143" width="35" height="38" class="wc-box" rx="3"/><text x="82" y="162" class="wc-text">WC</text>
-
-            <!-- Cụm trái cầu thang -->
-            <rect x="105" y="8" width="55" height="38" class="room-normal" /><text x="132" y="27" class="room-text">P.14</text>
-            <rect x="160" y="8" width="55" height="38" class="room-normal" /><text x="187" y="27" class="room-text">P.13</text>
-            <rect x="105" y="53" width="55" height="38" class="room-normal" /><text x="132" y="72" class="room-text">P.08</text>
-            <rect x="160" y="53" width="55" height="38" class="room-highlight" /><text x="187" y="72" class="room-text">P.02</text>
-            <rect x="105" y="98" width="55" height="38" class="room-normal" /><text x="132" y="117" class="room-text">P.07</text>
-            <rect x="160" y="98" width="55" height="38" class="room-normal" /><text x="187" y="117" class="room-text">P.06</text>
-            <rect x="105" y="143" width="55" height="38" class="room-normal" /><text x="132" y="162" class="room-text">P.01</text>
-            <rect x="160" y="143" width="55" height="38" class="room-normal" /><text x="187" y="162" class="room-text">P.02</text>
-
-            <!-- Cầu thang giữa -->
-            <rect x="220" y="8" width="55" height="173" class="stair-box" rx="4"/>
-            <text x="247" y="95" class="stair-text">Cầu Thang</text>
-
-            <!-- Cụm phải cầu thang -->
-            <rect x="280" y="8" width="55" height="38" class="room-normal" /><text x="307" y="27" class="room-text">P.12</text>
-            <rect x="335" y="8" width="55" height="38" class="room-normal" /><text x="362" y="27" class="room-text">P.11</text>
-            <rect x="280" y="53" width="55" height="38" class="room-normal" /><text x="307" y="72" class="room-text">P.09</text>
-            <rect x="335" y="53" width="55" height="38" class="room-normal" /><text x="362" y="72" class="room-text">P.10</text>
-            <rect x="280" y="98" width="55" height="38" class="room-normal" /><text x="307" y="117" class="room-text">P.05</text>
-            <rect x="335" y="98" width="55" height="38" class="room-normal" /><text x="362" y="117" class="room-text">P.04</text>
-            <rect x="280" y="143" width="55" height="38" class="room-highlight" /><text x="307" y="162" class="room-text">P.01</text>
-            <rect x="335" y="143" width="55" height="38" class="room-normal" /><text x="362" y="162" class="room-text">P.03</text>
-          </g>
-
-          <!-- ============================================================= -->
-          <!-- 3B. HỆ THỐNG HÀNH LANG & CẦU NỐI 2 DÃY PHÍA TÂY (THEO YÊU CẦU ĐẶC BIỆT) -->
-          <!-- ============================================================= -->
-          <!-- 1. HÀNH LANG TẦNG TRỆT: Đối diện P.01 (màu vàng) nối thẳng xuống Dãy Hành Chính -->
-          <g id="ground-corridor-west">
-            <!-- Mặt sàn hành lang trệt -->
-            <rect x="410" y="571" width="55" height="52" fill="#f1f5f9" stroke="#64748b" stroke-width="1.8" stroke-dasharray="4,2" />
-            <!-- Cột trụ hai bên -->
-            <circle cx="414" cy="584" r="2.5" fill="#0284c7" />
-            <circle cx="414" cy="609" r="2.5" fill="#0284c7" />
-            <circle cx="461" cy="584" r="2.5" fill="#0284c7" />
-            <circle cx="461" cy="609" r="2.5" fill="#0284c7" />
-            <!-- Nhãn định danh Hành lang Trệt -->
-            <rect x="360" y="587" width="155" height="20" rx="4" fill="#ffffff" fill-opacity="0.95" stroke="#0284c7" stroke-width="1" filter="url(#flagShadow)"/>
-            <text x="437" y="597" font-size="8.5px" font-weight="bold" fill="#0284c7" class="center-text">HÀNH LANG TẦNG TRỆT</text>
-            <text x="437" y="605" font-size="7.5px" font-weight="600" fill="#64748b" class="center-text">(Đối diện P.01 vàng ➔ Trệt)</text>
-          </g>
-
-          <!-- 2. CẦU HÀNH LANG LẦU 1: Đối diện P.05 (ngay phía trên song song với hành lang trệt) -->
-          <g id="skybridge-floor1-west">
-            <!-- Đổ bóng cầu vượt lầu 1 -->
-            <rect x="408" y="568" width="59" height="57" fill="#0f172a" opacity="0.12" rx="4" />
-            <!-- Mặt cầu bê tông Tầng 1 -->
-            <rect x="410" y="566" width="55" height="59" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2" rx="4" />
-            <!-- Lan can kính bảo vệ 2 bên -->
-            <line x1="412" y1="566" x2="412" y2="625" stroke="#2563eb" stroke-width="3" />
-            <line x1="463" y1="566" x2="463" y2="625" stroke="#2563eb" stroke-width="3" />
-            <line x1="412" y1="585" x2="463" y2="585" stroke="#93c5fd" stroke-width="1" stroke-dasharray="3,2"/>
-            <line x1="412" y1="605" x2="463" y2="605" stroke="#93c5fd" stroke-width="1" stroke-dasharray="3,2"/>
-            <!-- Biển nổi trên cao -->
-            <rect x="345" y="562" width="185" height="24" rx="5" fill="#1e40af" stroke="#ffffff" stroke-width="1.2" filter="url(#flagShadow)"/>
-            <text x="437" y="573" font-size="9.5px" font-weight="bold" fill="#ffffff" class="center-text">🪜 CẦU HÀNH LANG LẦU 1</text>
-            <text x="437" y="583" font-size="7.5px" font-weight="bold" fill="#93c5fd" class="center-text">(Nối P.05 ➔ Phòng Hội Đồng)</text>
-          </g>
-
-          <!-- ============================================================= -->
-          <!-- 4. DÃY HÀNH CHÍNH & PHÒNG HỘI ĐỒNG -->
-          <!-- ============================================================= -->
-          <g transform="translate(130, 615)">
-            <text x="85" y="25" class="floor-label">Tầng 1</text>
-            <text x="85" y="65" class="floor-label">Tầng trệt</text>
-
-            <rect x="105" y="8" width="55" height="35" class="room-gray" />
-            <rect x="160" y="8" width="55" height="35" class="room-gray" />
-            <rect x="105" y="47" width="55" height="35" class="room-gray" />
-            <rect x="160" y="47" width="55" height="35" class="room-gray" />
-
-            <rect x="220" y="8" width="55" height="74" class="stair-box" rx="4"/>
-            <text x="247" y="45" class="stair-text">Cầu Thang</text>
-
-            <rect x="280" y="8" width="50" height="35" class="room-gray" />
-            <rect x="330" y="8" width="120" height="35" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" rx="3"/>
-            <text x="390" y="25" class="facility-text center-text" fill="#b45309" font-size="11px">PHÒNG HỘI ĐỒNG</text>
-
-            <rect x="280" y="47" width="80" height="35" class="room-gray" />
-            <rect x="360" y="47" width="90" height="35" class="room-gray" />
-          </g>
-
-          <!-- ============================================================= -->
-          <!-- 5. DÃY NHÀ THIẾT BỊ, CÁC PHÒNG CHỨC NĂNG & HỘI TRƯỜNG -->
-          <!-- ============================================================= -->
-          <g transform="translate(860, 390)">
-            <!-- Cầu thang dãy thiết bị -->
-            <rect x="0" y="8" width="60" height="240" class="stair-box" rx="4"/>
-            <text x="30" y="128" class="stair-text">Cầu Thang</text>
-
-            <!-- Toàn bộ khối bao ngoài dãy thiết bị -->
-            <rect x="68" y="8" width="310" height="240" fill="#f8fafc" stroke="#64748b" stroke-width="2" rx="4" />
-
-            <!-- KHỐI PHÍA TRÊN: DÃY NHÀ THIẾT BỊ (GẠCH CHÉO) -->
-            <rect x="68" y="8" width="310" height="96" fill="url(#diagonalHatch)" stroke="#94a3b8" stroke-width="1.2" />
-            <rect x="123" y="32" width="200" height="46" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.5" rx="4" />
-            <text x="223" y="55" class="facility-text center-text" fill="#0284c7">DÃY NHÀ THIẾT BỊ</text>
-
-            <!-- HÀNG GIỮA: VP ĐOÀN & 2 PHÒNG TIN HỌC -->
-            <!-- Văn phòng đoàn thanh niên -->
-            <rect x="68" y="104" width="100" height="70" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5" rx="3" />
-            <text x="118" y="132" font-size="11px" font-weight="bold" fill="#0369a1" class="center-text">VP ĐOÀN</text>
-            <text x="118" y="148" font-size="10px" font-weight="bold" fill="#0369a1" class="center-text">THANH NIÊN</text>
-
-            <!-- Phòng Tin học số 1 -->
-            <rect x="168" y="104" width="105" height="70" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" rx="3" />
-            <text x="220" y="132" font-size="11px" font-weight="bold" fill="#6d28d9" class="center-text">TIN HỌC</text>
-            <text x="220" y="148" font-size="11px" font-weight="bold" fill="#6d28d9" class="center-text">SỐ 1</text>
-
-            <!-- Phòng Tin học số 2 -->
-            <rect x="273" y="104" width="105" height="70" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" rx="3" />
-            <text x="325" y="132" font-size="11px" font-weight="bold" fill="#6d28d9" class="center-text">TIN HỌC</text>
-            <text x="325" y="148" font-size="11px" font-weight="bold" fill="#6d28d9" class="center-text">SỐ 2</text>
-
-            <!-- HÀNG DƯỚI (TẦNG TRỆT): Y TẾ & PHÒNG THÍ NGHIỆM -->
-            <!-- Phòng Y tế -->
-            <rect x="68" y="174" width="100" height="74" fill="#fee2e2" stroke="#ef4444" stroke-width="1.8" rx="3" />
-            <text x="118" y="202" class="facility-text center-text" fill="#b91c1c">+ Y TẾ</text>
-            <text x="118" y="222" font-size="10px" fill="#dc2626" class="center-text">(Tầng trệt)</text>
-
-            <!-- Phòng Thí nghiệm -->
-            <rect x="168" y="174" width="210" height="74" fill="#fef3c7" stroke="#d97706" stroke-width="1.8" rx="3" />
-            <text x="273" y="204" class="facility-text center-text" fill="#b45309" font-size="13px">PHÒNG THÍ NGHIỆM</text>
-            <text x="273" y="224" font-size="10px" fill="#92400e" class="center-text">(Kế bên phòng Y tế)</text>
-
-            <!-- HỘI TRƯỜNG -->
-            <rect x="68" y="275" width="310" height="95" class="room-highlight" stroke-width="2" rx="6" />
-            <text x="223" y="322" class="facility-text center-text" font-size="18px" fill="#854d0e">HỘI TRƯỜNG</text>
-          </g>
-
-          <!-- ============================================================= -->
-          <!-- 6A. MÁI CHE TAM GIÁC (LỐI VÀO HÀNH LANG TRUNG TÂM) -->
-          <!-- ============================================================= -->
-          <g id="landmark-triangle-canopy" transform="translate(680, 410)">
-            <!-- Nền bóng chân mái che -->
-            <ellipse cx="40" cy="120" rx="76" ry="14" fill="#e0f2fe" opacity="0.5" stroke="#7dd3fc" stroke-width="1" stroke-dasharray="3,3"/>
-            <polygon points="-32,120 40,125 112,120 40,117" fill="#0f172a" opacity="0.08"/>
-
-            <!-- Khối kính tam giác chính (Mặt kính trái sáng hơn, mặt phải có độ sâu 3D) -->
-            <polygon points="40,30 -35,120 40,120" fill="url(#triangleGlassLeft)" stroke="#38bdf8" stroke-width="1" />
-            <polygon points="40,30 115,120 40,120" fill="url(#triangleGlassRight)" stroke="#0284c7" stroke-width="1" />
-
-            <!-- Các đường khung nhôm kính ngang (Mullions) -->
-            <line x1="23" y1="50" x2="57" y2="50" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.85"/>
-            <line x1="5" y1="72" x2="75" y2="72" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.85"/>
-            <line x1="-13" y1="94" x2="93" y2="94" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.85"/>
-
-            <!-- Các nan giằng kính dọc hướng tâm -->
-            <line x1="40" y1="30" x2="40" y2="120" stroke="#bae6fd" stroke-width="2" stroke-opacity="0.9"/>
-            <line x1="40" y1="30" x2="4" y2="120" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6"/>
-            <line x1="40" y1="30" x2="76" y2="120" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6"/>
-            <line x1="40" y1="30" x2="-18" y2="120" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.45"/>
-            <line x1="40" y1="30" x2="98" y2="120" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.45"/>
-
-            <!-- Dầm giằng ngang lớn bằng thép màu xanh dương (như trong ảnh thực tế) -->
-            <rect x="-16" y="93" width="112" height="6" rx="2" fill="#0284c7" stroke="#0369a1" stroke-width="1"/>
-            <line x1="-14" y1="96" x2="94" y2="96" stroke="#7dd3fc" stroke-width="1"/>
-
-            <!-- Vòm lối vào thông tầng phía dưới mái che -->
-            <path d="M 22 120 L 22 101 Q 40 91 58 101 L 58 120 Z" fill="#0284c7" fill-opacity="0.2" stroke="#0284c7" stroke-width="1.8"/>
-            <path d="M 27 120 L 27 104 Q 40 97 53 104 L 53 120 Z" fill="#ffffff" fill-opacity="0.9"/>
-            <text x="40" y="112" font-size="8px" font-weight="bold" fill="#0369a1" class="center-text">LỐI VÀO</text>
-
-            <!-- 2 Cánh dầm chéo chịu lực lớn màu xanh viền trắng (Hai chân dầm A-frame vươn xuống đất như thực tế) -->
-            <polygon points="40,24 45,30 -30,124 -39,119" fill="url(#beamGradient)" stroke="#0369a1" stroke-width="1.2"/>
-            <line x1="42" y1="27" x2="-34" y2="121" stroke="#ffffff" stroke-width="1" stroke-opacity="0.8"/>
-            <rect x="-42" y="119" width="14" height="5" rx="1.5" fill="#334155" stroke="#1e293b" stroke-width="1"/>
-
-            <polygon points="40,24 35,30 110,124 119,119" fill="url(#beamGradient)" stroke="#0369a1" stroke-width="1.2"/>
-            <line x1="38" y1="27" x2="114" y2="121" stroke="#ffffff" stroke-width="1" stroke-opacity="0.8"/>
-            <rect x="110" y="119" width="14" height="5" rx="1.5" fill="#334155" stroke="#1e293b" stroke-width="1"/>
-
-            <!-- Nắp chụp kim loại ở đỉnh mái tam giác -->
-            <polygon points="40,20 46,31 34,31" fill="#0284c7" stroke="#0369a1" stroke-width="1.2"/>
-            <circle cx="40" cy="22" r="2.5" fill="#38bdf8"/>
-
-            <!-- Nhãn định danh MÁI TAM GIÁC -->
-            <rect x="-10" y="128" width="100" height="22" rx="4" fill="#ffffff" fill-opacity="0.95" stroke="#0284c7" stroke-width="1.2" filter="url(#flagShadow)"/>
-            <text x="40" y="139" font-size="10px" font-weight="bold" fill="#0284c7" class="center-text">MÁI TAM GIÁC</text>
-          </g>
-
-          <!-- ============================================================= -->
-          <!-- 6B. CỘT CỜ TRUNG TÂM (SÂN TRƯỜNG PHÍA TRƯỚC) -->
-          <!-- ============================================================= -->
-          <g id="landmark-flagpole" transform="translate(680, 600)">
-            <!-- Vòng tròn nền sân chào cờ -->
-            <ellipse cx="40" cy="120" rx="55" ry="16" fill="#e0f2fe" opacity="0.6" stroke="#93c5fd" stroke-width="1.2"/>
-            <ellipse cx="40" cy="120" rx="36" ry="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-
-            <!-- Bục tròn tam cấp chân cột cờ -->
-            <ellipse cx="40" cy="120" rx="26" ry="7" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2"/>
-            <ellipse cx="40" cy="117" rx="17" ry="5" fill="#cbd5e1" stroke="#475569" stroke-width="1"/>
-            <ellipse cx="40" cy="115" rx="8" ry="2.5" fill="#475569"/>
-
-            <!-- Cột cờ inox vươn cao -->
-            <line x1="40" y1="115" x2="40" y2="18" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
-            <line x1="39.3" y1="115" x2="39.3" y2="19" stroke="#e2e8f0" stroke-width="1"/>
-            <circle cx="40" cy="18" r="3.5" fill="#facc15" stroke="#ca8a04" stroke-width="1"/>
-
-            <!-- Cờ đỏ sao vàng tung bay -->
-            <g filter="url(#flagShadow)">
-              <!-- Lá cờ có gợn sóng nhẹ tự nhiên -->
-              <path d="M 40 19 Q 58 15 78 20 L 78 44 Q 58 39 40 43 Z" fill="#dc2626"/>
-              <!-- Ngôi sao vàng năm cánh -->
-              <polygon points="59,25 61.2,31.5 68,31.5 62.5,35.5 64.6,42 59,38 53.4,42 55.5,35.5 50,31.5 56.8,31.5" fill="#facc15"/>
+              <rect x="0" y="51" width="150" height="17" class="park-cell map-interactive-room" data-loc-id="park_12a8" />
+              <text x="115" y="59.5" class="park-red-text">12A8</text>
             </g>
 
-            <!-- Nhãn định danh CỘT CỜ -->
-            <rect x="-4" y="132" width="88" height="24" rx="5" fill="#ffffff" fill-opacity="0.95" stroke="#64748b" stroke-width="1.2" filter="url(#flagShadow)"/>
-            <text x="40" y="145" font-size="11px" font-weight="bold" fill="#0f172a" class="center-text">CỘT CỜ</text>
+            <!-- CỔNG SAU -->
+            <rect x="238" y="32" width="108" height="42" rx="4" fill="#ffffff" stroke="#ef4444" stroke-width="1.8" />
+            <text x="292" y="53" class="center-text" fill="#ef4444" font-size="12.5px" font-weight="bold">CỔNG SAU</text>
+
+            <!-- Dãy xe cạnh Cổng sau (y: 118..170, chiều cao 52px đồng đều tất cả các lớp) -->
+            <g transform="translate(280, 118)">
+              <rect x="0" y="0" width="86" height="52" class="park-cell map-interactive-room" data-loc-id="park_12a4" />
+              <text x="43" y="26" class="park-red-text" font-size="12px">12A4</text>
+
+              <rect x="86" y="0" width="86" height="52" class="park-cell map-interactive-room" data-loc-id="park_12a3" />
+              <text x="129" y="26" class="park-red-text" font-size="12px">12A3</text>
+
+              <rect x="172" y="0" width="86" height="52" class="park-cell map-interactive-room" data-loc-id="park_12a2" />
+              <text x="215" y="26" class="park-red-text" font-size="12px">12A2</text>
+
+              <rect x="258" y="0" width="86" height="52" class="park-cell map-interactive-room" data-loc-id="park_12a1" />
+              <text x="301" y="26" class="park-red-text" font-size="12px">12A1</text>
+
+              <rect x="344" y="0" width="86" height="52" class="park-cell map-interactive-room" data-loc-id="park_11a8" />
+              <text x="387" y="26" class="park-red-text" font-size="12px">11A8</text>
+
+              <rect x="430" y="0" width="86" height="52" class="park-cell map-interactive-room" data-loc-id="park_11a7" />
+              <text x="473" y="26" class="park-red-text" font-size="12px">11A7</text>
+
+              <rect x="516" y="0" width="86" height="52" class="park-cell map-interactive-room" data-loc-id="park_11a6" />
+              <text x="559" y="26" class="park-red-text" font-size="12px">11A6</text>
+            </g>
           </g>
 
-          <!-- ============================================================= -->
-          <!-- 7. LỚP ĐỒ HỌA CHỈ ĐƯỜNG ĐỘNG (NAV OVERLAY LAYER) -->
-          <!-- ============================================================= -->
-          <g id="nav-overlay-layer"></g>
-        </svg>
-      </div>
+          <!-- 2. GÓC TRÊN BÊN PHẢI: NHÀ LỚP TÔN & 11A5, 11A3, 11A2 -->
+          <g id="parking-top-right">
+            <rect x="938" y="44" width="410" height="52" class="park-box" />
+            <text x="1143" y="70" class="park-label" font-size="13">NHÀ LỚP TÔN</text>
 
-      <!-- CÁC NÚT ĐIỀU KHIỂN BẢN ĐỒ (ZOOM / PAN / RESET) -->
-      <div class="map-floating-controls">
-        <div class="control-btn-group">
-          <a href="so_do_3d.html" class="map-control-btn" title="Mở Sơ Đồ 3D Không Gian" style="text-decoration:none; display:flex; align-items:center; justify-content:center; background:#0284c7; color:white; font-size:16px;">🏢</a>
-          <button type="button" id="btn-zoom-in" class="map-control-btn" title="Phóng to">+</button>
-          <button type="button" id="btn-zoom-out" class="map-control-btn" title="Thu nhỏ">−</button>
-          <button type="button" id="btn-reset-view" class="map-control-btn" title="Góc nhìn toàn cảnh">⛶</button>
-        </div>
+            <g transform="translate(938, 118)">
+              <rect x="0" y="0" width="205" height="52" class="park-cell map-interactive-room" data-loc-id="park_11a5" />
+              <text x="102.5" y="26" class="park-red-text" font-size="12px">11A5</text>
+
+              <rect x="205" y="0" width="205" height="52" class="park-cell map-interactive-room" data-loc-id="park_11a3" />
+              <text x="307.5" y="26" class="park-red-text" font-size="12px">11A3</text>
+            </g>
+
+            <!-- Mũi tên khúc cua Đông Bắc: đặt ngay giữa đoạn trắng trống đường xe chạy y=186 -->
+            <path d="M 1410,260 L 1410,186 L 1332,186" class="arrow-line" />
+            <polygon points="1332,182 1320,186 1332,190" class="arrow-head" />
+            <text x="1410" y="172" class="center-text" font-size="10.5px" font-weight="bold" fill="#475569">Khúc cua</text>
+          </g>
+
+          <!-- 3. CẠNH PHÍA TÂY (BÊN TRÁI): DÃY ĐỂ XE HỌC SINH (12A9, 12A10) -->
+          <g id="parking-west">
+            <!-- Mũi tên Khúc cua Tây Bắc: dời xuống lối đi thông thoáng y=186, không đè lên các lớp 12A5..12A8 -->
+            <path d="M 230,186 L 65,186 L 65,225" class="arrow-line" />
+            <polygon points="61,225 65,235 69,225" class="arrow-head" />
+            <text x="145" y="198" class="center-text" font-size="10.5px" font-weight="bold" fill="#475569">Khúc cua</text>
+
+            <g transform="translate(42, 245)">
+              <rect x="0" y="0" width="46" height="500" class="park-box" />
+              
+              <rect x="4" y="10" width="38" height="235" class="park-cell map-interactive-room" data-loc-id="park_12a9" />
+              <text x="23" y="127" class="park-red-text" font-size="12px">12A9</text>
+
+              <rect x="4" y="255" width="38" height="235" class="park-cell map-interactive-room" data-loc-id="park_12a10" />
+              <text x="23" y="372" class="park-red-text" font-size="12px">12A10</text>
+            </g>
+
+            <text x="22" y="495" class="center-text" font-size="12px" font-weight="bold" fill="#334155" transform="rotate(-90 22 495)" letter-spacing="1.5px">DÃY ĐỂ XE HỌC SINH</text>
+
+            <!-- Mũi tên góc cua Tây Nam: đặt ngay giữa khoảng trắng đường xe chạy x=112, y=760..835 -->
+            <path d="M 112,760 L 112,835 L 175,835" class="arrow-line" />
+            <polygon points="175,831 186,835 175,839" class="arrow-head" />
+            <text x="144" y="820" class="center-text" font-size="11px" font-weight="bold" fill="#475569">Khúc cua</text>
+          </g>
+
+          <!-- 4. CẠNH PHÍA ĐÔNG (BÊN PHẢI): DÃY XE HỌC SINH (11A2, 11A1 LIỀN NHAU & 10A12) -->
+          <g id="parking-east">
+            <!-- Khung dãy xe liền nhau 11A2 & 11A1 theo đúng Hình 1 -->
+            <g id="rack-11a2-11a1" transform="translate(1455, 126)">
+              <rect x="0" y="0" width="85" height="314" class="park-box" />
+              
+              <!-- Ô 11A2 phía trên -->
+              <rect x="0" y="0" width="85" height="144" class="park-cell map-interactive-room" data-loc-id="park_11a2" />
+              <text x="42.5" y="72" class="park-red-text" font-size="12px">11A2</text>
+
+              <!-- Ô 11A1 gắn liền ngay bên dưới (liền nhau) -->
+              <rect x="0" y="144" width="85" height="170" class="park-cell map-interactive-room" data-loc-id="park_11a1" />
+              <text x="42.5" y="229" class="park-red-text" font-size="12px">11A1</text>
+            </g>
+
+            <path d="M 1385,490 L 1535,490" class="arrow-line" />
+            <polygon points="1535,486 1546,490 1535,494" class="arrow-head" />
+            <text x="1460" y="475" class="center-text" font-size="11px" font-weight="700" fill="#0369a1">Lối vào Sân Bóng</text>
+
+            <rect x="1455" y="650" width="85" height="155" class="park-cell map-interactive-room" data-loc-id="park_10a12" />
+            <text x="1497" y="727" class="park-red-text" font-size="12px">10A12</text>
+
+            <text x="1565" y="470" class="center-text" font-size="12px" font-weight="bold" fill="#334155" transform="rotate(90 1565 470)" letter-spacing="1.5px">KHU VỰC XE HỌC SINH</text>
+
+            <path d="M 1375,815 L 1435,815 L 1435,745" class="arrow-line" />
+            <polygon points="1431,745 1435,734 1439,745" class="arrow-head" />
+            <text x="1405" y="785" class="center-text" font-size="10.5px" fill="#475569">Khúc cua</text>
+          </g>
+
+          <!-- 5. HÀNG DƯỚI CÙNG: NHÀ XE GV, CỔNG TRƯỜNG, NHÀ XE HỌC SINH CỔNG TRƯỚC -->
+          <g id="parking-bottom">
+            <rect x="85" y="875" width="168" height="68" class="park-box map-interactive-room" data-loc-id="nha_xe_gv" />
+            <rect x="125" y="896" width="88" height="26" rx="3" fill="#f8fafc" stroke="#64748b" stroke-width="1.2" />
+            <text x="169" y="909" class="center-text" font-size="11px" font-weight="bold" fill="#0f172a">Nhà xe GV</text>
+
+            <g transform="translate(600, 970)">
+              <rect x="0" y="0" width="168" height="54" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="2.2" filter="url(#boxShadow)" class="map-interactive-room" data-loc-id="cong_truong" />
+              <text x="84" y="27" class="center-text" font-size="14.5px" font-weight="900" fill="#0f172a" letter-spacing="0.5px">CỔNG TRƯỜNG</text>
+
+              <line x1="84" y1="-4" x2="84" y2="-22" stroke="#0f172a" stroke-width="2.5" />
+              <line x1="84" y1="-22" x2="-250" y2="-22" stroke="#0f172a" stroke-width="2.5" />
+              <polygon points="-250,-26 -262,-22 -250,-18" class="arrow-head" />
+              
+              <text x="-95" y="-54" class="center-text" font-size="12px" font-weight="bold" fill="#0f172a">Lối vào nhà xe GV</text>
+              <text x="-95" y="-38" class="center-text" font-size="10.5px" font-weight="bold" fill="#dc2626">(Học sinh không đi lối này)</text>
+
+              <line x1="84" y1="-22" x2="280" y2="-22" stroke="#0f172a" stroke-width="2.5" />
+              <polygon points="280,-26 292,-22 280,-18" class="arrow-head" />
+              <text x="180" y="-42" class="center-text" font-size="12px" font-weight="bold" fill="#0f172a">Lối vào nhà xe học sinh</text>
+            </g>
+
+            <rect x="865" y="820" width="82" height="42" rx="4" fill="#ffffff" stroke="#64748b" stroke-width="1.2" />
+            <text x="906" y="841" class="center-text" font-size="10.5px" fill="#475569">Xe khách</text>
+
+            <g transform="translate(965, 868)">
+              <rect x="0" y="0" width="480" height="96" class="park-box" />
+              <text x="240" y="24" class="park-label" font-size="12px">Nhà xe học sinh gần Cổng trước</text>
+
+              <g transform="translate(0, 44)">
+                <rect x="0" y="0" width="43.6" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a1" /><text x="21.8" y="26" class="park-red-text">10A1</text>
+                <rect x="43.6" y="0" width="43.6" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a2" /><text x="65.4" y="26" class="park-red-text">10A2</text>
+                <rect x="87.2" y="0" width="43.6" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a3" /><text x="109" y="26" class="park-red-text">10A3</text>
+                <rect x="130.8" y="0" width="43.6" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a4" /><text x="152.6" y="26" class="park-red-text">10A4</text>
+                <rect x="174.4" y="0" width="43.6" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a5" /><text x="196.2" y="26" class="park-red-text">10A5</text>
+                <rect x="218" y="0" width="43.6" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a6" /><text x="239.8" y="26" class="park-red-text">10A6</text>
+                <rect x="261.6" y="0" width="43.6" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a7" /><text x="283.4" y="26" class="park-red-text">10A7</text>
+                <rect x="305.2" y="0" width="43.6" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a8" /><text x="327" y="26" class="park-red-text">10A8</text>
+                <rect x="348.8" y="0" width="43.6" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a9" /><text x="370.6" y="26" class="park-red-text">10A9</text>
+                <rect x="392.4" y="0" width="43.6" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a10" /><text x="414.2" y="26" class="park-red-text">10A10</text>
+                <rect x="436" y="0" width="44" height="52" class="park-cell map-interactive-room" data-loc-id="park_10a11" /><text x="458" y="26" class="park-red-text">10A11</text>
+              </g>
+            </g>
+          </g>
+
+
+          <!-- ========================================================================= -->
+          <!-- II. CÁC KHỐI NHÀ & HỆ THỐNG HÀNH LANG CHUẨN XÁC 100% THEO MASTER BLUEPRINT-->
+          <!-- TẤT CẢ TÒA NHÀ ĐÃ ĐƯỢC DỜI ĐÚNG VỊ TRÍ, KHÔNG HỀ ĐÈ VÀO BẤT KỲ Ô XE NÀO!  -->
+          <!-- ========================================================================= -->
+
+          <!-- ===================================================================== -->
+          <!-- 1. DÃY A - TRÊN CÙNG: KHỐI 10, 11 & THƯ VIỆN                        -->
+          <!-- ĐẶT TẠI Y = 205 (CÁCH DÃY XE TRÊN CÙNG Y=170 ĐẾN 35px CỰC KỲ RỘNG RÃI)-->
+          <!-- ===================================================================== -->
+          <g id="building-A" transform="translate(340, 205)">
+            <!-- Nhãn Tầng bên trái -->
+            <rect x="0" y="3" width="60" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="30" y="20" class="fl-label">Tầng 4</text>
+
+            <rect x="0" y="41" width="60" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="30" y="58" class="fl-label">Tầng 3</text>
+
+            <rect x="0" y="79" width="60" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="30" y="96" class="fl-label">Tầng 2</text>
+
+            <rect x="0" y="117" width="60" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="30" y="134" class="fl-label">Tầng trệt</text>
+
+            <!-- CÁNH TRÁI: WC + 10A1/10A2, 10A6/10A5, 10A7/10A8 -->
+            <!-- Tầng 4 -->
+            <rect x="64" y="3" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_a_t4_left" /><text x="83" y="20" class="wc-text">WC</text>
+            <rect x="106" y="3" width="56" height="34" class="rm-gray" /><text x="134" y="20" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="166" y="3" width="56" height="34" class="rm-gray" /><text x="194" y="20" class="rm-text" fill="#94a3b8">—</text>
+
+            <!-- Tầng 3 (10A1, 10A2 Vàng nổi bật) -->
+            <rect x="64" y="41" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_a_t3_left" /><text x="83" y="58" class="wc-text">WC</text>
+            <rect x="106" y="41" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="a_t3_10a1" /><text x="134" y="58" class="rm-text">10A1</text>
+            <rect x="166" y="41" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="a_t3_10a2" /><text x="194" y="58" class="rm-text">10A2</text>
+
+            <!-- Tầng 2 (10A6, 10A5) -->
+            <rect x="64" y="79" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_a_t2_left" /><text x="83" y="96" class="wc-text">WC</text>
+            <rect x="106" y="79" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="a_t2_10a6" /><text x="134" y="96" class="rm-text">10A6</text>
+            <rect x="166" y="79" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="a_t2_10a5" /><text x="194" y="96" class="rm-text">10A5</text>
+
+            <!-- Tầng trệt (10A7, 10A8) -->
+            <rect x="64" y="117" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_a_tret_left" /><text x="83" y="134" class="wc-text">WC</text>
+            <rect x="106" y="117" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="a_tret_10a7" /><text x="134" y="134" class="rm-text">10A7</text>
+            <rect x="166" y="117" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="a_tret_10a8" /><text x="194" y="134" class="rm-text">10A8</text>
+
+            <!-- CẦU THANG 1 (TRÁI) -->
+            <rect x="226" y="3" width="54" height="148" class="stair-pill map-interactive-room" data-loc-id="cau_thang_a1" />
+            <text x="253" y="70" class="stair-text" font-size="9.5px">Cầu</text>
+            <text x="253" y="84" class="stair-text" font-size="9.5px">thang</text>
+
+            <!-- KHỐI GIỮA (3 PHÒNG) -->
+            <!-- Tầng 4: —, —, 10A13 -->
+            <rect x="284" y="3" width="56" height="34" class="rm-gray" /><text x="312" y="20" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="344" y="3" width="56" height="34" class="rm-gray" /><text x="372" y="20" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="404" y="3" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="a_t4_10a13" /><text x="432" y="20" class="rm-text">10A13</text>
+
+            <!-- Tầng 3: 10A3, 11A1, 11A2 -->
+            <rect x="284" y="41" width="56" height="34" class="rm-k10 map-interactive-room" data-loc-id="a_t3_10a3" /><text x="312" y="58" class="rm-text">10A3</text>
+            <rect x="344" y="41" width="56" height="34" class="rm-k11 map-interactive-room" data-loc-id="a_t3_11a1" /><text x="372" y="58" class="rm-text">11A1</text>
+            <rect x="404" y="41" width="56" height="34" class="rm-k11 map-interactive-room" data-loc-id="a_t3_11a2" /><text x="432" y="58" class="rm-text">11A2</text>
+
+            <!-- Tầng 2: 10A4, 11A8, 11A7 -->
+            <rect x="284" y="79" width="56" height="34" class="rm-k10 map-interactive-room" data-loc-id="a_t2_10a4" /><text x="312" y="96" class="rm-text">10A4</text>
+            <rect x="344" y="79" width="56" height="34" class="rm-k11 map-interactive-room" data-loc-id="a_t2_11a8" /><text x="372" y="96" class="rm-text">11A8</text>
+            <rect x="404" y="79" width="56" height="34" class="rm-k11 map-interactive-room" data-loc-id="a_t2_11a7" /><text x="432" y="96" class="rm-text">11A7</text>
+
+            <!-- Tầng trệt: THƯ VIỆN (Trải rộng cả 3 ô chuẩn Master Image) -->
+            <rect x="284" y="117" width="176" height="34" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="1.1" class="map-interactive-room" data-loc-id="a_tret_thu_vien" />
+            <text x="372" y="134" class="center-text" fill="#0284c7" font-size="11.5px" font-weight="900" letter-spacing="1px">THƯ VIỆN</text>
+
+            <!-- CẦU THANG 2 (PHẢI) -->
+            <rect x="464" y="3" width="54" height="148" class="stair-pill map-interactive-room" data-loc-id="cau_thang_a2" />
+            <text x="491" y="70" class="stair-text" font-size="9.5px">Cầu</text>
+            <text x="491" y="84" class="stair-text" font-size="9.5px">thang</text>
+
+            <!-- CÁNH PHẢI: 2 PHÒNG + WC -->
+            <!-- Tầng 4 -->
+            <rect x="522" y="3" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="a_t4_10a12" /><text x="550" y="20" class="rm-text">10A12</text>
+            <rect x="582" y="3" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="a_t4_10a11" /><text x="610" y="20" class="rm-text">10A11</text>
+            <rect x="642" y="3" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_a_t4_right" /><text x="661" y="20" class="wc-text">WC</text>
+
+            <!-- Tầng 3 -->
+            <rect x="522" y="41" width="56" height="34" class="rm-k11 map-interactive-room" data-loc-id="a_t3_11a3" /><text x="550" y="58" class="rm-text">11A3</text>
+            <rect x="582" y="41" width="56" height="34" class="rm-k11 map-interactive-room" data-loc-id="a_t3_11a4" /><text x="610" y="58" class="rm-text">11A4</text>
+            <rect x="642" y="41" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_a_t3_right" /><text x="661" y="58" class="wc-text">WC</text>
+
+            <!-- Tầng 2 -->
+            <rect x="522" y="79" width="56" height="34" class="rm-k11 map-interactive-room" data-loc-id="a_t2_11a6" /><text x="550" y="96" class="rm-text">11A6</text>
+            <rect x="582" y="79" width="56" height="34" class="rm-k11 map-interactive-room" data-loc-id="a_t2_11a5" /><text x="610" y="96" class="rm-text">11A5</text>
+            <rect x="642" y="79" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_a_t2_right" /><text x="661" y="96" class="wc-text">WC</text>
+
+            <!-- Tầng trệt -->
+            <rect x="522" y="117" width="56" height="34" class="rm-k11 map-interactive-room" data-loc-id="a_tret_11a9" /><text x="550" y="134" class="rm-text">11A9</text>
+            <rect x="582" y="117" width="56" height="34" class="rm-k11 map-interactive-room" data-loc-id="a_tret_11a10" /><text x="610" y="134" class="rm-text">11A10</text>
+            <rect x="642" y="117" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_a_tret_right" /><text x="661" y="134" class="wc-text">WC</text>
+          </g>
+
+          <!-- ===================================================================== -->
+          <!-- HỆ THỐNG HÀNH LANG TOÀN TRƯỜNG NỐI THÔNG LIỀN MẠCH 100% (KHÔNG VẾT CẮT)-->
+          <!-- ===================================================================== -->
+          <g id="campus-hallways-network">
+            <!-- Khối hành lang thống nhất xuyên suốt mọi dãy nhà, không hề có vách ngăn hay viền đè -->
+            <path id="unified-campus-hallways" class="hallway-band" d="M 340,360 H 1020 V 396 H 900 V 591 H 1276 V 633 H 954 V 815 H 900 V 633 H 622 V 796 H 140 V 758 H 568 V 633 H 140 V 591 H 568 V 396 H 340 Z M 622,396 H 846 V 591 H 622 Z" fill="#fef9c3" stroke="#64748b" stroke-width="1.3" stroke-linejoin="round" fill-rule="evenodd" />
+            
+            <!-- Nhãn HÀNH LANG các trục phía Bắc -->
+            <text x="590" y="378" class="hallway-text">HÀNH LANG</text>
+            <text x="850" y="378" class="hallway-text">HÀNH LANG</text>
+            <text x="595" y="493" class="hallway-text" transform="rotate(-90 595 493)">HÀNH LANG</text>
+            <text x="873" y="493" class="hallway-text" transform="rotate(-90 873 493)">HÀNH LANG</text>
+          </g>
+
+
+          <!-- ===================================================================== -->
+          <!-- 3. DÃY B (PHÍA TÂY): KHỐI 12 & 10A10, 10A9 CHUẨN XÁC THEO ẢNH          -->
+          <!-- ĐẶT TẠI X = 140 (CÁCH DÃY ĐỂ XE TÂY X=88 ĐẾN 52px CỰC KỲ THOÁNG ĐẸP)   -->
+          <!-- ===================================================================== -->
+          <g id="building-B" transform="translate(140, 440)">
+            <!-- Nhãn Tầng bên trái -->
+            <rect x="0" y="3" width="60" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="30" y="20" class="fl-label">Tầng 4</text>
+
+            <rect x="0" y="41" width="60" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="30" y="58" class="fl-label">Tầng 3</text>
+
+            <rect x="0" y="79" width="60" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="30" y="96" class="fl-label">Tầng 2</text>
+
+            <rect x="0" y="117" width="60" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="30" y="134" class="fl-label">Tầng trệt</text>
+
+            <!-- CÁNH TRÁI: WC + 12A1/12A2, 12A3/12A4, 12A7/12A8 -->
+            <!-- Tầng 4 -->
+            <rect x="64" y="3" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_b_t4" /><text x="83" y="20" class="wc-text">WC</text>
+            <rect x="106" y="3" width="56" height="34" class="rm-gray" /><text x="134" y="20" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="166" y="3" width="56" height="34" class="rm-gray" /><text x="194" y="20" class="rm-text" fill="#94a3b8">—</text>
+
+            <!-- Tầng 3 (12A1, 12A2) -->
+            <rect x="64" y="41" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_b_t3" /><text x="83" y="58" class="wc-text">WC</text>
+            <rect x="106" y="41" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_t3_12a1" /><text x="134" y="58" class="rm-text">12A1</text>
+            <rect x="166" y="41" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_t3_12a2" /><text x="194" y="58" class="rm-text">12A2</text>
+
+            <!-- Tầng 2 (12A3, 12A4) -->
+            <rect x="64" y="79" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_b_t2" /><text x="83" y="96" class="wc-text">WC</text>
+            <rect x="106" y="79" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_t2_12a3" /><text x="134" y="96" class="rm-text">12A3</text>
+            <rect x="166" y="79" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_t2_12a4" /><text x="194" y="96" class="rm-text">12A4</text>
+
+            <!-- Tầng trệt (12A7, 12A8) -->
+            <rect x="64" y="117" width="38" height="34" class="wc-box map-interactive-room" data-loc-id="wc_b_tret" /><text x="83" y="134" class="wc-text">WC</text>
+            <rect x="106" y="117" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_tret_12a7" /><text x="134" y="134" class="rm-text">12A7</text>
+            <rect x="166" y="117" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_tret_12a8" /><text x="194" y="134" class="rm-text">12A8</text>
+
+            <!-- CẦU THANG DÃY B -->
+            <rect x="226" y="3" width="44" height="148" class="stair-pill map-interactive-room" data-loc-id="cau_thang_b" />
+            <text x="248" y="70" class="stair-text" font-size="9.5px">Cầu</text>
+            <text x="248" y="84" class="stair-text" font-size="9.5px">thang</text>
+
+            <!-- CÁNH PHẢI: 10A10/10A9, 12A5/12A6, 12A9/12A10, CỘT Ô XÁM -->
+            <!-- Tầng 4 -->
+            <rect x="274" y="3" width="56" height="34" class="rm-gray" /><text x="302" y="20" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="334" y="3" width="56" height="34" class="rm-gray" /><text x="362" y="20" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="394" y="3" width="34" height="34" class="rm-gray" /><text x="411" y="20" class="rm-text" fill="#94a3b8">—</text>
+
+            <!-- Tầng 3 (10A10, 10A9 Vàng nổi bật theo Ảnh) -->
+            <rect x="274" y="41" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="b_t3_10a10" /><text x="302" y="58" class="rm-text">10A10</text>
+            <rect x="334" y="41" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="b_t3_10a9" /><text x="362" y="58" class="rm-text">10A9</text>
+            <rect x="394" y="41" width="34" height="34" class="rm-gray" /><text x="411" y="58" class="rm-text" fill="#94a3b8">—</text>
+
+            <!-- Tầng 2 (12A5, 12A6) -->
+            <rect x="274" y="79" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_t2_12a5" /><text x="302" y="96" class="rm-text">12A5</text>
+            <rect x="334" y="79" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_t2_12a6" /><text x="362" y="96" class="rm-text">12A6</text>
+            <rect x="394" y="79" width="34" height="34" class="rm-gray" /><text x="411" y="96" class="rm-text" fill="#94a3b8">—</text>
+
+            <!-- Tầng trệt (12A9, 12A10) -->
+            <rect x="274" y="117" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_tret_12a9" /><text x="302" y="134" class="rm-text">12A9</text>
+            <rect x="334" y="117" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_tret_12a10" /><text x="362" y="134" class="rm-text">12A10</text>
+            <rect x="394" y="117" width="34" height="34" class="rm-gray" /><text x="411" y="134" class="rm-text" fill="#94a3b8">—</text>
+          </g>
+
+
+          <!-- ===================================================================== -->
+          <!-- 4. NHÃN HÀNH LANG NGANG GIỮA SÂN & HÀNH LANG XUỐNG DÃY HÀNH CHÍNH       -->
+          <!-- ===================================================================== -->
+          <g id="hallway-middle-labels">
+            <text x="354" y="612" class="hallway-text">HÀNH LANG</text>
+            <text x="636" y="612" class="hallway-text">HÀNH LANG</text>
+            <text x="873" y="612" class="hallway-text">HÀNH LANG</text>
+            <text x="1100" y="612" class="hallway-text">HÀNH LANG</text>
+            <text x="595" y="714" class="hallway-text" transform="rotate(-90 595 714)">HÀNH LANG</text>
+          </g>
+
+
+          <!-- ===================================================================== -->
+          <!-- 6. DÃY HÀNH CHÍNH (HIỆU BỘ - DƯỚI BÊN TRÁI ĐÚNG CHUẨN MASTER BLUEPRINT)-->
+          <!-- GỌN GÀNG TRONG X=140..564, KHÔNG HỀ ĐÈ VÀO HÀNH LANG DỌC (X=568..622)  -->
+          <!-- ===================================================================== -->
+          <g id="building-Admin" transform="translate(140, 675)">
+            <!-- Nhãn Tầng bên trái -->
+            <rect x="0" y="3" width="40" height="38" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="20" y="22" class="fl-label" font-size="10px">Tầng 2</text>
+
+            <rect x="0" y="45" width="40" height="38" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="20" y="57" class="fl-label" font-size="9px">Tầng</text>
+            <text x="20" y="71" class="fl-label" font-size="9px">trệt</text>
+
+            <!-- TẦNG 2 HÀNH CHÍNH -->
+            <rect x="44" y="3" width="34" height="38" class="wc-box map-interactive-room" data-loc-id="wc_hc_t2" /><text x="61" y="22" class="wc-text">WC</text>
+
+            <!-- Phòng Hiệu trưởng -->
+            <rect x="82" y="3" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_hieu_truong" />
+            <text x="111" y="15" class="rm-text" font-size="8px">Phòng Hiệu</text>
+            <text x="111" y="29" class="rm-text" font-size="8px">trưởng</text>
+
+            <!-- Phòng Văn thư -->
+            <rect x="144" y="3" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_van_thu" />
+            <text x="173" y="15" class="rm-text" font-size="8px">Phòng Văn</text>
+            <text x="173" y="29" class="rm-text" font-size="8px">thư</text>
+
+            <!-- Cầu thang Hành chính -->
+            <rect x="206" y="3" width="38" height="80" class="stair-pill map-interactive-room" data-loc-id="cau_thang_hc" />
+            <text x="225" y="37" class="stair-text" font-size="9px">Cầu</text>
+            <text x="225" y="49" class="stair-text" font-size="9px">thang</text>
+
+            <!-- Phòng Kế toán -->
+            <rect x="248" y="3" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_ke_toan" />
+            <text x="277" y="15" class="rm-text" font-size="8px">Phòng Kế</text>
+            <text x="277" y="29" class="rm-text" font-size="8px">toán</text>
+
+            <!-- Phòng Chi bộ (phòng họp GV): Nằm gọn x=310..424, KHÔNG ĐÈ HÀNH LANG X=568 -->
+            <rect x="310" y="3" width="114" height="38" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="1.1" class="map-interactive-room" data-loc-id="phong_chi_bo" />
+            <text x="367" y="15" class="rm-text" font-size="8.5px">Phòng Chi bộ</text>
+            <text x="367" y="28" class="rm-text" font-size="8px">(phòng họp GV)</text>
+
+            <!-- TẦNG TRỆT HÀNH CHÍNH -->
+            <rect x="44" y="45" width="34" height="38" class="wc-box map-interactive-room" data-loc-id="wc_hc_tret" /><text x="61" y="64" class="wc-text">WC</text>
+
+            <!-- Phòng hồ sơ 1 -->
+            <rect x="82" y="45" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_ho_so_1" />
+            <text x="111" y="57" class="rm-text" font-size="8px">Phòng</text>
+            <text x="111" y="71" class="rm-text" font-size="8px">hồ sơ</text>
+
+            <!-- Phòng hồ sơ 2 -->
+            <rect x="144" y="45" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_ho_so_2" />
+            <text x="173" y="57" class="rm-text" font-size="8px">Phòng</text>
+            <text x="173" y="71" class="rm-text" font-size="8px">hồ sơ</text>
+
+            <!-- Phòng Phó HT -->
+            <rect x="248" y="45" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_pho_ht" />
+            <text x="277" y="57" class="rm-text" font-size="8px">Phòng</text>
+            <text x="277" y="71" class="rm-text" font-size="8px">Phó HT</text>
+
+            <!-- Phòng Truyền thống -->
+            <rect x="310" y="45" width="56" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_truyen_thong" />
+            <text x="338" y="57" class="rm-text" font-size="8px">P. Truyền</text>
+            <text x="338" y="71" class="rm-text" font-size="8px">thống</text>
+
+            <!-- Phòng Tiếp dân: Nằm gọn x=370..424, KHÔNG ĐÈ HÀNH LANG X=568 -->
+            <rect x="370" y="45" width="54" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_tiep_dan" />
+            <text x="397" y="57" class="rm-text" font-size="8px">Phòng</text>
+            <text x="397" y="71" class="rm-text" font-size="8px">Tiếp dân</text>
+          </g>
+
+          <!-- NHÃN HÀNH LANG ĐÁY DÃY HÀNH CHÍNH -->
+          <g id="hallway-under-Admin-label">
+            <text x="350" y="777" class="hallway-text">HÀNH LANG</text>
+          </g>
+
+
+          <!-- ===================================================================== -->
+          <!-- 7. MÁI TAM GIÁC & CỘT CỜ (TRUNG TÂM SÂN TRƯỜNG CHUẨN XÁC)            -->
+          <!-- ===================================================================== -->
+          <!-- ===================================================================== -->
+          <!-- 7. MÁI TAM GIÁC (THIẾT KẾ 3D CHUẨN XÁC THEO ẢNH CHỤP THỰC TẾ)        -->
+          <!-- ===================================================================== -->
+          <g id="canopy-triangle" transform="translate(705, 575)">
+            <!-- 1. BẬC THỀM BÁN NGUYỆT PHÍA TRƯỚC SẢNH (CHUẨN ẢNH THỰC TẾ) -->
+            <path d="M 12,58 A 42,18 0 0,0 88,58 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2" />
+            <path d="M 22,58 A 32,13 0 0,0 78,58 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" />
+            <ellipse cx="50" cy="58" rx="20" ry="8" fill="#f1f5f9" />
+
+            <!-- 2. CÁC TRỤ CỘT MÀU NÂU ĐỎ ĐẶC TRƯNG NỐI VỚI HÀNH LANG HAI BÊN -->
+            <rect x="0" y="34" width="7" height="24" rx="1.5" fill="#991b1b" stroke="#7f1d1d" stroke-width="0.8" />
+            <rect x="9" y="40" width="6" height="18" rx="1.5" fill="#991b1b" stroke="#7f1d1d" stroke-width="0.8" />
+            <rect x="93" y="34" width="7" height="24" rx="1.5" fill="#991b1b" stroke="#7f1d1d" stroke-width="0.8" />
+            <rect x="85" y="40" width="6" height="18" rx="1.5" fill="#991b1b" stroke="#7f1d1d" stroke-width="0.8" />
+
+            <!-- 3. HỐC VÒM CỔNG VÀO (ĐỘ SÂU BÊN DƯỚI MÁI CHÓP) -->
+            <polygon points="50,22 80,58 20,58" fill="#1e293b" fill-opacity="0.35" />
+            <text x="50" y="48" class="center-text" fill="#ffffff" font-size="7px" font-weight="900" letter-spacing="0.5px">LỐI VÀO</text>
+
+            <!-- 4. KHỐI MÁI CHÓP KIM TỰ THÁP 3D MÀU XANH THỰC TẾ -->
+            <!-- Mặt mái bên trái (đón sáng) -->
+            <polygon points="50,6 2,58 22,58 50,22" fill="url(#canopyLeftGrad)" stroke="#0284c7" stroke-width="1.2" />
+            <!-- Mặt mái bên phải (đổ bóng tự nhiên) -->
+            <polygon points="50,6 98,58 78,58 50,22" fill="url(#canopyRightGrad)" stroke="#0369a1" stroke-width="1.2" />
+            <!-- Khung vòm mặt tiền tam giác nổi khối 3D -->
+            <polygon points="50,6 88,56 78,58 50,22 22,58 12,56" fill="url(#canopyFrontGrad)" stroke="#0284c7" stroke-width="1.3" />
+
+            <!-- Gân nổi sống mái và kết cấu thép kính -->
+            <line x1="50" y1="6" x2="50" y2="22" stroke="#e0f2fe" stroke-width="2" stroke-linecap="round" />
+            <line x1="50" y1="6" x2="2" y2="58" stroke="#7dd3fc" stroke-width="1.5" />
+            <line x1="50" y1="6" x2="98" y2="58" stroke="#0284c7" stroke-width="1.5" />
+            <line x1="26" y1="32" x2="74" y2="32" stroke="#bae6fd" stroke-width="1" stroke-opacity="0.7" />
+            <line x1="38" y1="18" x2="62" y2="18" stroke="#bae6fd" stroke-width="1" stroke-opacity="0.7" />
+
+            <!-- 5. HAI CHÂN TRỤ XIÊN LỚN MÀU XANH NÂNG ĐỠ MÁI (CHUẨN ẢNH THỰC TẾ) -->
+            <polygon points="12,54 22,56 17,68 7,66" fill="#0369a1" stroke="#075985" stroke-width="1" />
+            <polygon points="88,54 78,56 83,68 93,66" fill="#0284c7" stroke="#0369a1" stroke-width="1" />
+
+            <!-- Chóp nhọn kim tự tháp -->
+            <line x1="50" y1="6" x2="50" y2="0" stroke="#0284c7" stroke-width="2" stroke-linecap="round" />
+            <circle cx="50" cy="5" r="2.5" fill="#facc15" stroke="#ca8a04" stroke-width="0.8" />
+
+            <!-- 6. BIỂN TÊN MÁI TAM GIÁC -->
+            <rect x="15" y="76" width="70" height="18" rx="3" fill="#ffffff" stroke="#0284c7" stroke-width="1.3" filter="url(#boxShadow)" />
+            <text x="50" y="85" class="center-text" fill="#0284c7" font-size="9px" font-weight="bold">MÁI TAM GIÁC</text>
+          </g>
+
+          <g id="flagpole-center" transform="translate(715, 695)" class="map-interactive-room" data-loc-id="cot_co">
+            <ellipse cx="40" cy="85" rx="30" ry="9" fill="#bae6fd" stroke="#0284c7" stroke-width="1.3" />
+            <ellipse cx="40" cy="83" rx="20" ry="6" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1" />
+            <line x1="40" y1="83" x2="40" y2="8" stroke="#475569" stroke-width="2.5" stroke-linecap="round" />
+            <circle cx="40" cy="7" r="3" fill="#f59e0b" />
+            <rect x="40" y="8" width="40" height="26" rx="1" fill="#dc2626" filter="url(#flagShadow)" />
+            <polygon points="60,13 62,20 69,20 63.5,24.5 65.5,31 60,27 54.5,31 56.5,24.5 51,20 58,20" fill="#facc15" />
+            <rect x="8" y="98" width="64" height="20" rx="3" fill="#ffffff" stroke="#64748b" stroke-width="1.2" filter="url(#boxShadow)" />
+            <text x="40" y="108" class="center-text" fill="#0f172a" font-size="10px" font-weight="bold">CỘT CỜ</text>
+          </g>
+
+
+          <!-- ===================================================================== -->
+          <!-- 8. DÃY BỘ MÔN / PHÒNG CHỨC NĂNG (GIỮA BÊN PHẢI THEO ĐÚNG ẢNH)        -->
+          <!-- ===================================================================== -->
+          <g id="building-Dept" transform="translate(900, 440)">
+            <!-- Cầu thang Bộ Môn -->
+            <rect x="0" y="3" width="56" height="148" class="stair-pill map-interactive-room" data-loc-id="cau_thang_bm" />
+            <text x="28" y="70" class="stair-text" font-size="9.5px">Cầu</text>
+            <text x="28" y="84" class="stair-text" font-size="9.5px">thang</text>
+
+            <!-- KHỐI PHÒNG 4 TẦNG (CÓ ĐỦ CÁC Ô XÁM CHUẨN ẢNH) -->
+            <!-- TẦNG 4: [xám], [xám], P. Tin 4, P. Anh văn -->
+            <rect x="60" y="3" width="56" height="34" class="rm-gray" /><text x="88" y="20" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="120" y="3" width="56" height="34" class="rm-gray" /><text x="148" y="20" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="180" y="3" width="56" height="34" rx="2" fill="#ede9fe" stroke="#a78bfa" stroke-width="1.1" class="map-interactive-room" data-loc-id="bm_t4_tin4" /><text x="208" y="20" class="rm-text" font-size="10px">P. Tin 4</text>
+            <rect x="240" y="3" width="75" height="34" class="rm-norm map-interactive-room" data-loc-id="bm_t4_anh_van" /><text x="277.5" y="20" class="rm-text" font-size="10px">P. Anh văn</text>
+            <rect x="320" y="3" width="56" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" /><text x="348" y="20" class="fl-label">Tầng 4</text>
+
+            <!-- TẦNG 3: [xám], [xám], P. Máy, P. Máy -->
+            <rect x="60" y="41" width="56" height="34" class="rm-gray" /><text x="88" y="58" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="120" y="41" width="56" height="34" class="rm-gray" /><text x="148" y="58" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="180" y="41" width="56" height="34" class="rm-norm map-interactive-room" data-loc-id="bm_t3_may1" /><text x="208" y="58" class="rm-text" font-size="10.5px">P. Máy</text>
+            <rect x="240" y="41" width="75" height="34" class="rm-norm map-interactive-room" data-loc-id="bm_t3_may2" /><text x="277.5" y="58" class="rm-text" font-size="10.5px">P. Máy</text>
+            <rect x="320" y="41" width="56" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" /><text x="348" y="58" class="fl-label">Tầng 3</text>
+
+            <!-- TẦNG 2: [xám], VP Đoàn thanh niên, P. Tin 1, P. Tin 2 -->
+            <rect x="60" y="79" width="56" height="34" class="rm-gray" /><text x="88" y="96" class="rm-text" fill="#94a3b8">—</text>
+            <rect x="120" y="79" width="56" height="34" rx="2" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.1" class="map-interactive-room" data-loc-id="vp_doan" />
+            <text x="148" y="89" class="center-text rm-text" font-size="8px">VP Đoàn</text>
+            <text x="148" y="103" class="center-text rm-text" font-size="8px">thanh niên</text>
+            <rect x="180" y="79" width="56" height="34" rx="2" fill="#ede9fe" stroke="#a78bfa" stroke-width="1.1" class="map-interactive-room" data-loc-id="tin_hoc_1" /><text x="208" y="96" class="rm-text" font-size="10px">P. Tin 1</text>
+            <rect x="240" y="79" width="75" height="34" rx="2" fill="#ede9fe" stroke="#a78bfa" stroke-width="1.1" class="map-interactive-room" data-loc-id="tin_hoc_2" /><text x="277.5" y="96" class="rm-text" font-size="10px">P. Tin 2</text>
+            <rect x="320" y="79" width="56" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" /><text x="348" y="96" class="fl-label">Tầng 2</text>
+
+            <!-- TẦNG TRỆT: P. Y Tế, P. Thí nghiệm Lý, P. Thí nghiệm Hóa -->
+            <rect x="60" y="117" width="56" height="34" rx="2" fill="#fee2e2" stroke="#f87171" stroke-width="1.1" class="map-interactive-room" data-loc-id="phong_y_te" /><text x="88" y="134" class="rm-text" font-size="10px">P. Y Tế</text>
+            <rect x="120" y="117" width="100" height="34" rx="2" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.1" class="map-interactive-room" data-loc-id="bm_tret_ly" /><text x="170" y="134" class="rm-text" font-size="8.5px">P. Thí nghiệm Lý</text>
+            <rect x="224" y="117" width="91" height="34" rx="2" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.1" class="map-interactive-room" data-loc-id="bm_tret_hoa" /><text x="269.5" y="134" class="rm-text" font-size="8.5px">P. Thí nghiệm Hóa</text>
+            <rect x="320" y="117" width="56" height="34" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" /><text x="348" y="134" class="fl-label">Tầng trệt</text>
+          </g>
+
+
+          <!-- ===================================================================== -->
+          <!-- 9. HÀNH LANG DỌC XUỐNG HỘI TRƯỜNG & KHU VỰC HỘI TRƯỜNG CHUẨN ẢNH      -->
+          <!-- ===================================================================== -->
+          <!-- Hành lang dọc xuống Hội trường (chạy suốt cạnh trái toàn bộ cụm) -->
+          <!-- NHÃN HÀNH LANG XUỐNG HỘI TRƯỜNG -->
+          <g id="hallway-to-Hall-label">
+            <text x="927" y="724" class="hallway-text" transform="rotate(-90 927 724)">HÀNH LANG</text>
+          </g>
+
+          <!-- Cụm Hội Trường & Bãi xe 10A13 kẹp giữa 2 Bồn cây (Theo đúng ảnh người dùng gửi) -->
+          <g id="building-Hall-cluster" transform="translate(954, 633)">
+            <!-- 1. BỒN CÂY PHÍA TRÊN KẸP CHỖ ĐỂ XE 10A13 -->
+            <g id="bon-cay-tren">
+              <rect x="0" y="0" width="206" height="28" rx="2" class="bon-cay" />
+              <!-- Cụm cây cảnh xanh hai đầu -->
+              <circle cx="18" cy="14" r="6" fill="#86efac" stroke="#16a34a" stroke-width="1"/>
+              <circle cx="25" cy="14" r="4.5" fill="#4ade80" stroke="#15803d" stroke-width="1"/>
+              <circle cx="188" cy="14" r="6" fill="#86efac" stroke="#16a34a" stroke-width="1"/>
+              <circle cx="181" cy="14" r="4.5" fill="#4ade80" stroke="#15803d" stroke-width="1"/>
+              <text x="103" y="14" class="bon-cay-text">🌿 BỒN CÂY XANH 🌿</text>
+            </g>
+
+            <!-- 2. LÀN ĐỂ XE LỚP 10A13 KẸP Ở GIỮA -->
+            <rect x="0" y="28" width="206" height="46" fill="#ffffff" stroke="#64748b" stroke-width="1.2" class="map-interactive-room" data-loc-id="park_10a13" />
+            <text x="103" y="51" class="center-text rm-blue" font-size="13px" font-weight="900" letter-spacing="1.5px">10A13</text>
+
+            <!-- Mũi tên Lối để xe lớp 10A13 chỉ từ bên phải vào -->
+            <path d="M 330,51 L 225,51" class="arrow-line" />
+            <polygon points="225,47 213,51 225,55" class="arrow-head" />
+            <text x="278" y="37" class="center-text" font-size="10.5px" font-weight="bold" fill="#0f172a">Lối để xe lớp 10A13</text>
+
+            <!-- 3. BỒN CÂY PHÍA DƯỚI KẸP CHỖ ĐỂ XE 10A13 -->
+            <g id="bon-cay-duoi" transform="translate(0, 74)">
+              <rect x="0" y="0" width="206" height="28" rx="2" class="bon-cay" />
+              <!-- Cụm cây cảnh xanh hai đầu -->
+              <circle cx="18" cy="14" r="6" fill="#86efac" stroke="#16a34a" stroke-width="1"/>
+              <circle cx="25" cy="14" r="4.5" fill="#4ade80" stroke="#15803d" stroke-width="1"/>
+              <circle cx="188" cy="14" r="6" fill="#86efac" stroke="#16a34a" stroke-width="1"/>
+              <circle cx="181" cy="14" r="4.5" fill="#4ade80" stroke="#15803d" stroke-width="1"/>
+              <text x="103" y="14" class="bon-cay-text">🌿 BỒN CÂY XANH 🌿</text>
+            </g>
+
+            <!-- Ô WC bên phải bồn cây dưới (Đúng y chang hình vẽ của người dùng) -->
+            <rect x="206" y="74" width="46" height="28" class="wc-box map-interactive-room" data-loc-id="wc_hoi_truong" />
+            <text x="229" y="88" class="wc-text" font-size="9.5px">WC</text>
+
+            <!-- 4. HỘI TRƯỜNG (DƯỚI CÙNG, TRẢI RỘNG 252px) -->
+            <rect x="0" y="102" width="252" height="80" fill="#ffffff" stroke="#64748b" stroke-width="1.5" class="map-interactive-room" data-loc-id="hoi_truong" />
+            <text x="126" y="142" class="center-text" font-size="15px" font-weight="900" fill="#0f172a" letter-spacing="2px">HỘI TRƯỜNG</text>
+          </g>
+
+          <!-- LỚP VẼ ĐƯỜNG DẪN TRỰC QUAN (NAV OVERLAY LAYER) -->
+          <g id="nav-overlay-layer"></g>
+
+        </svg>
       </div>
     </main>
   </div>
@@ -649,4 +913,5 @@
   <script src="qrcode.min.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>
