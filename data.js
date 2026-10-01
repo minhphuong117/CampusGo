@@ -350,27 +350,30 @@ const CAMPUS_LOCATIONS = [
 ];
 
 // ============================================================================
-// 2. NÚT ĐỒ THỊ LỐI ĐI CHUẨN XÁC 100% VUÔNG GÓC (CAMPUS_GRAPH_NODES)
+// 2. NÚT ĐỒ THỊ LỐI ĐI CHUẨN XÁC 100% VUÔNG GÓC 90° (CAMPUS_GRAPH_NODES)
+// Mọi cung nối đều song song 100% với trục X hoặc trục Y (không cắt chéo xiên vẹo)
 // ============================================================================
 const CAMPUS_GRAPH_NODES = {
-  // Trục cổng & sân trước
+  // Trục Cổng & Trục sân chính (X = 684 và X = 755)
   "node_cong_truong": { x: 684, y: 988, name: "Cổng Trường", floor: "Mặt đất" },
-  "node_nga_re_cong": { x: 684, y: 915, name: "Ngã rẽ vào sân từ Cổng", floor: "Mặt đất" },
-  "node_nga_xe_gv": { x: 169, y: 915, name: "Trước Nhà xe giáo viên", floor: "Mặt đất" },
-  "node_nha_xe_gv": { x: 169, y: 889, name: "Trong Nhà xe GV", floor: "Mặt đất" },
-  
-  // Trục sân giữa Cột Cờ & Mái Tam Giác
-  "node_truc_san_giua": { x: 740, y: 840, name: "Lối sân trước Cột Cờ", floor: "Mặt đất" },
-  "node_cot_co": { x: 740, y: 785, name: "Khu vực Cột Cờ", floor: "Mặt đất" },
-  "node_mai_tam_giac": { x: 740, y: 635, name: "Trước Mái Tam Giác", floor: "Mặt đất" },
-  "node_truc_san_bac": { x: 760, y: 395, name: "Lối giao sân phía Bắc", floor: "Mặt đất" },
+  "node_nga_re_cong": { x: 684, y: 918, name: "Ngã giao đường xe trước Cổng", floor: "Mặt đất" },
+  "node_san_cong_truoc": { x: 684, y: 777, name: "Ngã giao sân trước Dãy Hành chính", floor: "Mặt đất" },
 
-  // Trục Hội Trường
-  "node_loi_hoi_truong": { x: 927, y: 773, name: "Cửa chính Hội Trường", floor: "Tầng trệt" },
-  "node_hoi_truong": { x: 1080, y: 773, name: "Trong Hội Trường", floor: "Tầng trệt" },
+  // Trục sân giữa Cột Cờ & Mái Tam Giác (Trục dọc X = 755)
+  "node_truc_san_giua": { x: 755, y: 777, name: "Lối giao sân trước Cột Cờ", floor: "Mặt đất" },
+  "node_cot_co": { x: 755, y: 720, name: "Khu vực Cột Cờ", floor: "Mặt đất" },
+  "node_mai_tam_giac": { x: 755, y: 612, name: "Trước Mái Tam Giác", floor: "Mặt đất" },
+  "node_truc_san_bac": { x: 755, y: 378, name: "Lối giao sân phía Bắc (trước Dãy A)", floor: "Mặt đất" },
+
+  // Trục Hội Trường (Trục ngang Y = 777)
+  "node_loi_hoi_truong": { x: 927, y: 777, name: "Cửa chính Hội Trường", floor: "Tầng trệt" },
+  "node_hoi_truong": { x: 1080, y: 777, name: "Trong Hội Trường", floor: "Tầng trệt" },
+  "node_wc_hoi_truong_corner": { x: 1183, y: 777, name: "Lối rẽ vào WC Hội Trường", floor: "Tầng trệt" },
   "node_wc_hoi_truong": { x: 1183, y: 721, name: "WC Hội Trường", floor: "Tầng trệt" },
 
-  // Trục Nhà xe Cổng trước
+  // Trục Nhà xe Cổng trước (Trục ngang Y = 918)
+  "node_nga_xe_gv": { x: 169, y: 918, name: "Trước Nhà xe giáo viên", floor: "Mặt đất" },
+  "node_nha_xe_gv": { x: 169, y: 889, name: "Trong Nhà xe GV", floor: "Mặt đất" },
   "node_truoc_xe_hs": { x: 965, y: 918, name: "Lối vào Nhà xe học sinh Cổng trước", floor: "Mặt đất" },
   "node_pk_10a1": { x: 986, y: 918, name: "Ô xe 10A1", floor: "Mặt đất" },
   "node_pk_10a2": { x: 1030, y: 918, name: "Ô xe 10A2", floor: "Mặt đất" },
@@ -383,165 +386,195 @@ const CAMPUS_GRAPH_NODES = {
   "node_pk_10a9": { x: 1335, y: 918, name: "Ô xe 10A9", floor: "Mặt đất" },
   "node_pk_10a10": { x: 1379, y: 918, name: "Ô xe 10A10", floor: "Mặt đất" },
   "node_pk_10a11": { x: 1423, y: 918, name: "Ô xe 10A11", floor: "Mặt đất" },
-  "node_goc_xe_dong": { x: 1450, y: 918, name: "Góc cua nhà xe phía Đông", floor: "Mặt đất" },
+  "node_goc_xe_dong": { x: 1497, y: 918, name: "Góc cua nhà xe phía Đông", floor: "Mặt đất" },
   "node_pk_10a12": { x: 1497, y: 722, name: "Ô xe 10A12", floor: "Mặt đất" },
   "node_pk_11a1": { x: 1497, y: 355, name: "Ô xe 11A1", floor: "Mặt đất" },
   "node_pk_11a2": { x: 1497, y: 200, name: "Ô xe 11A2", floor: "Mặt đất" },
 
-  // Dãy để xe Tây & Bắc
+  // Dãy để xe Tây & Bắc (Trục dọc X = 65, X = 112 và Trục ngang Y = 186, Y = 835)
+  "node_goc_xe_tay_nam_1": { x: 112, y: 918, name: "Khúc rẽ Nhà xe Tây Nam", floor: "Mặt đất" },
   "node_goc_xe_tay_nam": { x: 112, y: 835, name: "Góc cua nhà xe phía Tây Nam", floor: "Mặt đất" },
-  "node_goc_xe_tay_bac": { x: 65, y: 188, name: "Góc cua nhà xe phía Tây Bắc", floor: "Mặt đất" },
-  "node_khuc_cua_tb": { x: 118, y: 188, name: "Khúc cua Cổng sau", floor: "Mặt đất" },
-  "node_khuc_cua_db": { x: 1425, y: 185, name: "Khúc cua phía Đông Bắc", floor: "Mặt đất" },
-  "node_pk_10a13": { x: 1057, y: 684, name: "Vị trí để xe 10A13", floor: "Mặt đất" },
+  "node_goc_xe_tay_bac_1": { x: 65, y: 835, name: "Khúc cua nhà xe phía Tây", floor: "Mặt đất" },
   "node_pk_12a10": { x: 65, y: 617, name: "Ô xe 12A10", floor: "Mặt đất" },
   "node_pk_12a9": { x: 65, y: 372, name: "Ô xe 12A9", floor: "Mặt đất" },
+  "node_goc_xe_tay_bac": { x: 65, y: 186, name: "Góc cua nhà xe phía Tây Bắc", floor: "Mặt đất" },
+  "node_khuc_cua_tb": { x: 118, y: 186, name: "Khúc cua Cổng sau", floor: "Mặt đất" },
   "node_pk_12a5": { x: 117, y: 110, name: "Ô xe 12A5", floor: "Mặt đất" },
   "node_pk_12a6": { x: 117, y: 127, name: "Ô xe 12A6", floor: "Mặt đất" },
   "node_pk_12a7": { x: 117, y: 144, name: "Ô xe 12A7", floor: "Mặt đất" },
   "node_pk_12a8": { x: 117, y: 161, name: "Ô xe 12A8", floor: "Mặt đất" },
-  "node_pk_12a4": { x: 323, y: 144, name: "Ô xe 12A4", floor: "Mặt đất" },
-  "node_pk_12a3": { x: 409, y: 144, name: "Ô xe 12A3", floor: "Mặt đất" },
-  "node_pk_12a2": { x: 495, y: 144, name: "Ô xe 12A2", floor: "Mặt đất" },
-  "node_pk_12a1": { x: 581, y: 144, name: "Ô xe 12A1", floor: "Mặt đất" },
-  "node_pk_11a8": { x: 667, y: 144, name: "Ô xe 11A8", floor: "Mặt đất" },
-  "node_pk_11a7": { x: 753, y: 144, name: "Ô xe 11A7", floor: "Mặt đất" },
-  "node_pk_11a6": { x: 839, y: 144, name: "Ô xe 11A6", floor: "Mặt đất" },
-  "node_pk_11a5": { x: 1041, y: 144, name: "Ô xe 11A5", floor: "Mặt đất" },
-  "node_pk_11a3": { x: 1246, y: 144, name: "Ô xe 11A3", floor: "Mặt đất" },
+  "node_pk_12a4": { x: 323, y: 186, name: "Ô xe 12A4", floor: "Mặt đất" },
+  "node_pk_12a3": { x: 409, y: 186, name: "Ô xe 12A3", floor: "Mặt đất" },
+  "node_pk_12a2": { x: 495, y: 186, name: "Ô xe 12A2", floor: "Mặt đất" },
+  "node_pk_12a1": { x: 581, y: 186, name: "Ô xe 12A1", floor: "Mặt đất" },
+  "node_pk_11a8": { x: 667, y: 186, name: "Ô xe 11A8", floor: "Mặt đất" },
+  "node_pk_11a7": { x: 753, y: 186, name: "Ô xe 11A7", floor: "Mặt đất" },
+  "node_pk_11a6": { x: 839, y: 186, name: "Ô xe 11A6", floor: "Mặt đất" },
+  "node_pk_11a5": { x: 1041, y: 186, name: "Ô xe 11A5", floor: "Mặt đất" },
+  "node_pk_11a3": { x: 1246, y: 186, name: "Ô xe 11A3", floor: "Mặt đất" },
+  "node_khuc_cua_db": { x: 1410, y: 186, name: "Khúc cua phía Đông Bắc", floor: "Mặt đất" },
+  "node_pk_10a13": { x: 1057, y: 684, name: "Vị trí để xe 10A13", floor: "Mặt đất" },
 
   // --- DÃY HÀNH CHÍNH (HIỆU BỘ) ---
-  "node_loi_vao_hc": { x: 595, y: 758, name: "Lối vào Dãy Hành Chính", floor: "Tầng trệt" },
-  // Tầng trệt
-  "node_hc_tret_td": { x: 537, y: 739, name: "Phòng Tiếp dân", floor: "Tầng trệt" },
-  "node_hc_tret_tt": { x: 478, y: 739, name: "Phòng Truyền thống", floor: "Tầng trệt" },
-  "node_hc_tret_pht": { x: 417, y: 739, name: "Phòng Phó HT", floor: "Tầng trệt" },
-  "node_hc_stair": { x: 365, y: 718, name: "Cầu thang Hành chính", floor: "Cầu thang" },
-  "node_hc_stair_tret": { x: 365, y: 739, name: "Chân Cầu thang HC", floor: "Tầng trệt" },
-  "node_hc_tret_p2": { x: 313, y: 739, name: "Phòng hồ sơ 2", floor: "Tầng trệt" },
-  "node_hc_tret_p1": { x: 251, y: 739, name: "Phòng hồ sơ 1", floor: "Tầng trệt" },
-  "node_hc_tret_wc": { x: 201, y: 739, name: "WC Hành chính Trệt", floor: "Tầng trệt" },
-  // Tầng 2
+  // Tầng trệt (Trục ngang Y = 777)
+  "node_loi_vao_hc": { x: 595, y: 777, name: "Lối vào Dãy Hành Chính", floor: "Tầng trệt" },
+  "node_hc_tret_td": { x: 537, y: 777, name: "Phòng Tiếp dân", floor: "Tầng trệt" },
+  "node_hc_tret_tt": { x: 478, y: 777, name: "Phòng Truyền thống", floor: "Tầng trệt" },
+  "node_hc_tret_pht": { x: 417, y: 777, name: "Phòng Phó HT", floor: "Tầng trệt" },
+  "node_hc_stair_tret": { x: 365, y: 777, name: "Chân Cầu thang HC", floor: "Tầng trệt" },
+  "node_hc_tret_p2": { x: 313, y: 777, name: "Phòng hồ sơ 2", floor: "Tầng trệt" },
+  "node_hc_tret_p1": { x: 251, y: 777, name: "Phòng hồ sơ 1", floor: "Tầng trệt" },
+  "node_hc_tret_wc": { x: 201, y: 777, name: "WC Hành chính Trệt", floor: "Tầng trệt" },
+
+  // Cầu thang Hành chính (Trục dọc X = 365)
+  "node_hc_stair": { x: 365, y: 737, name: "Cầu thang Hành chính", floor: "Cầu thang" },
   "node_hc_stair_t2": { x: 365, y: 697, name: "Đỉnh Cầu thang HC (T2)", floor: "Tầng 2" },
+
+  // Tầng 2 Hành chính (Trục ngang Y = 697)
   "node_hc_t2_cb": { x: 507, y: 697, name: "Phòng Chi bộ", floor: "Tầng 2" },
   "node_hc_t2_kt": { x: 417, y: 697, name: "Phòng Kế toán", floor: "Tầng 2" },
   "node_hc_t2_vt": { x: 313, y: 697, name: "Phòng Văn thư", floor: "Tầng 2" },
   "node_hc_t2_ht": { x: 251, y: 697, name: "Phòng Hiệu trưởng", floor: "Tầng 2" },
   "node_hc_t2_wc": { x: 201, y: 697, name: "WC Hành chính T2", floor: "Tầng 2" },
+  "node_cau_noi_hc_b": { x: 595, y: 697, name: "Cầu hành lang nối Dãy B & HC", floor: "Tầng 2" },
 
   // --- DÃY B (KHỐI 12) ---
-  "node_cau_noi_hc_b": { x: 595, y: 697, name: "Cầu hành lang nối Dãy B & HC", floor: "Tầng 2" },
-  // Tầng trệt
-  "node_b_tret_wc": { x: 243, y: 614, name: "WC Dãy B (Trệt)", floor: "Tầng trệt" },
-  "node_b_tret_12a7": { x: 294, y: 614, name: "Phòng 12A7", floor: "Tầng trệt" },
-  "node_b_tret_12a8": { x: 354, y: 614, name: "Phòng 12A8", floor: "Tầng trệt" },
-  "node_b_stair_tret": { x: 409, y: 614, name: "Chân Cầu thang B (Trệt)", floor: "Tầng trệt" },
-  "node_b_tret_12a9": { x: 464, y: 614, name: "Phòng 12A9", floor: "Tầng trệt" },
-  "node_b_tret_12a10": { x: 524, y: 614, name: "Phòng 12A10", floor: "Tầng trệt" },
-  // Tầng 2
+  // Tầng trệt (Trục ngang Y = 612)
+  "node_b_tret_wc": { x: 243, y: 612, name: "WC Dãy B (Trệt)", floor: "Tầng trệt" },
+  "node_b_tret_12a7": { x: 294, y: 612, name: "Phòng 12A7", floor: "Tầng trệt" },
+  "node_b_tret_12a8": { x: 354, y: 612, name: "Phòng 12A8", floor: "Tầng trệt" },
+  "node_b_stair_tret": { x: 409, y: 612, name: "Chân Cầu thang B (Trệt)", floor: "Tầng trệt" },
+  "node_b_tret_12a9": { x: 464, y: 612, name: "Phòng 12A9", floor: "Tầng trệt" },
+  "node_b_tret_12a10": { x: 524, y: 612, name: "Phòng 12A10", floor: "Tầng trệt" },
+  "node_b_tret_east": { x: 595, y: 612, name: "Hành lang Dãy B (Đông)", floor: "Tầng trệt" },
+
+  // Cầu thang Dãy B (Trục dọc X = 409)
+  "node_b_stair_t2": { x: 409, y: 576, name: "Cầu thang B (T2)", floor: "Tầng 2" },
+  "node_b_stair_t3": { x: 409, y: 538, name: "Cầu thang B (T3)", floor: "Tầng 3" },
+  "node_b_stair_t4": { x: 409, y: 500, name: "Cầu thang B (T4)", floor: "Tầng 4" },
+
+  // Tầng 2 Dãy B (Trục ngang Y = 576)
   "node_b_t2_wc": { x: 243, y: 576, name: "WC Dãy B (T2)", floor: "Tầng 2" },
   "node_b_t2_12a3": { x: 294, y: 576, name: "Phòng 12A3", floor: "Tầng 2" },
   "node_b_t2_12a4": { x: 354, y: 576, name: "Phòng 12A4", floor: "Tầng 2" },
-  "node_b_stair_t2": { x: 409, y: 576, name: "Cầu thang B (T2)", floor: "Tầng 2" },
   "node_b_t2_12a5": { x: 464, y: 576, name: "Phòng 12A5", floor: "Tầng 2" },
   "node_b_t2_12a6": { x: 524, y: 576, name: "Phòng 12A6", floor: "Tầng 2" },
-  // Tầng 3
+  "node_b_t2_east": { x: 595, y: 576, name: "Hành lang Tầng 2 Dãy B", floor: "Tầng 2" },
+
+  // Tầng 3 Dãy B (Trục ngang Y = 538)
   "node_b_t3_wc": { x: 243, y: 538, name: "WC Dãy B (T3)", floor: "Tầng 3" },
   "node_b_t3_12a1": { x: 294, y: 538, name: "Phòng 12A1", floor: "Tầng 3" },
   "node_b_t3_12a2": { x: 354, y: 538, name: "Phòng 12A2", floor: "Tầng 3" },
-  "node_b_stair_t3": { x: 409, y: 538, name: "Cầu thang B (T3)", floor: "Tầng 3" },
   "node_b_t3_10a10": { x: 464, y: 538, name: "Phòng 10A10", floor: "Tầng 3" },
   "node_b_t3_10a9": { x: 524, y: 538, name: "Phòng 10A9", floor: "Tầng 3" },
-  // Tầng 4
-  "node_b_t4_wc": { x: 243, y: 500, name: "WC Dãy B (T4)", floor: "Tầng 4" },
-  "node_b_stair_t4": { x: 409, y: 500, name: "Cầu thang B (T4)", floor: "Tầng 4" },
 
-  // Cầu nối Dãy B lên Dãy A (Trục x = 429)
-  "node_noi_ba_tret": { x: 429, y: 395, name: "Hành lang nối Dãy B - Dãy A", floor: "Tầng trệt" },
+  // Tầng 4 Dãy B (Trục ngang Y = 500)
+  "node_b_t4_wc": { x: 243, y: 500, name: "WC Dãy B (T4)", floor: "Tầng 4" },
+
+  // Hành lang nối Dãy B sang Dãy A (Trục dọc X = 429)
+  "node_noi_ba_south": { x: 429, y: 612, name: "Hành lang Tây Dãy B", floor: "Tầng trệt" },
+  "node_noi_ba_north": { x: 429, y: 378, name: "Hành lang Tây Dãy A", floor: "Tầng trệt" },
 
   // --- DÃY BỘ MÔN (GIỮA BÊN PHẢI) ---
-  // Tầng trệt
-  "node_bm_stair_tret": { x: 942, y: 614, name: "Chân Cầu thang Bộ Môn", floor: "Tầng trệt" },
-  "node_bm_tret_yte": { x: 1002, y: 614, name: "Phòng Y Tế", floor: "Tầng trệt" },
-  "node_bm_tret_ly": { x: 1084, y: 614, name: "Phòng Thí nghiệm Lý", floor: "Tầng trệt" },
-  "node_bm_tret_hoa": { x: 1184, y: 614, name: "Phòng Thí nghiệm Hóa", floor: "Tầng trệt" },
-  // Tầng 2
+  // Tầng trệt (Trục ngang Y = 612)
+  "node_bm_stair_tret": { x: 942, y: 612, name: "Chân Cầu thang Bộ Môn", floor: "Tầng trệt" },
+  "node_bm_tret_yte": { x: 1002, y: 612, name: "Phòng Y Tế", floor: "Tầng trệt" },
+  "node_bm_tret_ly": { x: 1084, y: 612, name: "Phòng Thí nghiệm Lý", floor: "Tầng trệt" },
+  "node_bm_tret_hoa": { x: 1184, y: 612, name: "Phòng Thí nghiệm Hóa", floor: "Tầng trệt" },
+
+  // Cầu thang Bộ Môn (Trục dọc X = 942)
   "node_bm_stair_t2": { x: 942, y: 576, name: "Cầu thang Bộ Môn (T2)", floor: "Tầng 2" },
+  "node_bm_stair_t3": { x: 942, y: 538, name: "Cầu thang Bộ Môn (T3)", floor: "Tầng 3" },
+  "node_bm_stair_t4": { x: 942, y: 500, name: "Cầu thang Bộ Môn (T4)", floor: "Tầng 4" },
+
+  // Tầng 2 Bộ Môn (Trục ngang Y = 576)
   "node_bm_t2_doan": { x: 1062, y: 576, name: "VP Đoàn Thanh Niên", floor: "Tầng 2" },
   "node_bm_t2_tin1": { x: 1122, y: 576, name: "Phòng Tin 1", floor: "Tầng 2" },
   "node_bm_t2_tin2": { x: 1192, y: 576, name: "Phòng Tin 2", floor: "Tầng 2" },
-  // Tầng 3
-  "node_bm_stair_t3": { x: 942, y: 538, name: "Cầu thang Bộ Môn (T3)", floor: "Tầng 3" },
+
+  // Tầng 3 Bộ Môn (Trục ngang Y = 538)
   "node_bm_t3_may1": { x: 1122, y: 538, name: "Phòng Máy 1", floor: "Tầng 3" },
   "node_bm_t3_may2": { x: 1192, y: 538, name: "Phòng Máy 2", floor: "Tầng 3" },
-  // Tầng 4
-  "node_bm_stair_t4": { x: 942, y: 500, name: "Cầu thang Bộ Môn (T4)", floor: "Tầng 4" },
+
+  // Tầng 4 Bộ Môn (Trục ngang Y = 500)
   "node_bm_t4_tin4": { x: 1122, y: 500, name: "Phòng Tin 4", floor: "Tầng 4" },
   "node_bm_t4_av": { x: 1192, y: 500, name: "Phòng Anh văn", floor: "Tầng 4" },
 
   // --- DÃY A (TRÊN CÙNG: KHỐI 10 & 11 & THƯ VIỆN) ---
-  // Tầng trệt
-  "node_a_tret_wc_l": { x: 255, y: 348, name: "WC Dãy A Trái (Trệt)", floor: "Tầng trệt" },
-  "node_a_tret_10a7": { x: 306, y: 348, name: "Phòng 10A7", floor: "Tầng trệt" },
-  "node_a_tret_10a8": { x: 367, y: 348, name: "Phòng 10A8", floor: "Tầng trệt" },
-  "node_a1_stair_tret": { x: 623, y: 194, name: "Chân Cầu thang A1 (Trệt)", floor: "Tầng trệt" },
-  "node_a_tret_tv": { x: 554, y: 348, name: "Thư Viện trường", floor: "Tầng trệt" },
-  "node_a2_stair_tret": { x: 861, y: 194, name: "Chân Cầu thang A2 (Trệt)", floor: "Tầng trệt" },
-  "node_a_tret_11a9": { x: 742, y: 348, name: "Phòng 11A9", floor: "Tầng trệt" },
-  "node_a_tret_11a10": { x: 803, y: 348, name: "Phòng 11A10", floor: "Tầng trệt" },
-  "node_a_tret_wc_r": { x: 853, y: 348, name: "WC Dãy A Phải (Trệt)", floor: "Tầng trệt" },
+  // Tầng trệt (Trục ngang Y = 378)
+  "node_a_tret_wc_l": { x: 255, y: 378, name: "WC Dãy A Trái (Trệt)", floor: "Tầng trệt" },
+  "node_a_tret_10a7": { x: 306, y: 378, name: "Phòng 10A7", floor: "Tầng trệt" },
+  "node_a_tret_10a8": { x: 367, y: 378, name: "Phòng 10A8", floor: "Tầng trệt" },
+  "node_a_tret_tv": { x: 554, y: 378, name: "Thư Viện trường", floor: "Tầng trệt" },
+  "node_a1_stair_tret": { x: 623, y: 378, name: "Chân Cầu thang A1 (Trệt)", floor: "Tầng trệt" },
+  "node_a_tret_11a9": { x: 742, y: 378, name: "Phòng 11A9", floor: "Tầng trệt" },
+  "node_a_tret_11a10": { x: 803, y: 378, name: "Phòng 11A10", floor: "Tầng trệt" },
+  "node_a2_stair_tret": { x: 861, y: 378, name: "Chân Cầu thang A2 (Trệt)", floor: "Tầng trệt" },
+  "node_a_tret_wc_r": { x: 910, y: 378, name: "WC Dãy A Phải (Trệt)", floor: "Tầng trệt" },
 
-  // Tầng 2
+  // Cầu thang A1 (Trục dọc X = 623)
+  "node_a1_stair_t2": { x: 623, y: 304, name: "Cầu thang A1 (T2)", floor: "Tầng 2" },
+  "node_a1_stair_t3": { x: 623, y: 260, name: "Cầu thang A1 (T3)", floor: "Tầng 3" },
+  "node_a1_stair_t4": { x: 623, y: 216, name: "Đỉnh Cầu thang A1 (T4)", floor: "Tầng 4" },
+
+  // Cầu thang A2 (Trục dọc X = 861)
+  "node_a2_stair_t2": { x: 861, y: 304, name: "Cầu thang A2 (T2)", floor: "Tầng 2" },
+  "node_a2_stair_t3": { x: 861, y: 260, name: "Cầu thang A2 (T3)", floor: "Tầng 3" },
+  "node_a2_stair_t4": { x: 861, y: 216, name: "Đỉnh Cầu thang A2 (T4)", floor: "Tầng 4" },
+
+  // Tầng 2 Dãy A (Trục ngang Y = 304)
   "node_a_t2_wc_l": { x: 255, y: 304, name: "WC Dãy A Trái (T2)", floor: "Tầng 2" },
   "node_a_t2_10a6": { x: 306, y: 304, name: "Phòng 10A6", floor: "Tầng 2" },
   "node_a_t2_10a5": { x: 367, y: 304, name: "Phòng 10A5", floor: "Tầng 2" },
-  "node_a1_stair_t2": { x: 623, y: 156, name: "Cầu thang A1 (T2)", floor: "Tầng 2" },
   "node_a_t2_10a4": { x: 491, y: 304, name: "Phòng 10A4", floor: "Tầng 2" },
   "node_a_t2_11a8": { x: 552, y: 304, name: "Phòng 11A8", floor: "Tầng 2" },
   "node_a_t2_11a7": { x: 615, y: 304, name: "Phòng 11A7", floor: "Tầng 2" },
-  "node_a2_stair_t2": { x: 861, y: 156, name: "Cầu thang A2 (T2)", floor: "Tầng 2" },
   "node_a_t2_11a6": { x: 742, y: 304, name: "Phòng 11A6", floor: "Tầng 2" },
   "node_a_t2_11a5": { x: 803, y: 304, name: "Phòng 11A5", floor: "Tầng 2" },
-  "node_a_t2_wc_r": { x: 853, y: 304, name: "WC Dãy A Phải (T2)", floor: "Tầng 2" },
+  "node_a_t2_wc_r": { x: 910, y: 304, name: "WC Dãy A Phải (T2)", floor: "Tầng 2" },
 
-  // Tầng 3
+  // Tầng 3 Dãy A (Trục ngang Y = 260)
   "node_a_t3_wc_l": { x: 255, y: 260, name: "WC Dãy A Trái (T3)", floor: "Tầng 3" },
   "node_a_t3_10a1": { x: 306, y: 260, name: "Phòng 10A1", floor: "Tầng 3" },
   "node_a_t3_10a2": { x: 367, y: 260, name: "Phòng 10A2", floor: "Tầng 3" },
-  "node_a1_stair_t3": { x: 623, y: 118, name: "Cầu thang A1 (T3)", floor: "Tầng 3" },
   "node_a_t3_10a3": { x: 491, y: 260, name: "Phòng 10A3", floor: "Tầng 3" },
   "node_a_t3_11a1": { x: 552, y: 260, name: "Phòng 11A1", floor: "Tầng 3" },
   "node_a_t3_11a2": { x: 615, y: 260, name: "Phòng 11A2", floor: "Tầng 3" },
-  "node_a2_stair_t3": { x: 861, y: 118, name: "Cầu thang A2 (T3)", floor: "Tầng 3" },
   "node_a_t3_11a3": { x: 742, y: 260, name: "Phòng 11A3", floor: "Tầng 3" },
   "node_a_t3_11a4": { x: 803, y: 260, name: "Phòng 11A4", floor: "Tầng 3" },
-  "node_a_t3_wc_r": { x: 853, y: 260, name: "WC Dãy A Phải (T3)", floor: "Tầng 3" },
+  "node_a_t3_wc_r": { x: 910, y: 260, name: "WC Dãy A Phải (T3)", floor: "Tầng 3" },
 
-  // Tầng 4
+  // Tầng 4 Dãy A (Trục ngang Y = 216)
   "node_a_t4_wc_l": { x: 255, y: 216, name: "WC Dãy A Trái (T4)", floor: "Tầng 4" },
-  "node_a1_stair_t4": { x: 623, y: 80, name: "Đỉnh Cầu thang A1 (T4)", floor: "Tầng 4" },
   "node_a_t4_10a13": { x: 615, y: 216, name: "Phòng 10A13", floor: "Tầng 4" },
-  "node_a2_stair_t4": { x: 861, y: 80, name: "Đỉnh Cầu thang A2 (T4)", floor: "Tầng 4" },
   "node_a_t4_10a12": { x: 742, y: 216, name: "Phòng 10A12", floor: "Tầng 4" },
   "node_a_t4_10a11": { x: 803, y: 216, name: "Phòng 10A11", floor: "Tầng 4" },
-  "node_a_t4_wc_r": { x: 853, y: 216, name: "WC Dãy A Phải (T4)", floor: "Tầng 4" }
+  "node_a_t4_wc_r": { x: 910, y: 216, name: "WC Dãy A Phải (T4)", floor: "Tầng 4" }
 };
 
 // ============================================================================
 // 3. MẠNG CẠNH ĐỒ THỊ 100% VUÔNG GÓC 90° (CAMPUS_GRAPH_EDGES)
+// Mọi cung nối đều song song 100% với trục X hoặc trục Y (không cắt chéo xiên vẹo)
 // ============================================================================
 const CAMPUS_GRAPH_EDGES = [
-  // CỔNG & TRỤC SÂN
-  { from: "node_cong_truong", to: "node_nga_re_cong", desc: "Đi thẳng qua Cổng Trường vào sân" },
-  { from: "node_nga_re_cong", to: "node_nga_xe_gv", desc: "Rẽ trái đi theo lối vào Nhà xe giáo viên" },
-  { from: "node_nga_xe_gv", to: "node_nha_xe_gv", desc: "Đi vào trong Nhà xe giáo viên" },
-  { from: "node_nga_re_cong", to: "node_truc_san_giua", desc: "Đi thẳng dọc sân về hướng Cột Cờ" },
-  { from: "node_truc_san_giua", to: "node_cot_co", desc: "Rẽ sang khu vực Cột Cờ trung tâm" },
-  { from: "node_truc_san_giua", to: "node_loi_hoi_truong", desc: "Đi thẳng ngang sang lối vào Hội Trường" },
-  { from: "node_loi_hoi_truong", to: "node_hoi_truong", desc: "Bước vào bên trong Hội Trường" },
-  { from: "node_loi_hoi_truong", to: "node_wc_hoi_truong", desc: "Rẽ vào WC Hội Trường" },
+  // CỔNG & TRỤC SÂN (Hoàn toàn thẳng đứng X = 684 và nằm ngang Y = 777, Y = 918)
+  { from: "node_cong_truong", to: "node_nga_re_cong", desc: "Đi thẳng qua Cổng Trường vào đường nội bộ" },
+  { from: "node_nga_re_cong", to: "node_san_cong_truoc", desc: "Đi thẳng trục chính vào sân trường (hướng Bắc)" },
+  { from: "node_san_cong_truoc", to: "node_loi_vao_hc", desc: "Rẽ trái vào Hành lang Dãy Hành chính" },
+  { from: "node_san_cong_truoc", to: "node_truc_san_giua", desc: "Rẽ phải đi theo trục sân về phía Cột Cờ" },
+  
+  // TRỤC GIỮA SÂN, CỘT CỜ & MÁI TAM GIÁC (Thẳng đứng X = 755)
+  { from: "node_truc_san_giua", to: "node_cot_co", desc: "Đi thẳng dọc trục sân đến Cột Cờ trung tâm" },
+  { from: "node_cot_co", to: "node_mai_tam_giac", desc: "Đi thẳng tiếp đến sảnh Mái Tam Giác" },
+  { from: "node_mai_tam_giac", to: "node_truc_san_bac", desc: "Đi thẳng trục sân lên Dãy A (phía Bắc)" },
 
-  // NHÀ XE HỌC SINH CỔNG TRƯỚC (Trục ngang y = 918)
+  // HỘI TRƯỜNG (Trục ngang Y = 777)
+  { from: "node_truc_san_giua", to: "node_loi_hoi_truong", desc: "Rẽ phải đi thẳng sang lối vào Hội Trường" },
+  { from: "node_loi_hoi_truong", to: "node_hoi_truong", desc: "Bước vào cửa chính Hội Trường" },
+  { from: "node_loi_hoi_truong", to: "node_wc_hoi_truong_corner", desc: "Đi tiếp đến lối vào WC Hội Trường" },
+  { from: "node_wc_hoi_truong_corner", to: "node_wc_hoi_truong", desc: "Rẽ vào WC Hội Trường" },
+
+  // NHÀ XE HỌC SINH CỔNG TRƯỚC (Trục ngang Y = 918)
   { from: "node_nga_re_cong", to: "node_truoc_xe_hs", desc: "Rẽ phải đi theo lối vào Nhà xe học sinh" },
   { from: "node_truoc_xe_hs", to: "node_pk_10a1", desc: "Đến vị trí để xe lớp 10A1" },
   { from: "node_pk_10a1", to: "node_pk_10a2", desc: "Đến vị trí để xe lớp 10A2" },
@@ -556,101 +589,126 @@ const CAMPUS_GRAPH_EDGES = [
   { from: "node_pk_10a10", to: "node_pk_10a11", desc: "Đến vị trí để xe lớp 10A11" },
   { from: "node_pk_10a11", to: "node_goc_xe_dong", desc: "Đến góc cua nhà xe phía Đông" },
 
-  // DÃY XE PHÍA ĐÔNG (Trục dọc x = 1497)
-  { from: "node_goc_xe_dong", to: "node_pk_10a12", desc: "Rẽ vuông góc đến vị trí để xe 10A12" },
+  // DÃY XE PHÍA ĐÔNG (Trục dọc X = 1497)
+  { from: "node_goc_xe_dong", to: "node_pk_10a12", desc: "Rẽ vuông góc dọc dãy xe đến ô 10A12" },
   { from: "node_pk_10a12", to: "node_pk_11a1", desc: "Đi thẳng dọc theo dãy xe đến ô 11A1" },
   { from: "node_pk_11a1", to: "node_pk_11a2", desc: "Đi thẳng tiếp đến ô xe 11A2" },
 
-  // SÂN BẮC & MÁI TAM GIÁC
-  { from: "node_cot_co", to: "node_mai_tam_giac", desc: "Đi thẳng qua khu Mái Tam Giác" },
-  { from: "node_mai_tam_giac", to: "node_truc_san_bac", desc: "Đi dọc lên sân phía Bắc" },
-  { from: "node_truc_san_bac", to: "node_a2_stair_tret", desc: "Rẽ vào Cầu thang A2 (Phải Dãy A)" },
+  // NHÀ XE GIÁO VIÊN & ĐƯỜNG XE PHÍA TÂY (Trục ngang Y = 918 & Y = 835)
+  { from: "node_nga_re_cong", to: "node_nga_xe_gv", desc: "Rẽ trái đi theo lối vào Nhà xe giáo viên" },
+  { from: "node_nga_xe_gv", to: "node_nha_xe_gv", desc: "Đi vào trong Nhà xe giáo viên" },
+  { from: "node_nga_xe_gv", to: "node_goc_xe_tay_nam_1", desc: "Đi thẳng sang góc cua phía Tây Nam" },
+  { from: "node_goc_xe_tay_nam_1", to: "node_goc_xe_tay_nam", desc: "Rẽ phải theo đường xe phía Tây" },
+  { from: "node_goc_xe_tay_nam", to: "node_goc_xe_tay_bac_1", desc: "Rẽ trái vào dãy để xe học sinh phía Tây" },
+  { from: "node_goc_xe_tay_bac_1", to: "node_pk_12a10", desc: "Đến vị trí để xe 12A10" },
+  { from: "node_pk_12a10", to: "node_pk_12a9", desc: "Đi thẳng dọc dãy xe đến ô 12A9" },
+  { from: "node_pk_12a9", to: "node_goc_xe_tay_bac", desc: "Đi đến góc cua phía Tây Bắc" },
 
-  // DÃY HÀNH CHÍNH (Tầng trệt y = 703)
-  { from: "node_truc_san_giua", to: "node_loi_vao_hc", desc: "Rẽ vào lối Dãy Hành Chính" },
+  // DÃY XE CẠNH CỔNG SAU (Trục ngang Y = 186)
+  { from: "node_goc_xe_tay_bac", to: "node_khuc_cua_tb", desc: "Rẽ phải theo đường xe Cổng sau" },
+  { from: "node_khuc_cua_tb", to: "node_pk_12a4", desc: "Đến ô xe 12A4" },
+  { from: "node_pk_12a4", to: "node_pk_12a3", desc: "Đến ô xe 12A3" },
+  { from: "node_pk_12a3", to: "node_pk_12a2", desc: "Đến ô xe 12A2" },
+  { from: "node_pk_12a2", to: "node_pk_12a1", desc: "Đến ô xe 12A1" },
+  { from: "node_pk_12a1", to: "node_pk_11a8", desc: "Đến ô xe 11A8" },
+  { from: "node_pk_11a8", to: "node_pk_11a7", desc: "Đến ô xe 11A7" },
+  { from: "node_pk_11a7", to: "node_pk_11a6", desc: "Đến ô xe 11A6" },
+  { from: "node_pk_11a6", to: "node_pk_11a5", desc: "Đến ô xe 11A5" },
+  { from: "node_pk_11a5", to: "node_pk_11a3", desc: "Đến ô xe 11A3" },
+  { from: "node_pk_11a3", to: "node_khuc_cua_db", desc: "Đến góc cua phía Đông Bắc" },
+
+  // DÃY HÀNH CHÍNH (Tầng trệt Y = 777)
   { from: "node_loi_vao_hc", to: "node_hc_tret_td", desc: "Đến trước Phòng Tiếp dân" },
-  { from: "node_hc_tret_td", to: "node_hc_tret_tt", desc: "Đi qua Phòng Truyền thống" },
-  { from: "node_hc_tret_tt", to: "node_hc_tret_pht", desc: "Đi qua Phòng Phó Hiệu Trưởng" },
+  { from: "node_hc_tret_td", to: "node_hc_tret_tt", desc: "Đi thẳng qua Phòng Truyền thống" },
+  { from: "node_hc_tret_tt", to: "node_hc_tret_pht", desc: "Đi thẳng qua Phòng Phó Hiệu Trưởng" },
   { from: "node_hc_tret_pht", to: "node_hc_stair_tret", desc: "Đến Cầu thang Dãy Hành Chính (Trệt)" },
-  { from: "node_hc_stair_tret", to: "node_hc_tret_p2", desc: "Đi qua Phòng hồ sơ 2" },
-  { from: "node_hc_tret_p2", to: "node_hc_tret_p1", desc: "Đi qua Phòng hồ sơ 1" },
+  { from: "node_hc_stair_tret", to: "node_hc_tret_p2", desc: "Đi thẳng qua Phòng hồ sơ 2" },
+  { from: "node_hc_tret_p2", to: "node_hc_tret_p1", desc: "Đi thẳng qua Phòng hồ sơ 1" },
   { from: "node_hc_tret_p1", to: "node_hc_tret_wc", desc: "Đến WC Dãy Hành Chính (Trệt)" },
 
-  // Cầu thang Hành chính (x = 458, y = 703 -> 659)
+  // Cầu thang Hành chính (Trục dọc X = 365)
   { from: "node_hc_stair_tret", to: "node_hc_stair", desc: "Bước vào Cầu thang Hành chính" },
   { from: "node_hc_stair", to: "node_hc_stair_t2", desc: "Leo cầu thang bộ lên Tầng 2 Dãy Hành Chính" },
 
-  // Tầng 2 Hành chính (y = 659)
-  { from: "node_hc_stair_t2", to: "node_hc_t2_kt", desc: "Đi qua Phòng Kế toán" },
-  { from: "node_hc_t2_kt", to: "node_hc_t2_cb", desc: "Đến Phòng Chi bộ (Họp GV)" },
-  { from: "node_hc_stair_t2", to: "node_hc_t2_vt", desc: "Đi qua Phòng Văn thư" },
-  { from: "node_hc_t2_vt", to: "node_hc_t2_ht", desc: "Đến Phòng Hiệu trưởng" },
+  // Tầng 2 Hành chính (Trục ngang Y = 697)
+  { from: "node_hc_stair_t2", to: "node_hc_t2_kt", desc: "Đi thẳng đến Phòng Kế toán" },
+  { from: "node_hc_t2_kt", to: "node_hc_t2_cb", desc: "Đi thẳng đến Phòng Chi bộ (Họp GV)" },
+  { from: "node_hc_t2_cb", to: "node_cau_noi_hc_b", desc: "Đến đầu Cầu hành lang nối Dãy B" },
+  { from: "node_hc_stair_t2", to: "node_hc_t2_vt", desc: "Đi thẳng sang Phòng Văn thư" },
+  { from: "node_hc_t2_vt", to: "node_hc_t2_ht", desc: "Đi thẳng đến Phòng Hiệu trưởng" },
   { from: "node_hc_t2_ht", to: "node_hc_t2_wc", desc: "Đến WC Tầng 2 Hành chính" },
 
-  // CẦU HÀNH LANG LẦU 1 NỐI DÃY HC VÀ DÃY B (x = 458)
-  { from: "node_hc_stair_t2", to: "node_cau_noi_hc_b", desc: "Đi qua Cầu hành lang Lầu 1 sang Dãy B" },
-  { from: "node_cau_noi_hc_b", to: "node_b_stair_tret", desc: "Đi đến Cầu thang Dãy B" },
+  // CẦU HÀNH LANG NỐI DÃY HC VÀ DÃY B (Trục dọc X = 595)
+  { from: "node_cau_noi_hc_b", to: "node_b_tret_east", desc: "Đi qua Cầu hành lang trên cao sang Dãy B" },
+  { from: "node_cau_noi_hc_b", to: "node_b_t2_east", desc: "Đi qua Cầu hành lang Tầng 2 sang Dãy B" },
 
   // DÃY B (KHỐI 12)
-  // Tầng trệt (y = 563)
+  // Tầng trệt (Trục ngang Y = 612)
   { from: "node_b_tret_wc", to: "node_b_tret_12a7", desc: "Hành lang Trệt Dãy B qua 12A7" },
   { from: "node_b_tret_12a7", to: "node_b_tret_12a8", desc: "Đi thẳng qua Phòng 12A8" },
   { from: "node_b_tret_12a8", to: "node_b_stair_tret", desc: "Đến Cầu thang Dãy B (Trệt)" },
   { from: "node_b_stair_tret", to: "node_b_tret_12a9", desc: "Đi thẳng qua Phòng 12A9" },
-  { from: "node_b_tret_12a9", to: "node_b_tret_12a10", desc: "Đi thẳng đến Phòng 12A10" },
+  { from: "node_b_tret_12a9", to: "node_b_tret_12a10", desc: "Đi thẳng qua Phòng 12A10" },
+  { from: "node_b_tret_12a10", to: "node_b_tret_east", desc: "Đến đầu hành lang phía Đông Dãy B" },
+  { from: "node_b_tret_east", to: "node_mai_tam_giac", desc: "Đi thẳng theo hành lang ra sảnh Mái Tam Giác" },
 
-  // Cầu thang Dãy B (x = 429)
+  // Cầu thang Dãy B (Trục dọc X = 409)
   { from: "node_b_stair_tret", to: "node_b_stair_t2", desc: "Leo lên Tầng 2 Dãy B qua cầu thang bộ" },
   { from: "node_b_stair_t2", to: "node_b_stair_t3", desc: "Leo tiếp lên Tầng 3 Dãy B qua cầu thang bộ" },
   { from: "node_b_stair_t3", to: "node_b_stair_t4", desc: "Leo lên Tầng 4 Dãy B qua cầu thang bộ" },
 
-  // Tầng 2 Dãy B (y = 519)
+  // Tầng 2 Dãy B (Trục ngang Y = 576)
   { from: "node_b_t2_wc", to: "node_b_t2_12a3", desc: "Hành lang Tầng 2 qua 12A3" },
   { from: "node_b_t2_12a3", to: "node_b_t2_12a4", desc: "Đi thẳng qua 12A4" },
   { from: "node_b_t2_12a4", to: "node_b_stair_t2", desc: "Đến Cầu thang Tầng 2 Dãy B" },
   { from: "node_b_stair_t2", to: "node_b_t2_12a5", desc: "Đi thẳng qua 12A5" },
   { from: "node_b_t2_12a5", to: "node_b_t2_12a6", desc: "Đi thẳng đến 12A6" },
+  { from: "node_b_t2_12a6", to: "node_b_t2_east", desc: "Đến đầu hành lang Tầng 2 Dãy B" },
 
-  // Tầng 3 Dãy B (y = 475)
+  // Tầng 3 Dãy B (Trục ngang Y = 538)
   { from: "node_b_t3_wc", to: "node_b_t3_12a1", desc: "Hành lang Tầng 3 qua 12A1" },
   { from: "node_b_t3_12a1", to: "node_b_t3_12a2", desc: "Đi thẳng qua 12A2" },
   { from: "node_b_t3_12a2", to: "node_b_stair_t3", desc: "Đến Cầu thang Tầng 3 Dãy B" },
   { from: "node_b_stair_t3", to: "node_b_t3_10a10", desc: "Đi thẳng qua 10A10" },
   { from: "node_b_t3_10a10", to: "node_b_t3_10a9", desc: "Đi thẳng đến 10A9" },
 
-  // Tầng 4 Dãy B (y = 431)
+  // Tầng 4 Dãy B (Trục ngang Y = 500)
   { from: "node_b_t4_wc", to: "node_b_stair_t4", desc: "Đến Cầu thang Tầng 4 Dãy B" },
 
-  // HÀNH LANG NỐI DÃY B VÀ DÃY A (Trục x = 429)
-  { from: "node_b_stair_tret", to: "node_noi_ba_tret", desc: "Đi dọc theo Hành lang Tây Bắc" },
-  { from: "node_noi_ba_tret", to: "node_a1_stair_tret", desc: "Đến Cầu thang A1 (Trệt Dãy A)" },
+  // HÀNH LANG TÂY BẮC NỐI DÃY B VÀ DÃY A (Trục dọc X = 429)
+  { from: "node_b_stair_tret", to: "node_noi_ba_south", desc: "Rẽ vào hành lang Tây Dãy B" },
+  { from: "node_noi_ba_south", to: "node_noi_ba_north", desc: "Đi thẳng dọc theo Hành lang Tây Bắc" },
+  { from: "node_noi_ba_north", to: "node_a1_stair_tret", desc: "Rẽ phải đến Cầu thang A1 (Trệt Dãy A)" },
 
-  // DÃY BỘ MÔN (Trục y = 571, x = 877..1216)
-  { from: "node_mai_tam_giac", to: "node_bm_stair_tret", desc: "Đi sang lối vào Dãy Bộ Môn" },
+  // DÃY BỘ MÔN (Trục ngang Y = 612)
+  { from: "node_mai_tam_giac", to: "node_bm_stair_tret", desc: "Rẽ phải theo hành lang sang Dãy Bộ Môn" },
   { from: "node_bm_stair_tret", to: "node_bm_tret_yte", desc: "Đi thẳng qua Phòng Y Tế" },
   { from: "node_bm_tret_yte", to: "node_bm_tret_ly", desc: "Đi thẳng qua Phòng Thí nghiệm Lý" },
   { from: "node_bm_tret_ly", to: "node_bm_tret_hoa", desc: "Đi thẳng đến Phòng Thí nghiệm Hóa" },
 
-  // Cầu thang Bộ Môn (x = 877)
+  // Cầu thang Bộ Môn (Trục dọc X = 942)
   { from: "node_bm_stair_tret", to: "node_bm_stair_t2", desc: "Leo lên Tầng 2 Dãy Bộ Môn qua cầu thang bộ" },
   { from: "node_bm_stair_t2", to: "node_bm_stair_t3", desc: "Leo tiếp lên Tầng 3 Dãy Bộ Môn qua cầu thang bộ" },
   { from: "node_bm_stair_t3", to: "node_bm_stair_t4", desc: "Leo lên Tầng 4 Dãy Bộ Môn qua cầu thang bộ" },
 
-  // Tầng 2 Bộ Môn (y = 524)
+  // Tầng 2 Bộ Môn (Trục ngang Y = 576)
   { from: "node_bm_stair_t2", to: "node_bm_t2_doan", desc: "Đến VP Đoàn Thanh Niên" },
-  { from: "node_bm_t2_doan", to: "node_bm_t2_tin1", desc: "Đi qua Phòng Tin 1" },
+  { from: "node_bm_t2_doan", to: "node_bm_t2_tin1", desc: "Đi thẳng qua Phòng Tin 1" },
   { from: "node_bm_t2_tin1", to: "node_bm_t2_tin2", desc: "Đi đến Phòng Tin 2" },
 
-  // Tầng 3 Bộ Môn (y = 478)
+  // Tầng 3 Bộ Môn (Trục ngang Y = 538)
   { from: "node_bm_stair_t3", to: "node_bm_t3_may1", desc: "Đến Phòng Máy 1" },
   { from: "node_bm_t3_may1", to: "node_bm_t3_may2", desc: "Đi đến Phòng Máy 2" },
 
-  // Tầng 4 Bộ Môn (y = 432)
+  // Tầng 4 Bộ Môn (Trục ngang Y = 500)
   { from: "node_bm_stair_t4", to: "node_bm_t4_tin4", desc: "Đến Phòng Tin 4" },
   { from: "node_bm_t4_tin4", to: "node_bm_t4_av", desc: "Đi đến Phòng Anh văn" },
 
   // DÃY A (TRÊN CÙNG: KHỐI 10 & 11 & THƯ VIỆN)
-  // Tầng trệt (y = 348)
+  // Tầng trệt (Trục ngang Y = 378)
+  { from: "node_truc_san_bac", to: "node_a_tret_tv", desc: "Đến khu vực Thư Viện trường" },
+  { from: "node_truc_san_bac", to: "node_a1_stair_tret", desc: "Đến Cầu thang A1 (Trệt Dãy A)" },
+  { from: "node_truc_san_bac", to: "node_a2_stair_tret", desc: "Đến Cầu thang A2 (Trệt Dãy A)" },
   { from: "node_a_tret_wc_l", to: "node_a_tret_10a7", desc: "Hành lang Trệt Dãy A qua 10A7" },
   { from: "node_a_tret_10a7", to: "node_a_tret_10a8", desc: "Đi thẳng qua 10A8" },
   { from: "node_a_tret_10a8", to: "node_a1_stair_tret", desc: "Đến Cầu thang A1 (Trái)" },
@@ -658,19 +716,19 @@ const CAMPUS_GRAPH_EDGES = [
   { from: "node_a_tret_tv", to: "node_a2_stair_tret", desc: "Đến Cầu thang A2 (Phải)" },
   { from: "node_a2_stair_tret", to: "node_a_tret_11a9", desc: "Đi thẳng qua 11A9" },
   { from: "node_a_tret_11a9", to: "node_a_tret_11a10", desc: "Đi thẳng qua 11A10" },
-  { from: "node_a_tret_11a10", to: "node_a_tret_wc_r", desc: "Đến WC Phải (Trệt)" },
+  { from: "node_a_tret_11a10", to: "node_a_tret_wc_r", desc: "Đến WC Dãy A Phải (Trệt)" },
 
-  // Cầu thang A1 (Trái, x = 429)
-  { from: "node_a1_stair_tret", to: "node_a1_stair_t2", desc: "Leo lên Tầng 2 Dãy A qua Cầu thang A1" },
-  { from: "node_a1_stair_t2", to: "node_a1_stair_t3", desc: "Leo tiếp lên Tầng 3 Dãy A qua Cầu thang A1" },
-  { from: "node_a1_stair_t3", to: "node_a1_stair_t4", desc: "Leo lên Tầng 4 Dãy A qua Cầu thang A1" },
+  // Cầu thang A1 (Trục dọc X = 623)
+  { from: "node_a1_stair_tret", to: "node_a1_stair_t2", desc: "Leo cầu thang A1 lên Tầng 2" },
+  { from: "node_a1_stair_t2", to: "node_a1_stair_t3", desc: "Leo tiếp lên Tầng 3" },
+  { from: "node_a1_stair_t3", to: "node_a1_stair_t4", desc: "Leo lên Tầng 4 Dãy A" },
 
-  // Cầu thang A2 (Phải, x = 680)
-  { from: "node_a2_stair_tret", to: "node_a2_stair_t2", desc: "Leo lên Tầng 2 Dãy A qua Cầu thang A2" },
-  { from: "node_a2_stair_t2", to: "node_a2_stair_t3", desc: "Leo tiếp lên Tầng 3 Dãy A qua Cầu thang A2" },
-  { from: "node_a2_stair_t3", to: "node_a2_stair_t4", desc: "Leo lên Tầng 4 Dãy A qua Cầu thang A2" },
+  // Cầu thang A2 (Trục dọc X = 861)
+  { from: "node_a2_stair_tret", to: "node_a2_stair_t2", desc: "Leo cầu thang A2 lên Tầng 2" },
+  { from: "node_a2_stair_t2", to: "node_a2_stair_t3", desc: "Leo tiếp lên Tầng 3" },
+  { from: "node_a2_stair_t3", to: "node_a2_stair_t4", desc: "Leo lên Tầng 4 Dãy A" },
 
-  // Tầng 2 Dãy A (y = 304)
+  // Tầng 2 Dãy A (Trục ngang Y = 304)
   { from: "node_a_t2_wc_l", to: "node_a_t2_10a6", desc: "Hành lang Tầng 2 qua 10A6" },
   { from: "node_a_t2_10a6", to: "node_a_t2_10a5", desc: "Đi thẳng qua 10A5" },
   { from: "node_a_t2_10a5", to: "node_a1_stair_t2", desc: "Đến Cầu thang A1 (T2)" },
@@ -680,9 +738,9 @@ const CAMPUS_GRAPH_EDGES = [
   { from: "node_a_t2_11a7", to: "node_a2_stair_t2", desc: "Đến Cầu thang A2 (T2)" },
   { from: "node_a2_stair_t2", to: "node_a_t2_11a6", desc: "Đi thẳng qua 11A6" },
   { from: "node_a_t2_11a6", to: "node_a_t2_11a5", desc: "Đi thẳng qua 11A5" },
-  { from: "node_a_t2_11a5", to: "node_a_t2_wc_r", desc: "Đến WC Phải (T2)" },
+  { from: "node_a_t2_11a5", to: "node_a_t2_wc_r", desc: "Đến WC Dãy A Phải (T2)" },
 
-  // Tầng 3 Dãy A (y = 260)
+  // Tầng 3 Dãy A (Trục ngang Y = 260)
   { from: "node_a_t3_wc_l", to: "node_a_t3_10a1", desc: "Hành lang Tầng 3 qua 10A1" },
   { from: "node_a_t3_10a1", to: "node_a_t3_10a2", desc: "Đi thẳng qua 10A2" },
   { from: "node_a_t3_10a2", to: "node_a1_stair_t3", desc: "Đến Cầu thang A1 (T3)" },
@@ -692,44 +750,14 @@ const CAMPUS_GRAPH_EDGES = [
   { from: "node_a_t3_11a2", to: "node_a2_stair_t3", desc: "Đến Cầu thang A2 (T3)" },
   { from: "node_a2_stair_t3", to: "node_a_t3_11a3", desc: "Đi thẳng qua 11A3" },
   { from: "node_a_t3_11a3", to: "node_a_t3_11a4", desc: "Đi thẳng qua 11A4" },
-  { from: "node_a_t3_11a4", to: "node_a_t3_wc_r", desc: "Đến WC Phải (T3)" },
+  { from: "node_a_t3_11a4", to: "node_a_t3_wc_r", desc: "Đến WC Dãy A Phải (T3)" },
 
-  // Tầng 4 Dãy A (y = 216)
+  // Tầng 4 Dãy A (Trục ngang Y = 216)
   { from: "node_a_t4_wc_l", to: "node_a1_stair_t4", desc: "Đến Cầu thang A1 (T4)" },
-  { from: "node_a1_stair_t4", to: "node_a_t4_10a13", desc: "Đi thẳng qua Phòng 10A13" },
+  { from: "node_a1_stair_t4", to: "node_a_t4_10a13", desc: "Đi thẳng đến Phòng 10A13" },
   { from: "node_a_t4_10a13", to: "node_a2_stair_t4", desc: "Đến Cầu thang A2 (T4)" },
   { from: "node_a2_stair_t4", to: "node_a_t4_10a12", desc: "Đi thẳng qua 10A12" },
-  { from: "node_a_t4_10a12", to: "node_a_t4_10a11", desc: "Đi thẳng qua 10A11" },
-  { from: "node_a_t4_10a11", to: "node_a_t4_wc_r", desc: "Đến WC Phải (T4)" },
-
-  // LIÊN KẾT NHÀ XE NGOẠI VI (PHÍA TÂY & PHÍA BẮC)
-  { from: "node_nga_xe_gv", to: "node_goc_xe_tay_nam", desc: "Rẽ theo đường cua về phía Dãy để xe học sinh phía Tây" },
-  { from: "node_goc_xe_tay_nam", to: "node_pk_12a10", desc: "Đến vị trí để xe lớp 12A10" },
-  { from: "node_pk_12a10", to: "node_pk_12a9", desc: "Đi dọc theo dãy xe đến ô 12A9" },
-  { from: "node_pk_12a9", to: "node_goc_xe_tay_bac", desc: "Đi thẳng lên góc cua Tây Bắc" },
-  { from: "node_goc_xe_tay_bac", to: "node_khuc_cua_tb", desc: "Rẽ qua khúc cua Cổng sau" },
-  
-  // Nhà xe gần Cổng sau
-  { from: "node_khuc_cua_tb", to: "node_pk_12a8", desc: "Rẽ vào Nhà xe gần Cổng sau (ô 12A8)" },
-  { from: "node_pk_12a8", to: "node_pk_12a7", desc: "Đến ô xe 12A7" },
-  { from: "node_pk_12a7", to: "node_pk_12a6", desc: "Đến ô xe 12A6" },
-  { from: "node_pk_12a6", to: "node_pk_12a5", desc: "Đến ô xe 12A5" },
-  
-  // Dãy xe cạnh Cổng sau
-  { from: "node_khuc_cua_tb", to: "node_pk_12a4", desc: "Đến vị trí để xe 12A4 cạnh Cổng sau" },
-  { from: "node_pk_12a4", to: "node_pk_12a3", desc: "Đi thẳng qua ô 12A3" },
-  { from: "node_pk_12a3", to: "node_pk_12a2", desc: "Đi thẳng qua ô 12A2" },
-  { from: "node_pk_12a2", to: "node_pk_12a1", desc: "Đi thẳng qua ô 12A1" },
-  { from: "node_pk_12a1", to: "node_pk_11a8", desc: "Đi thẳng qua ô 11A8" },
-  { from: "node_pk_11a8", to: "node_pk_11a7", desc: "Đi thẳng qua ô 11A7" },
-  { from: "node_pk_11a7", to: "node_pk_11a6", desc: "Đi thẳng qua ô 11A6" },
-  
-  // Nối sang Dãy xe Nhà lớp tôn
-  { from: "node_pk_11a6", to: "node_pk_11a5", desc: "Đi dọc theo đường Bắc sang ô 11A5 (Nhà lớp tôn)" },
-  { from: "node_pk_11a5", to: "node_pk_11a3", desc: "Đi thẳng tiếp đến ô 11A3" },
-  { from: "node_pk_11a3", to: "node_khuc_cua_db", desc: "Đến khúc cua Đông Bắc" },
-  { from: "node_khuc_cua_db", to: "node_pk_11a2", desc: "Rẽ vào vị trí để xe 11A2" },
-
+  { from: "node_a_t4_10a11", to: "node_a_t4_wc_r", desc: "Đến WC Dãy A Phải (T4)" },
   // Vị trí để xe 10A13 (Kế bên Hội Trường)
   { from: "node_loi_hoi_truong", to: "node_pk_10a13", desc: "Rẽ sang Khu vực để xe lớp 10A13" }
 ];

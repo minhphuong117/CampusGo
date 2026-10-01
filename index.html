@@ -110,24 +110,43 @@
           </div>
         </section>
 
-        <!-- KẾT QUẢ CHỈ ĐƯỜNG & HƯỚNG DẪN TỪNG BƯỚC -->
+        <!-- KẾT QUẢ CHỈ ĐƯỜNG & HƯỚNG DẪN TỪNG BƯỚC (CHUẨN GOOGLE MAPS) -->
         <section id="results-card" class="results-card" aria-label="Kết quả chỉ dẫn">
           <div class="results-header">
+            <!-- Huy hiệu lộ trình tối ưu -->
+            <div class="optimal-route-banner">
+              <span class="optimal-dot"></span>
+              <span>⚡ Tuyến đường ngắn nhất & nhanh nhất</span>
+            </div>
+
             <div class="route-summary-pill">
               <div class="summary-metric">
-                <div class="metric-icon">🚶</div>
+                <div class="metric-icon">🚶‍♂️</div>
                 <div class="metric-data">
-                  <h4>Lộ trình di chuyển</h4>
-                  <span>Ước tính đi bộ nội bộ</span>
+                  <h4 id="route-time-main">~2 phút</h4>
+                  <span id="route-distance-sub">Khoảng cách: 120m</span>
                 </div>
               </div>
               <div class="metric-badges">
-                <span id="route-distance" class="badge-tag badge-distance">120m</span>
-                <span id="route-time" class="badge-tag badge-time">~2 phút</span>
+                <span id="route-steps-badge" class="badge-tag badge-steps" title="Số bước chân ước tính">👣 160 bước</span>
+                <span id="route-cal-badge" class="badge-tag badge-cal" title="Tiêu thụ năng lượng">🔥 ~5 kcal</span>
               </div>
             </div>
-            <div id="route-floor-badge"
-              style="display:none; margin-top:8px; font-size:11px; font-weight:700; color:#4338ca; background:#e0e7ff; padding:3px 8px; border-radius:6px; width:fit-content;">
+
+            <!-- Badge chuyển tầng lầu -->
+            <div id="route-floor-badge" class="route-floor-badge" style="display:none;"></div>
+
+            <!-- Hàng nút thao tác nhanh trên lộ trình -->
+            <div class="route-quick-actions">
+              <button type="button" id="btn-simulate-tour" class="btn-tour-action" title="Mô phỏng đường đi chuyển động">
+                <span>▶️</span> Đi thử
+              </button>
+              <button type="button" id="btn-swap-active-route" class="btn-tour-action" title="Đảo ngược chiều di chuyển">
+                <span>⇅</span> Đổi chiều
+              </button>
+              <button type="button" id="btn-clear-active-route" class="btn-tour-action" title="Xóa đường vẽ">
+                <span>🗑️</span> Xóa
+              </button>
             </div>
           </div>
 
@@ -871,37 +890,90 @@
 
         </svg>
       </div>
+      <!-- FLOATING CONTROLS GÓC PHẢI (ZOOM, VỀ VỊ TRÍ, RESET) -->
+      <div class="map-floating-controls">
+        <div class="control-btn-group">
+          <button type="button" id="btn-zoom-in" class="map-control-btn" title="Phóng to">+</button>
+          <button type="button" id="btn-zoom-out" class="map-control-btn" title="Thu nhỏ">−</button>
+          <button type="button" id="btn-reset-view" class="map-control-btn" title="Về toàn cảnh khuôn viên">⟲</button>
+        </div>
+      </div>
+
+      <!-- POPOVER CHỌN NHANH ĐỊA ĐIỂM NGAY TRÊN BẢN ĐỒ (PHONG CÁCH GOOGLE MAPS) -->
+      <div id="map-location-popover" class="map-location-popover" style="display: none;">
+        <div class="popover-card">
+          <button type="button" class="popover-close-btn" id="popover-close-btn" title="Đóng">✕</button>
+          <div class="popover-header">
+            <span class="popover-icon" id="popover-icon">🏫</span>
+            <div class="popover-title-box">
+              <h3 id="popover-title">Phòng Kế toán</h3>
+              <div class="popover-meta" id="popover-meta">Tầng 2 • Dãy Hành Chính</div>
+            </div>
+          </div>
+          <div class="popover-actions">
+            <button type="button" class="popover-btn btn-set-start" id="popover-btn-start">
+              <span>🟢</span> Vị trí đang đứng (Điểm đi)
+            </button>
+            <button type="button" class="popover-btn btn-set-dest" id="popover-btn-dest">
+              <span>🔴</span> Nơi muốn đến (Điểm đến)
+            </button>
+          </div>
+          <div class="popover-sub-actions">
+            <button type="button" class="popover-sub-btn" id="popover-btn-from-gate">
+              <span>🚀</span> Dẫn đường từ Cổng trường
+            </button>
+            <button type="button" class="popover-sub-btn" id="popover-btn-qr">
+              <span>📱</span> Tạo mã QR vị trí này
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOAST THÔNG BÁO NHANH KIỂU GOOGLE MAPS -->
+      <div id="toast-notification" class="toast-notification" style="display: none;">
+        <span id="toast-icon">ℹ️</span>
+        <span id="toast-text">Đã chọn địa điểm</span>
+      </div>
+
     </main>
   </div>
 
   <!-- ======================================================================
-       MODAL: TẠO MÃ QR DÁN KHUÔN VIÊN TRƯỜNG (DÀNH CHO QUẢN TRỊ / GIÁO VIÊN)
+       MODAL: TẠO MÃ QR TỪNG PHÒNG HỌC & ĐỊA ĐIỂM (DÀNH CHO QUẢN TRỊ / GIÁO VIÊN / HỌC SINH)
        ====================================================================== -->
   <div id="qr-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
     <div class="modal-container">
       <div class="modal-header">
-        <h3 id="qr-modal-title"><span>🖨️</span> Bộ Tạo Mã QR Khuôn Viên</h3>
+        <h3 id="qr-modal-title"><span>📱</span> Tạo Mã QR Định Vị Từng Phòng</h3>
         <button type="button" id="btn-close-qr-modal" class="btn-close-modal" title="Đóng">✕</button>
       </div>
 
       <div class="modal-body">
         <div class="qr-select-group">
-          <label for="qr-location-select" class="qr-select-label">Chọn vị trí bạn muốn dán mã QR:</label>
+          <label for="qr-search-input" class="qr-select-label">Tìm nhanh phòng cần tạo mã QR:</label>
+          <input type="text" id="qr-search-input" class="qr-search-input" placeholder="Gõ tên phòng (12A1, Kế toán, Y tế...)" autocomplete="off">
           <select id="qr-location-select" class="qr-select"></select>
         </div>
 
-        <!-- MẪU THẺ IN MÃ QR -->
+        <!-- MẪU THẺ IN MÃ QR CHUẨN DÁN CỬA PHÒNG -->
         <div class="qr-card-preview" id="qr-card-preview">
-          <div class="qr-school-tag">🏫 BẢN ĐỒ CHỈ ĐƯỜNG TRƯỜNG HỌC</div>
+          <div class="qr-school-tag">🏫 BẢN ĐỒ CHỈ ĐƯỜNG TRƯỜNG HỌC • CAMPUS GO</div>
           <div id="qr-preview-box" class="qr-canvas-box"></div>
-          <div id="qr-card-loc-title" class="qr-location-title">Cổng Trường</div>
-          <p class="qr-guide-text">Dùng camera điện thoại quét mã để mở bản đồ và tự động định vị vị trí này</p>
+          <div id="qr-card-loc-title" class="qr-location-title">Phòng 12A1</div>
+          <div id="qr-card-loc-sub" class="qr-location-sub">Tầng 3 • Dãy B (Khối 12)</div>
+          <p class="qr-guide-text">Dùng Camera hoặc Zalo quét mã để tự động định vị và tìm đường đi trong trường</p>
         </div>
       </div>
 
       <div class="modal-footer">
+        <button type="button" id="btn-copy-qr-link" class="btn-secondary-tool">
+          <span>🔗</span> Sao chép link
+        </button>
+        <button type="button" id="btn-download-qr-png" class="btn-secondary-tool">
+          <span>⬇️</span> Tải ảnh PNG
+        </button>
         <button type="button" id="btn-print-qr" class="btn-print-qr">
-          <span>🖨️</span> In thẻ QR dán trường
+          <span>🖨️</span> In thẻ dán cửa
         </button>
       </div>
     </div>

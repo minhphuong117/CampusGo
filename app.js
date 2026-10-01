@@ -33,7 +33,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultsTimeline = document.getElementById("results-timeline");
   const routeDistanceEl = document.getElementById("route-distance");
   const routeTimeEl = document.getElementById("route-time");
+  const routeTimeMainEl = document.getElementById("route-time-main");
+  const routeDistanceSubEl = document.getElementById("route-distance-sub");
+  const routeStepsBadge = document.getElementById("route-steps-badge");
+  const routeCalBadge = document.getElementById("route-cal-badge");
   const routeFloorBadge = document.getElementById("route-floor-badge");
+
+  const btnSimulateTour = document.getElementById("btn-simulate-tour");
+  const btnSwapActiveRoute = document.getElementById("btn-swap-active-route");
+  const btnClearActiveRoute = document.getElementById("btn-clear-active-route");
+
+  // Popover chọn nhanh trên bản đồ
+  const mapLocationPopover = document.getElementById("map-location-popover");
+  const popoverCloseBtn = document.getElementById("popover-close-btn");
+  const popoverIcon = document.getElementById("popover-icon");
+  const popoverTitle = document.getElementById("popover-title");
+  const popoverMeta = document.getElementById("popover-meta");
+  const popoverBtnStart = document.getElementById("popover-btn-start");
+  const popoverBtnDest = document.getElementById("popover-btn-dest");
+  const popoverBtnFromGate = document.getElementById("popover-btn-from-gate");
+  const popoverBtnQr = document.getElementById("popover-btn-qr");
+
+  // Toast thông báo
+  const toastNotification = document.getElementById("toast-notification");
+  const toastIcon = document.getElementById("toast-icon");
+  const toastText = document.getElementById("toast-text");
 
   const qrSourceBanner = document.getElementById("qr-source-banner");
   const qrSourceName = document.getElementById("qr-source-name");
@@ -47,8 +71,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnOpenQrModal = document.getElementById("btn-open-qr-modal");
   const btnCloseQrModal = document.getElementById("btn-close-qr-modal");
   const qrLocationSelect = document.getElementById("qr-location-select");
+  const qrSearchInput = document.getElementById("qr-search-input");
   const qrPreviewBox = document.getElementById("qr-preview-box");
   const qrCardLocTitle = document.getElementById("qr-card-loc-title");
+  const qrCardLocSub = document.getElementById("qr-card-loc-sub");
+  const btnCopyQrLink = document.getElementById("btn-copy-qr-link");
+  const btnDownloadQrPng = document.getElementById("btn-download-qr-png");
   const btnPrintQr = document.getElementById("btn-print-qr");
 
   // Trạng thái ứng dụng
@@ -408,9 +436,143 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-zoom-out").addEventListener("click", () => zoomMap(-0.2));
   document.getElementById("btn-reset-view").addEventListener("click", resetMapView);
 
-  // 5. TƯƠNG TÁC CLICK VÀO CÁC PHÒNG TRÊN BẢN ĐỒ SVG
+  // 5. TOAST THÔNG BÁO TIỆN ÍCH KIỂU GOOGLE MAPS
+  let toastTimer = null;
+  function showToast(message, icon = "ℹ️", duration = 2500) {
+    if (!toastNotification) return;
+    toastText.textContent = message;
+    toastIcon.textContent = icon;
+    toastNotification.style.display = "flex";
+    toastNotification.classList.remove("hide");
+    toastNotification.classList.add("show");
+
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toastNotification.classList.remove("show");
+      toastNotification.classList.add("hide");
+      setTimeout(() => {
+        toastNotification.style.display = "none";
+      }, 250);
+    }, duration);
+  }
+
+  // 6. POPOVER CHỌN ĐỊA ĐIỂM TRỰC TIẾP TRÊN BẢN ĐỒ (KHÔNG CẦN GÕ TÌM KIẾM)
+  let activeClickedLoc = null;
+
+  function showLocationPopover(loc, clientX, clientY) {
+    activeClickedLoc = loc;
+    popoverTitle.textContent = loc.name;
+    popoverMeta.textContent = `${loc.floor} • ${loc.category || "Khuôn viên"}`;
+
+    // Icon phù hợp theo danh mục
+    let icon = "🏫";
+    if (loc.category && loc.category.includes("Khối")) icon = "🎒";
+    else if (loc.name.includes("WC")) icon = "🚻";
+    else if (loc.name.includes("Cổng")) icon = "🚪";
+    else if (loc.name.includes("Xe")) icon = "🏍️";
+    else if (loc.name.includes("Hành")) icon = "🏛️";
+    else if (loc.name.includes("Y Tế")) icon = "🏥";
+    else if (loc.name.includes("Thư Viện")) icon = "📚";
+    else if (loc.name.includes("Cờ")) icon = "🚩";
+    popoverIcon.textContent = icon;
+
+    mapLocationPopover.style.display = "block";
+
+    if (window.innerWidth > 768 && clientX !== undefined && clientY !== undefined) {
+      const popoverWidth = 280;
+      const popoverHeight = 220;
+      let posX = clientX + 15;
+      let posY = clientY - 40;
+      if (posX + popoverWidth > window.innerWidth - 20) {
+        posX = clientX - popoverWidth - 15;
+      }
+      if (posY + popoverHeight > window.innerHeight - 20) {
+        posY = window.innerHeight - popoverHeight - 20;
+      }
+      if (posY < 70) posY = 70;
+      mapLocationPopover.style.left = `${posX}px`;
+      mapLocationPopover.style.top = `${posY}px`;
+      mapLocationPopover.style.bottom = "auto";
+      mapLocationPopover.style.right = "auto";
+    } else {
+      mapLocationPopover.style.left = "0";
+      mapLocationPopover.style.right = "0";
+      mapLocationPopover.style.bottom = "0";
+      mapLocationPopover.style.top = "auto";
+    }
+  }
+
+  function hideLocationPopover() {
+    mapLocationPopover.style.display = "none";
+    activeClickedLoc = null;
+  }
+
+  if (popoverCloseBtn) {
+    popoverCloseBtn.addEventListener("click", hideLocationPopover);
+  }
+
+  if (popoverBtnStart) {
+    popoverBtnStart.addEventListener("click", () => {
+      if (!activeClickedLoc) return;
+      const loc = activeClickedLoc;
+      startCombobox.selectLocation(loc);
+      showToast(`Đã chọn điểm xuất phát: ${loc.name}`, "🟢");
+      hideLocationPopover();
+
+      if (selectedDestLoc && selectedDestLoc.id !== loc.id) {
+        handleCalculateRoute();
+      } else {
+        highlightMarkerOnMap();
+      }
+    });
+  }
+
+  if (popoverBtnDest) {
+    popoverBtnDest.addEventListener("click", () => {
+      if (!activeClickedLoc) return;
+      const loc = activeClickedLoc;
+
+      // Nếu chưa chọn điểm đi, tự động chọn Cổng trường làm mặc định
+      if (!selectedStartLoc) {
+        const gate = window.CAMPUS_LOCATIONS.find(l => l.id === "cong_truong");
+        if (gate) startCombobox.selectLocation(gate);
+      }
+
+      destCombobox.selectLocation(loc);
+      showToast(`Đã chọn nơi muốn đến: ${loc.name}`, "🔴");
+      hideLocationPopover();
+      handleCalculateRoute();
+    });
+  }
+
+  if (popoverBtnFromGate) {
+    popoverBtnFromGate.addEventListener("click", () => {
+      if (!activeClickedLoc) return;
+      const loc = activeClickedLoc;
+
+      const gate = window.CAMPUS_LOCATIONS.find(l => l.id === "cong_truong");
+      if (gate) startCombobox.selectLocation(gate);
+
+      destCombobox.selectLocation(loc);
+      showToast(`Dẫn đường từ Cổng trường tới ${loc.name}`, "🚀");
+      hideLocationPopover();
+      handleCalculateRoute();
+    });
+  }
+
+  if (popoverBtnQr) {
+    popoverBtnQr.addEventListener("click", () => {
+      if (!activeClickedLoc) return;
+      const loc = activeClickedLoc;
+      hideLocationPopover();
+      qrModal.classList.add("active");
+      generateQrForSelected(loc.id);
+    });
+  }
+
+  // 7. TƯƠNG TÁC BẤM CHỌN PHÒNG TRÊN BẢN ĐỒ SVG
   function setupMapRoomInteractions() {
-    // 1. Bắt sự kiện click trực tiếp trên tất cả các phòng / ô để xe có data-loc-id
+    // Click vào phòng trên SVG
     mainMapSvg.addEventListener("click", (e) => {
       const target = e.target.closest("[data-loc-id]");
       if (target) {
@@ -418,20 +580,23 @@ document.addEventListener("DOMContentLoaded", () => {
         const loc = window.CAMPUS_LOCATIONS.find(l => l.id === locId);
         if (loc) {
           e.stopPropagation();
-          if (!selectedStartLoc) {
-            startCombobox.selectLocation(loc);
-          } else if (selectedStartLoc.id === loc.id) {
-            return;
-          } else {
-            destCombobox.selectLocation(loc);
-            handleCalculateRoute();
-          }
+          showLocationPopover(loc, e.clientX, e.clientY);
+          return;
         }
       }
+      hideLocationPopover();
     });
 
-    // 2. Duyệt qua tất cả các vị trí tạo vùng clickable hỗ trợ tooltip
+    // Tạo các hit-area tương tác phủ trên các phòng để bấm trên mobile cực nhạy
     window.CAMPUS_LOCATIONS.forEach(loc => {
+      // Tìm element trên SVG
+      const existingEl = mainMapSvg.querySelector(`[data-loc-id="${loc.id}"]`) || document.getElementById(loc.id);
+      if (existingEl) {
+        existingEl.classList.add("map-interactive-room");
+        existingEl.setAttribute("data-loc-id", loc.id);
+        existingEl.style.cursor = "pointer";
+      }
+
       const hitArea = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       hitArea.setAttribute("cx", loc.x);
       hitArea.setAttribute("cy", loc.y);
@@ -439,6 +604,7 @@ document.addEventListener("DOMContentLoaded", () => {
       hitArea.setAttribute("fill", "transparent");
       hitArea.setAttribute("cursor", "pointer");
       hitArea.setAttribute("class", "map-room-hitarea");
+      hitArea.setAttribute("data-loc-id", loc.id);
 
       const titleEl = document.createElementNS("http://www.w3.org/2000/svg", "title");
       titleEl.textContent = `${loc.name} (${loc.floor})`;
@@ -446,30 +612,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       hitArea.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (!selectedStartLoc) {
-          startCombobox.selectLocation(loc);
-        } else if (selectedStartLoc.id === loc.id) {
-          return;
-        } else {
-          destCombobox.selectLocation(loc);
-          handleCalculateRoute();
-        }
+        showLocationPopover(loc, e.clientX, e.clientY);
       });
 
       mainMapSvg.appendChild(hitArea);
     });
   }
 
-  // 6. XỬ LÝ TÍNH TOÁN LỘ TRÌNH & VẼ ĐƯỜNG DẪN TRỰC QUAN
+  // 8. TÍNH TOÁN LỘ TRÌNH CHUẨN GOOGLE MAPS
   function handleCalculateRoute() {
     if (!selectedStartLoc || !selectedDestLoc) {
-      alert("Vui lòng chọn cả 'Vị trí hiện tại' và 'Nơi muốn đến'!");
+      showToast("Vui lòng chọn cả điểm xuất phát và nơi muốn đến!", "⚠️");
       return;
     }
 
     const result = router.navigate(selectedStartLoc.id, selectedDestLoc.id);
     if (!result.success) {
-      alert(result.message || "Không tìm thấy tuyến đường phù hợp.");
+      showToast(result.message || "Không tìm thấy tuyến đường.", "❌");
       return;
     }
 
@@ -477,82 +636,119 @@ document.addEventListener("DOMContentLoaded", () => {
     drawRouteOnMap(result);
     displayRouteResults(result);
 
-    // Trên iPhone / Mobile: chuyển sang chế độ sheet-half để thấy cả bản đồ lẫn lộ trình
+    // Trên điện thoại: mở nửa màn hình (sheet-half) để thấy cả lộ trình và hướng dẫn
     if (window.innerWidth <= 768) {
       setBottomSheetState("sheet-half");
     }
   }
 
-  // Vẽ lộ trình trên SVG Layer
+  // 9. VẼ ĐƯỜNG DẪN VUÔNG GÓC 90 ĐỘ PHONG CÁCH GOOGLE MAPS (KHÔNG XIÊN VẸO)
+  let simulationAnimId = null;
+
   function drawRouteOnMap(route) {
+    if (simulationAnimId) {
+      cancelAnimationFrame(simulationAnimId);
+      simulationAnimId = null;
+    }
     navOverlayLayer.innerHTML = "";
 
     if (route.isSameLocation) {
-      // Chỉ vẽ 1 điểm ghim tại chỗ
-      drawPin(route.startLoc.x, route.startLoc.y, "#16a34a", "Bạn đang ở đây");
+      drawGooglePin(route.startLoc.x, route.startLoc.y, "#10b981", "A", route.startLoc.name, true);
+      showToast("Bạn đang ở ngay tại vị trí này!", "📍");
       return;
     }
 
     const pts = route.points;
     const pointsStr = pts.map(p => `${p.x},${p.y}`).join(" ");
 
-    // 1. Lớp vệt sáng phát quang (Glow Layer)
-    const glowPath = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-    glowPath.setAttribute("points", pointsStr);
-    glowPath.setAttribute("class", "nav-route-glow");
-    navOverlayLayer.appendChild(glowPath);
+    // 1. Viền ngoài tương phản cao (Google Maps Outer Casing)
+    const casingPath = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    casingPath.setAttribute("points", pointsStr);
+    casingPath.setAttribute("class", "nav-route-casing");
+    navOverlayLayer.appendChild(casingPath);
 
-    // 2. Lớp đường nét đứt chuyển động (Animated Dash Line)
+    // 2. Đường kẻ chỉ hướng chính màu xanh lam nổi bật (Google Maps Blue Polyline)
     const linePath = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
     linePath.setAttribute("points", pointsStr);
     linePath.setAttribute("class", "nav-route-line");
     navOverlayLayer.appendChild(linePath);
 
-    // 3. Ghim điểm xuất phát 🟢
-    drawPin(route.startLoc.x, route.startLoc.y, "#10b981", "Xuất phát", true);
+    // 3. Chuỗi hạt chấm trắng chuyển động theo chiều đi (Animated Walking Dots)
+    const dotsPath = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    dotsPath.setAttribute("points", pointsStr);
+    dotsPath.setAttribute("class", "nav-route-dots");
+    navOverlayLayer.appendChild(dotsPath);
 
-    // 4. Ghim điểm đến 🔴
-    drawPin(route.destLoc.x, route.destLoc.y, "#ef4444", "Đích đến", false);
+    // 4. Các điểm nút góc vuông 90 độ (Waypoints)
+    for (let i = 1; i < pts.length - 1; i++) {
+      const corner = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      corner.setAttribute("cx", pts[i].x);
+      corner.setAttribute("cy", pts[i].y);
+      corner.setAttribute("r", "3.5");
+      corner.setAttribute("class", "waypoint-corner");
+      navOverlayLayer.appendChild(corner);
+    }
 
-    // Tự động focus view vào khu vực lộ trình
+    // 5. Ghim xuất phát Google Maps 🟢 (Điểm A)
+    drawGooglePin(route.startLoc.x, route.startLoc.y, "#10b981", "A", route.startLoc.name, true);
+
+    // 6. Ghim đích đến Google Maps 🔴 (Điểm B)
+    drawGooglePin(route.destLoc.x, route.destLoc.y, "#ef4444", "B", route.destLoc.name, false);
+
+    // Tự động căn góc nhìn bao quát toàn bộ lộ trình
     focusRouteBounds(pts);
   }
 
-  // Vẽ ghim định vị
-  function drawPin(x, y, color, label, isStart = true) {
+  // Vẽ ghim định vị giọt nước Google Maps
+  function drawGooglePin(x, y, color, label, titleText, isStart = true) {
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    g.setAttribute("class", "marker-pin");
+    g.setAttribute("class", "marker-pin-google");
     g.setAttribute("transform", `translate(${x}, ${y})`);
 
-    // Vòng tròn xung nhịp (Pulse halo)
+    // Vòng tròn tỏa sóng pulse
     const pulse = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    pulse.setAttribute("r", "18");
+    pulse.setAttribute("r", "16");
     pulse.setAttribute("fill", color);
     pulse.setAttribute("class", "marker-pulse");
     g.appendChild(pulse);
 
-    // Vòng tròn lõi chính
-    const core = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    core.setAttribute("r", "10");
-    core.setAttribute("fill", color);
-    core.setAttribute("stroke", "#ffffff");
-    core.setAttribute("stroke-width", "2.5");
-    g.appendChild(core);
+    // Thân ghim giọt nước (Google Maps Pin)
+    const pin = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    pin.setAttribute("d", "M 0 0 C -4 -5, -12 -14, -12 -22 C -12 -30, -6 -36, 0 -36 C 6 -36, 12 -30, 12 -22 C 12 -14, 4 -5, 0 0 Z");
+    pin.setAttribute("fill", color);
+    pin.setAttribute("stroke", "#ffffff");
+    pin.setAttribute("stroke-width", "2");
+    pin.setAttribute("filter", "url(#boxShadow)");
+    g.appendChild(pin);
 
-    // Icon nhãn bên trong
-    const icon = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    icon.setAttribute("text-anchor", "middle");
-    icon.setAttribute("dominant-baseline", "central");
-    icon.setAttribute("fill", "#ffffff");
-    icon.setAttribute("font-size", "9px");
-    icon.setAttribute("font-weight", "bold");
-    icon.textContent = isStart ? "A" : "B";
-    g.appendChild(icon);
+    // Vòng tròn trắng lõi
+    const disc = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    disc.setAttribute("cx", "0");
+    disc.setAttribute("cy", "-22");
+    disc.setAttribute("r", "7.5");
+    disc.setAttribute("fill", "#ffffff");
+    g.appendChild(disc);
+
+    // Ký tự A / B
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", "0");
+    text.setAttribute("y", "-21");
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("dominant-baseline", "central");
+    text.setAttribute("fill", color);
+    text.setAttribute("font-size", "10px");
+    text.setAttribute("font-weight", "900");
+    text.textContent = label;
+    g.appendChild(text);
+
+    const titleEl = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    titleEl.textContent = `${isStart ? "Xuất phát" : "Đích đến"}: ${titleText}`;
+    g.appendChild(titleEl);
 
     navOverlayLayer.appendChild(g);
   }
 
-  // Focus bản đồ bao quát toàn bộ lộ trình
+  // Tự động căn giữa bản đồ theo kích thước lộ trình
   function focusRouteBounds(points) {
     if (!points || points.length === 0) return;
 
@@ -565,7 +761,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const isMobile = window.innerWidth <= 768;
-    const padding = isMobile ? 80 : 140;
+    const padding = isMobile ? 80 : 130;
     minX = Math.max(0, minX - padding);
     minY = Math.max(0, minY - padding);
     maxX = Math.min(1600, maxX + padding);
@@ -575,15 +771,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const routeHeight = maxY - minY;
 
     const viewportRect = mapViewport.getBoundingClientRect();
-    const visibleHeight = isMobile ? viewportRect.height * 0.46 : viewportRect.height;
+    const visibleHeight = isMobile ? viewportRect.height * 0.48 : viewportRect.height;
 
     const scaleX = (viewportRect.width - 24) / routeWidth;
     const scaleY = (visibleHeight - 24) / routeHeight;
     const newScale = Math.min(scaleX, scaleY, 2.2);
 
-    transform.scale = Math.max(0.18, newScale);
+    transform.scale = Math.max(0.2, newScale);
 
-    // Căn giữa trọng tâm lộ trình vào khung nhìn thực tế
     const routeCenterX = (minX + maxX) / 2;
     const routeCenterY = (minY + maxY) / 2;
 
@@ -593,21 +788,33 @@ document.addEventListener("DOMContentLoaded", () => {
     updateMapTransform();
   }
 
-  // Điểm đánh dấu tạm khi chọn vị trí
   function highlightMarkerOnMap() {
     navOverlayLayer.innerHTML = "";
     if (selectedStartLoc) {
-      drawPin(selectedStartLoc.x, selectedStartLoc.y, "#10b981", "Xuất phát", true);
+      drawGooglePin(selectedStartLoc.x, selectedStartLoc.y, "#10b981", "A", selectedStartLoc.name, true);
     }
     if (selectedDestLoc) {
-      drawPin(selectedDestLoc.x, selectedDestLoc.y, "#ef4444", "Đích đến", false);
+      drawGooglePin(selectedDestLoc.x, selectedDestLoc.y, "#ef4444", "B", selectedDestLoc.name, false);
     }
   }
 
-  // 7. HIỂN THỊ CHỈ DẪN VĂN BẢN TỪNG BƯỚC
+  // 10. HIỂN THỊ PHÂN TÍCH THỜI GIAN, QUÃNG ĐƯỜNG, BƯỚC CHÂN VÀ CALO
   function displayRouteResults(route) {
-    routeDistanceEl.textContent = `${route.totalDistanceMeters}m`;
-    routeTimeEl.textContent = `~${route.estimatedMinutes} phút`;
+    if (routeTimeMainEl) {
+      routeTimeMainEl.textContent = route.formattedTime || `~${route.estimatedMinutes} phút`;
+    }
+    if (routeDistanceSubEl) {
+      routeDistanceSubEl.textContent = `Khoảng cách: ${route.totalDistanceMeters}m (tối ưu nhất)`;
+    }
+    if (routeStepsBadge) {
+      routeStepsBadge.textContent = `👣 ~${route.estimatedSteps || Math.round(route.totalDistanceMeters * 1.35)} bước`;
+    }
+    if (routeCalBadge) {
+      routeCalBadge.textContent = `🔥 ~${route.calorieBurn || (route.totalDistanceMeters * 0.045).toFixed(1)} kcal`;
+    }
+
+    if (routeDistanceEl) routeDistanceEl.textContent = `${route.totalDistanceMeters}m`;
+    if (routeTimeEl) routeTimeEl.textContent = `~${route.estimatedMinutes} phút`;
 
     // Hiển thị badge tầng
     if (route.startLoc.floor !== route.destLoc.floor) {
@@ -642,8 +849,94 @@ document.addEventListener("DOMContentLoaded", () => {
     resultsCard.classList.add("active");
   }
 
-  // 8. ĐẢO CHIỀU ĐI (SWAP BUTTON)
-  btnSwapRoute.addEventListener("click", () => {
+  // 11. MÔ PHỎNG ĐI THỬ THEO ĐƯỜNG DẪN (WALKING SIMULATOR)
+  function simulateTour() {
+    if (!currentRoute || !currentRoute.points || currentRoute.points.length < 2) {
+      showToast("Chưa có lộ trình để mô phỏng đi thử!", "ℹ️");
+      return;
+    }
+
+    if (simulationAnimId) {
+      cancelAnimationFrame(simulationAnimId);
+      simulationAnimId = null;
+    }
+
+    const existingAvatar = navOverlayLayer.querySelector(".avatar-walker");
+    if (existingAvatar) existingAvatar.remove();
+
+    const walker = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    walker.setAttribute("class", "avatar-walker");
+
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("r", "14");
+    circle.setAttribute("fill", "#0284c7");
+    circle.setAttribute("stroke", "#ffffff");
+    circle.setAttribute("stroke-width", "2.5");
+    circle.setAttribute("filter", "url(#boxShadow)");
+    walker.appendChild(circle);
+
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    icon.setAttribute("text-anchor", "middle");
+    icon.setAttribute("dominant-baseline", "central");
+    icon.setAttribute("font-size", "14px");
+    icon.textContent = "🚶";
+    walker.appendChild(icon);
+
+    navOverlayLayer.appendChild(walker);
+
+    const pts = currentRoute.points;
+    let currentSegmentIndex = 0;
+    let segmentProgress = 0;
+    const speed = 4; // pixel mỗi frame
+
+    showToast("Đang mô phỏng di chuyển thực tế theo đường thẳng...", "🚶‍♂️");
+
+    function step() {
+      if (currentSegmentIndex >= pts.length - 1) {
+        showToast("Đã đến điểm đích!", "🎯");
+        setTimeout(() => {
+          if (walker.parentNode) walker.remove();
+        }, 1500);
+        return;
+      }
+
+      const p1 = pts[currentSegmentIndex];
+      const p2 = pts[currentSegmentIndex + 1];
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const segLen = Math.hypot(dx, dy);
+
+      if (segLen === 0) {
+        currentSegmentIndex++;
+        segmentProgress = 0;
+        simulationAnimId = requestAnimationFrame(step);
+        return;
+      }
+
+      segmentProgress += speed;
+      const t = Math.min(segmentProgress / segLen, 1);
+      const currX = p1.x + dx * t;
+      const currY = p1.y + dy * t;
+
+      walker.setAttribute("transform", `translate(${currX}, ${currY})`);
+
+      if (t >= 1) {
+        currentSegmentIndex++;
+        segmentProgress = 0;
+      }
+
+      simulationAnimId = requestAnimationFrame(step);
+    }
+
+    simulationAnimId = requestAnimationFrame(step);
+  }
+
+  if (btnSimulateTour) {
+    btnSimulateTour.addEventListener("click", simulateTour);
+  }
+
+  // 12. CÁC NÚT ĐỔI CHIỀU & XÓA LỘ TRÌNH
+  function swapRouteLocations() {
     if (!selectedStartLoc && !selectedDestLoc) return;
 
     const temp = selectedStartLoc;
@@ -661,22 +954,38 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       highlightMarkerOnMap();
     }
-  });
+  }
 
-  // 9. NÚT SUBMIT & RESET
-  btnSubmitRoute.addEventListener("click", handleCalculateRoute);
+  btnSwapRoute.addEventListener("click", swapRouteLocations);
+  if (btnSwapActiveRoute) {
+    btnSwapActiveRoute.addEventListener("click", swapRouteLocations);
+  }
 
-  btnResetAll.addEventListener("click", () => {
+  function clearActiveRoute() {
     startCombobox.clear();
     destCombobox.clear();
     selectedStartLoc = null;
     selectedDestLoc = null;
+    currentRoute = null;
+    if (simulationAnimId) {
+      cancelAnimationFrame(simulationAnimId);
+      simulationAnimId = null;
+    }
     navOverlayLayer.innerHTML = "";
     resultsCard.classList.remove("active");
+    hideLocationPopover();
+    showToast("Đã xóa lộ trình", "🧹");
     resetMapView();
-  });
+  }
 
-  // 10. QUICK LOCATION CHIPS
+  btnResetAll.addEventListener("click", clearActiveRoute);
+  if (btnClearActiveRoute) {
+    btnClearActiveRoute.addEventListener("click", clearActiveRoute);
+  }
+
+  btnSubmitRoute.addEventListener("click", handleCalculateRoute);
+
+  // Quick Chips
   document.querySelectorAll(".chip-item").forEach(chip => {
     chip.addEventListener("click", () => {
       const targetId = chip.dataset.id;
@@ -684,12 +993,19 @@ document.addEventListener("DOMContentLoaded", () => {
         destCombobox.setLocationById(targetId);
         if (selectedStartLoc) {
           handleCalculateRoute();
+        } else {
+          // Gợi ý Cổng trường nếu chưa chọn điểm đi
+          const gate = window.CAMPUS_LOCATIONS.find(l => l.id === "cong_truong");
+          if (gate) {
+            startCombobox.selectLocation(gate);
+            handleCalculateRoute();
+          }
         }
       }
     });
   });
 
-  // 11. XỬ LÝ QUÉT MÃ QR (ĐỌC URL PARAMETERS)
+  // 13. XỬ LÝ QUÉT MÃ QR (URL PARAMETERS)
   function handleUrlQueryParams() {
     const params = new URLSearchParams(window.location.search);
     const fromParam = params.get("from") || params.get("start") || params.get("location") || params.get("qr");
@@ -698,11 +1014,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (fromParam) {
       const foundStart = startCombobox.setLocationById(fromParam);
       if (foundStart && selectedStartLoc) {
-        // Hiện banner thông báo quét QR thành công
         qrSourceName.textContent = selectedStartLoc.name;
         qrSourceBanner.classList.add("active");
-
-        // Focus ngay vào ô Nơi muốn đến để tiện tra cứu
+        showToast(`Đã nhận diện vị trí hiện tại: ${selectedStartLoc.name}`, "📱");
         setTimeout(() => {
           destInput.focus();
         }, 300);
@@ -713,7 +1027,6 @@ document.addEventListener("DOMContentLoaded", () => {
       destCombobox.setLocationById(toParam);
     }
 
-    // Nếu có cả 2 tham số trên URL, tự động kích hoạt dẫn đường
     if (selectedStartLoc && selectedDestLoc) {
       handleCalculateRoute();
     }
@@ -723,7 +1036,7 @@ document.addEventListener("DOMContentLoaded", () => {
     qrSourceBanner.classList.remove("active");
   });
 
-  // 12. ĐIỀU KHIỂN BOTTOM SHEET TRÊN IPHONE 16 & SMARTPHONE
+  // 14. BOTTOM SHEET TRÊN MOBILE (SMARTPHONE)
   const sheetHandleWrapper = document.getElementById("sheet-handle-wrapper");
   const mobileToggleText = document.getElementById("mobile-toggle-text");
 
@@ -737,7 +1050,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.setBottomSheetState = setBottomSheetState;
 
   if (sheetHandleWrapper) {
-    // Chạm vào thanh kéo để chuyển trạng thái
     sheetHandleWrapper.addEventListener("click", () => {
       if (sidebar.classList.contains("sheet-collapsed")) {
         setBottomSheetState("sheet-half");
@@ -748,7 +1060,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Cử chỉ vuốt tay (Swipe Gestures) chuẩn iOS
     let touchStartY = 0;
     sheetHandleWrapper.addEventListener("touchstart", (e) => {
       touchStartY = e.touches[0].clientY;
@@ -758,18 +1069,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const touchEndY = e.changedTouches[0].clientY;
       const diffY = touchEndY - touchStartY;
       if (diffY < -30) {
-        // Vuốt lên -> Mở rộng
         if (sidebar.classList.contains("sheet-collapsed")) setBottomSheetState("sheet-half");
         else setBottomSheetState("sheet-full");
       } else if (diffY > 30) {
-        // Vuốt xuống -> Thu gọn
         if (sidebar.classList.contains("sheet-full")) setBottomSheetState("sheet-half");
         else setBottomSheetState("sheet-collapsed");
       }
     }, { passive: true });
   }
 
-  // Nút nổi trên góc trái màn hình iPhone
   btnToggleSidebar.addEventListener("click", () => {
     if (sidebar.classList.contains("sheet-collapsed")) {
       setBottomSheetState("sheet-half");
@@ -778,7 +1086,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Tự động mở rộng sheet khi bấm vào ô tìm kiếm trên điện thoại
   startInput.addEventListener("focus", () => {
     if (window.innerWidth <= 768 && sidebar.classList.contains("sheet-collapsed")) {
       setBottomSheetState("sheet-half");
@@ -790,28 +1097,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 12. CÔNG CỤ TẠO MÃ QR DÁN KHUÔN VIÊN TRƯỜNG (CHO GIÁO VIÊN / ADMIN)
+  // 15. TẠO MÃ QR TỪNG PHÒNG ĐẦY ĐỦ TIỆN ÍCH (TẢI ẢNH, SAO CHÉP LINK, IN DÁN)
   function setupQrGeneratorModal() {
-    // Đổ danh sách vào select
-    qrLocationSelect.innerHTML = "";
-    window.CAMPUS_LOCATIONS.forEach(loc => {
-      const opt = document.createElement("option");
-      opt.value = loc.id;
-      opt.textContent = `[${loc.category}] ${loc.name}`;
-      qrLocationSelect.appendChild(opt);
-    });
+    function populateQrSelect(filterTerm = "") {
+      qrLocationSelect.innerHTML = "";
+      const term = removeVietnameseTones(filterTerm.toLowerCase().trim());
+      const filtered = window.CAMPUS_LOCATIONS.filter(loc => {
+        if (!term) return true;
+        const n = removeVietnameseTones(loc.name.toLowerCase());
+        const c = removeVietnameseTones(loc.category.toLowerCase());
+        return n.includes(term) || c.includes(term);
+      });
 
-    function generateQrForSelected() {
-      const locId = qrLocationSelect.value;
+      filtered.forEach(loc => {
+        const opt = document.createElement("option");
+        opt.value = loc.id;
+        opt.textContent = `[${loc.category}] ${loc.name}`;
+        qrLocationSelect.appendChild(opt);
+      });
+
+      if (filtered.length > 0) {
+        generateQrForSelected(filtered[0].id);
+      }
+    }
+
+    function generateQrForSelected(targetId) {
+      const locId = targetId || qrLocationSelect.value;
       const loc = window.CAMPUS_LOCATIONS.find(l => l.id === locId);
       if (!loc) return;
 
+      qrLocationSelect.value = loc.id;
       qrCardLocTitle.textContent = loc.name;
+      if (qrCardLocSub) {
+        qrCardLocSub.textContent = `${loc.floor} • ${loc.category}`;
+      }
 
-      // URL tạo mã: http://domain/index.html?from=locId
-      const currentUrl = new URL(window.location.href);
-      currentUrl.search = `?from=${loc.id}`;
-      const qrCodeString = currentUrl.toString();
+      // Link trực tiếp đến vị trí phòng này
+      const baseUrl = window.location.origin + window.location.pathname;
+      const qrCodeString = `${baseUrl}?from=${loc.id}`;
 
       qrPreviewBox.innerHTML = "";
       new QRCode(qrPreviewBox, {
@@ -819,20 +1142,68 @@ document.addEventListener("DOMContentLoaded", () => {
         width: 170,
         height: 170,
         colorDark: "#0f172a",
-        colorLight: "#ffffff"
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+    window.generateQrForSelected = generateQrForSelected;
+
+    populateQrSelect();
+
+    if (qrSearchInput) {
+      qrSearchInput.addEventListener("input", (e) => {
+        populateQrSelect(e.target.value);
       });
     }
 
-    qrLocationSelect.addEventListener("change", generateQrForSelected);
+    qrLocationSelect.addEventListener("change", () => {
+      generateQrForSelected(qrLocationSelect.value);
+    });
 
     btnOpenQrModal.addEventListener("click", () => {
       qrModal.classList.add("active");
-      generateQrForSelected();
+      generateQrForSelected(qrLocationSelect.value);
     });
 
     btnCloseQrModal.addEventListener("click", () => {
       qrModal.classList.remove("active");
     });
+
+    if (btnCopyQrLink) {
+      btnCopyQrLink.addEventListener("click", () => {
+        const locId = qrLocationSelect.value;
+        const baseUrl = window.location.origin + window.location.pathname;
+        const link = `${baseUrl}?from=${locId}`;
+        navigator.clipboard.writeText(link).then(() => {
+          showToast("Đã sao chép link QR định vị!", "🔗");
+        }).catch(() => {
+          prompt("Sao chép liên kết này:", link);
+        });
+      });
+    }
+
+    if (btnDownloadQrPng) {
+      btnDownloadQrPng.addEventListener("click", () => {
+        const canvas = qrPreviewBox.querySelector("canvas");
+        const locId = qrLocationSelect.value;
+        if (canvas) {
+          const link = document.createElement("a");
+          link.download = `QR_${locId}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+          showToast("Đã tải ảnh mã QR PNG!", "⬇️");
+        } else {
+          const img = qrPreviewBox.querySelector("img");
+          if (img) {
+            const link = document.createElement("a");
+            link.download = `QR_${locId}.png`;
+            link.href = img.src;
+            link.click();
+            showToast("Đã tải ảnh mã QR PNG!", "⬇️");
+          }
+        }
+      });
+    }
 
     btnPrintQr.addEventListener("click", () => {
       window.print();
@@ -845,7 +1216,6 @@ document.addEventListener("DOMContentLoaded", () => {
   handleUrlQueryParams();
   setupQrGeneratorModal();
 
-  // Tự động căn chỉnh khi resize cửa sổ (chuyển đổi ngang/dọc trên điện thoại)
   window.addEventListener("resize", () => {
     if (currentRoute && currentRoute.points) {
       focusRouteBounds(currentRoute.points);
@@ -854,3 +1224,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
