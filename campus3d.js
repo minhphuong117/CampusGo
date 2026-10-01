@@ -24,6 +24,18 @@ class Campus3DViewer {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
 
+    // Hệ thống Chỉ Đường 3D
+    this.routeGroup = new THREE.Group();
+    this.routeGroup.name = "RouteGroup3D";
+    this.beaconPulses = [];
+    this.activeCurve = null;
+    this.activeRoute = null;
+    this.tourActive = false;
+    this.tourProgress = 0;
+    this.tourStartTime = 0;
+    this.tourDuration = 12000;
+    this.router = null;
+
     this.initScene();
     this.buildCampus();
     this.setupEvents();
@@ -45,6 +57,7 @@ class Campus3DViewer {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.container.appendChild(this.renderer.domElement);
+    this.scene.add(this.routeGroup);
 
     // 2. Camera
     this.camera = new THREE.PerspectiveCamera(42, width / height, 0.5, 1000);
@@ -1391,16 +1404,22 @@ class Campus3DViewer {
       <div style="font-weight: bold; font-size: 15px; color: #38bdf8; margin-bottom: 2px;">📍 ${userData.name}</div>
       <div style="color: #cbd5e1;">🏢 Vị trí: <b>${floorLabel}</b></div>
       ${userData.info ? `<div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">ℹ️ ${userData.info}</div>` : ''}
+      <div style="display: flex; gap: 8px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">
+        <button type="button" onclick="if(window.setNavPoint) window.setNavPoint('${userData.name}', 'start')" style="background: #10b981; color: white; border: none; padding: 4px 9px; border-radius: 5px; font-size: 11px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px;">📍 Đi từ đây</button>
+        <button type="button" onclick="if(window.setNavPoint) window.setNavPoint('${userData.name}', 'dest')" style="background: #ef4444; color: white; border: none; padding: 4px 9px; border-radius: 5px; font-size: 11px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px;">🏁 Đến đây</button>
+      </div>
     `;
 
     tooltip.style.left = `${clientX}px`;
     tooltip.style.top = `${clientY}px`;
     tooltip.style.opacity = '1';
+    tooltip.style.pointerEvents = 'auto';
 
     clearTimeout(this.tooltipTimeout);
     this.tooltipTimeout = setTimeout(() => {
       tooltip.style.opacity = '0';
-    }, 4000);
+      tooltip.style.pointerEvents = 'none';
+    }, 5000);
   }
 
   animate() {
@@ -1408,7 +1427,361 @@ class Campus3DViewer {
     if (this.controls) {
       this.controls.update();
     }
+
+    // Cập nhật hiệu ứng xung nhịp của các beacon 3D
+    if (this.beaconPulses && this.beaconPulses.length > 0) {
+      const pScale = 1 + 0.22 * Math.sin(Date.now() * 0.007);
+      this.beaconPulses.forEach(b => {
+        b.scale.set(pScale, 1, pScale);
+      });
+    }
+
+    // Cập nhật chế độ tham quan hành trình 3D dọc tuyến đường
+    if (this.tourActive && this.activeCurve) {
+      this.updateTourStep();
+    }
+
     this.renderer.render(this.scene, this.camera);
+  }
+
+  // =========================================================================
+  // TÍNH NĂNG CHỈ ĐƯỜNG 3D THÔNG MINH
+  // =========================================================================
+  findLocation(raw) {
+    if (!raw) return null;
+    if (typeof raw === 'object' && raw.id) return raw;
+    const term = String(raw).trim();
+    if (!window.CAMPUS_LOCATIONS) return null;
+
+    // 1. Khớp trực tiếp id
+    let found = window.CAMPUS_LOCATIONS.find(l => l.id.toLowerCase() === term.toLowerCase());
+    if (found) return found;
+
+    const norm = term.toLowerCase().replace(/^p\.\s*/, '').replace(/^(lớp|phòng)\s*/, '').trim();
+
+    // 2. Khớp tên phòng sạch
+    found = window.CAMPUS_LOCATIONS.find(l => {
+      const lNorm = l.name.toLowerCase().replace(/^(lớp|phòng)\s*/, '').trim();
+      return lNorm === norm || lNorm === term.toLowerCase();
+    });
+    if (found) return found;
+
+    // 3. Khớp từ khóa keywords
+    found = window.CAMPUS_LOCATIONS.find(l => l.keywords && l.keywords.some(k => {
+      const kNorm = k.toLowerCase().replace(/^(lớp|phòng)\s*/, '').trim();
+      return kNorm === norm || k.toLowerCase() === term.toLowerCase();
+    }));
+    if (found) return found;
+
+    // 4. Khớp phần cuối của ID (vd: _10a1, _12a7)
+    found = window.CAMPUS_LOCATIONS.find(l => l.id.toLowerCase().endsWith('_' + norm));
+    return found || null;
+  }
+
+  draw3DRoute(startTerm, destTerm) {
+    if (!window.CampusRouter) {
+      console.warn("CampusRouter chưa được nạp!");
+      return null;
+    }
+    if (!this.router) {
+      this.router = new window.CampusRouter(
+        window.CAMPUS_GRAPH_NODES,
+        window.CAMPUS_GRAPH_EDGES,
+        window.CAMPUS_LOCATIONS
+      );
+    }
+
+    const startLoc = this.findLocation(startTerm);
+    const destLoc = this.findLocation(destTerm);
+
+    if (!startLoc || !destLoc) {
+      return { success: false, message: "Không tìm thấy thông tin vị trí xuất phát hoặc đích đến." };
+    }
+
+    const navRes = this.router.navigate(startLoc.id, destLoc.id);
+    if (!navRes || !navRes.success) {
+      return navRes;
+    }
+
+    this.clearRoute();
+    this.activeRoute = navRes;
+
+    // Chuyển đổi các điểm sang tọa độ 3D
+    const points3D = [];
+
+    // Tìm mesh 3D của phòng học nếu có
+    const findRoomMesh = (name) => {
+      if (!name) return null;
+      const clean = name.toLowerCase().replace(/^(lớp|phòng)\s*/, '').trim();
+      return this.interactiveRooms.find(r => {
+        const rName = (r.userData.name || '').toLowerCase().replace(/^(lớp|phòng)\s*/, '').trim();
+        return rName === clean;
+      });
+    };
+
+    // Hàm chuyển đổi 1 điểm nút 2D thành Vector3
+    const nodeTo3D = (p, floorStr) => {
+      const x3d = (p.x - 740) * 0.062;
+      const z3d = (p.y - 650) * 0.088;
+      let y3d = 0.5;
+      if (floorStr === 't4' || floorStr === 'lau_3') y3d = 11.1;
+      else if (floorStr === 't3' || floorStr === 'lau_2') y3d = 7.5;
+      else if (floorStr === 't2' || floorStr === 'lau_1') y3d = 3.9;
+      return new THREE.Vector3(x3d, y3d, z3d);
+    };
+
+    // Điểm đầu
+    const startMesh = findRoomMesh(startLoc.name);
+    let startPos3D;
+    if (startMesh) {
+      startPos3D = new THREE.Vector3();
+      startMesh.getWorldPosition(startPos3D);
+      startPos3D.y += 0.4;
+    } else {
+      startPos3D = nodeTo3D(startLoc, startLoc.floor);
+    }
+    points3D.push(startPos3D);
+
+    // Các điểm trung gian
+    if (navRes.points && navRes.points.length > 2) {
+      for (let i = 1; i < navRes.points.length - 1; i++) {
+        const pt = navRes.points[i];
+        let nodeFloor = 'tret';
+        if (window.CAMPUS_GRAPH_NODES) {
+          for (const k in window.CAMPUS_GRAPH_NODES) {
+            const nd = window.CAMPUS_GRAPH_NODES[k];
+            if (Math.hypot(nd.x - pt.x, nd.y - pt.y) < 1.0) {
+              nodeFloor = nd.floor;
+              break;
+            }
+          }
+        }
+        points3D.push(nodeTo3D(pt, nodeFloor));
+      }
+    }
+
+    // Điểm cuối
+    const destMesh = findRoomMesh(destLoc.name);
+    let destPos3D;
+    if (destMesh) {
+      destPos3D = new THREE.Vector3();
+      destMesh.getWorldPosition(destPos3D);
+      destPos3D.y += 0.4;
+    } else {
+      destPos3D = nodeTo3D(destLoc, destLoc.floor);
+    }
+    points3D.push(destPos3D);
+
+    // Lọc các điểm trùng lặp quá gần (< 0.6 đơn vị)
+    const filteredPoints = [points3D[0]];
+    for (let i = 1; i < points3D.length; i++) {
+      if (filteredPoints[filteredPoints.length - 1].distanceTo(points3D[i]) > 0.6) {
+        filteredPoints.push(points3D[i]);
+      }
+    }
+
+    if (filteredPoints.length >= 2) {
+      const curve = new THREE.CatmullRomCurve3(filteredPoints);
+      curve.curveType = 'centripetal';
+      this.activeCurve = curve;
+
+      // 1. Ống dẫn đường 3D phát sáng
+      const tubeSegments = Math.max(50, filteredPoints.length * 16);
+      const tubeGeo = new THREE.TubeGeometry(curve, tubeSegments, 0.38, 12, false);
+      const tubeMat = new THREE.MeshStandardMaterial({
+        color: 0x06b6d4,
+        emissive: 0x0284c7,
+        emissiveIntensity: 0.85,
+        roughness: 0.2,
+        metalness: 0.2
+      });
+      const tubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
+      tubeMesh.castShadow = true;
+      this.routeGroup.add(tubeMesh);
+
+      // 2. Viền dây neon phát sáng bên ngoài
+      const wireGeo = new THREE.TubeGeometry(curve, tubeSegments, 0.44, 6, false);
+      const wireMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.6
+      });
+      const wireMesh = new THREE.Mesh(wireGeo, wireMat);
+      this.routeGroup.add(wireMesh);
+
+      // 3. Các điểm ghim 3D Bắt đầu & Kết thúc
+      this.createRoutePin(filteredPoints[0], "#10b981", `BẮT ĐẦU: ${startLoc.name}`, true);
+      this.createRoutePin(filteredPoints[filteredPoints.length - 1], "#ef4444", `ĐẾN: ${destLoc.name}`, false);
+
+      // Tự động xoay camera để bao quát toàn tuyến
+      this.focusRoute(filteredPoints);
+    } else {
+      this.createRoutePin(filteredPoints[0], "#10b981", `VỊ TRÍ: ${startLoc.name}`, true);
+    }
+
+    return navRes;
+  }
+
+  createRoutePin(pos, hexColor, labelText, isStart = true) {
+    const pinGroup = new THREE.Group();
+    pinGroup.position.copy(pos);
+
+    const colorNum = typeof hexColor === 'string' ? parseInt(hexColor.replace('#', '0x'), 16) : hexColor;
+
+    // Cột trụ năng lượng
+    const beamGeo = new THREE.CylinderGeometry(0.18, 0.18, 5, 16);
+    const beamMat = new THREE.MeshStandardMaterial({
+      color: colorNum,
+      emissive: colorNum,
+      emissiveIntensity: 0.9,
+      transparent: true,
+      opacity: 0.85
+    });
+    const beam = new THREE.Mesh(beamGeo, beamMat);
+    beam.position.y = 2.5;
+    pinGroup.add(beam);
+
+    // Viên ngọc phát sáng trên đỉnh cột
+    const orbGeo = new THREE.SphereGeometry(0.65, 24, 24);
+    const orbMat = new THREE.MeshStandardMaterial({
+      color: colorNum,
+      emissive: colorNum,
+      emissiveIntensity: 1.0,
+      metalness: 0.2,
+      roughness: 0.1
+    });
+    const orb = new THREE.Mesh(orbGeo, orbMat);
+    orb.position.y = 5.3;
+    pinGroup.add(orb);
+
+    // Vòng sóng xung nhịp dưới mặt sàn (Pulse ring)
+    const ringGeo = new THREE.RingGeometry(1.0, 1.4, 32);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: colorNum,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.75
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.08;
+    pinGroup.add(ring);
+    this.beaconPulses.push(ring);
+
+    // Biển tên 3D Billboard
+    const labelCanvas = this.createCanvasLabel(
+      isStart ? "🟢 XUẤT PHÁT" : "🔴 ĐÍCH ĐẾN",
+      labelText,
+      isStart ? "#10b981" : "#ef4444",
+      "#ffffff",
+      "#ffffff",
+      320,
+      120
+    );
+    const labelMat = new THREE.MeshBasicMaterial({ map: labelCanvas, transparent: true });
+    const lbl = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 1.8), labelMat);
+    lbl.position.y = 6.8;
+    pinGroup.add(lbl);
+
+    this.routeGroup.add(pinGroup);
+  }
+
+  clearRoute() {
+    this.stopTour();
+    this.beaconPulses = [];
+    this.activeCurve = null;
+    this.activeRoute = null;
+
+    while (this.routeGroup.children.length > 0) {
+      const obj = this.routeGroup.children[0];
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+        else obj.material.dispose();
+      }
+      this.routeGroup.remove(obj);
+    }
+  }
+
+  focusRoute(points) {
+    if (!points || points.length === 0) return;
+
+    let minX = Infinity, maxX = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+
+    points.forEach(p => {
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minZ = Math.min(minZ, p.z);
+      maxZ = Math.max(maxZ, p.z);
+      minY = Math.min(minY, p.y);
+      maxY = Math.max(maxY, p.y);
+    });
+
+    const centerX = (minX + maxX) / 2;
+    const centerZ = (minZ + maxZ) / 2;
+    const centerY = (minY + maxY) / 2;
+    const target = new THREE.Vector3(centerX, centerY, centerZ);
+
+    const span = Math.max(maxX - minX, maxZ - minZ, 22);
+    const camPos = new THREE.Vector3(centerX - span * 0.95, centerY + span * 0.85, centerZ + span * 0.95);
+
+    this.tweenCamera(camPos, target, 900);
+  }
+
+  tweenCamera(endPos, endTarget, duration = 1000) {
+    const startPos = this.camera.position.clone();
+    const startTarget = this.controls.target.clone();
+    const startTime = performance.now();
+
+    const step = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+
+      this.camera.position.lerpVectors(startPos, endPos, ease);
+      this.controls.target.lerpVectors(startTarget, endTarget, ease);
+      this.controls.update();
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    };
+    requestAnimationFrame(step);
+  }
+
+  startTour() {
+    if (!this.activeCurve) return;
+    this.tourActive = true;
+    this.tourProgress = 0;
+    this.tourStartTime = performance.now();
+    const dist = (this.activeRoute && this.activeRoute.totalDistanceMeters) || 60;
+    this.tourDuration = Math.max(9000, dist * 160);
+  }
+
+  updateTourStep() {
+    const now = performance.now();
+    const elapsed = now - this.tourStartTime;
+    this.tourProgress = Math.min(elapsed / this.tourDuration, 1);
+
+    const pos = this.activeCurve.getPointAt(this.tourProgress);
+    const forwardProgress = Math.min(this.tourProgress + 0.05, 1);
+    const lookTarget = this.activeCurve.getPointAt(forwardProgress);
+
+    // Tầm mắt người đi bộ (+1.7m)
+    this.camera.position.set(pos.x, pos.y + 1.7, pos.z);
+    this.controls.target.set(lookTarget.x, lookTarget.y + 1.5, lookTarget.z);
+    this.controls.update();
+
+    if (this.tourProgress >= 1) {
+      this.tourActive = false;
+    }
+  }
+
+  stopTour() {
+    this.tourActive = false;
   }
 
   // Xuất ảnh PNG 3D sắc nét

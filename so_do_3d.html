@@ -198,6 +198,250 @@
       box-shadow: 0 0 10px rgba(2, 132, 199, 0.5);
     }
 
+    /* 3D Navigation Panel */
+    .nav-panel-3d {
+      position: fixed;
+      top: 76px;
+      left: 20px;
+      width: 340px;
+      max-height: calc(100vh - 250px);
+      z-index: 20;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-panel-3d.collapsed {
+      width: auto;
+      max-height: 48px;
+    }
+
+    .nav-panel-3d.collapsed .nav-panel-body {
+      display: none;
+    }
+
+    .nav-panel-header {
+      padding: 12px 16px;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.25), rgba(15, 23, 42, 0.5));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .nav-panel-title {
+      font-weight: 800;
+      font-size: 14px;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-toggle-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .nav-toggle-btn:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-panel-body {
+      padding: 14px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .nav-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .nav-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .nav-select {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: white;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .nav-select:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+    .nav-select optgroup {
+      background: #0f172a;
+      color: #38bdf8;
+      font-weight: bold;
+    }
+    .nav-select option {
+      background: #1e293b;
+      color: #f1f5f9;
+      font-weight: normal;
+    }
+
+    .btn-swap-3d {
+      align-self: center;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #38bdf8;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-swap-3d:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      color: white;
+    }
+
+    .btn-route-action {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-route-action:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .nav-result-box {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nav-stats-row {
+      display: flex;
+      justify-content: space-around;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 8px;
+    }
+
+    .stat-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .stat-val {
+      font-size: 16px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+    .stat-lbl {
+      font-size: 10px;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .nav-btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-sub-action {
+      flex: 1;
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      transition: all 0.2s;
+    }
+    .btn-sub-action:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+    .btn-tour {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: #34d399;
+      color: white;
+    }
+    .btn-tour:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+    }
+
+    .steps-timeline {
+      max-height: 180px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-right: 4px;
+    }
+    .step-node {
+      font-size: 11.5px;
+      line-height: 1.4;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 5px 8px;
+      border-radius: 6px;
+      border-left: 2.5px solid #38bdf8;
+    }
+
     .controls-hint {
       position: fixed;
       bottom: 20px;
@@ -228,7 +472,6 @@
 
     <!-- Quick Camera Presets -->
     <div class="btn-group">
-      <!-- NÚT ĐẶC BIỆT: ZOOM THẲNG VÀO CẦU HÀNH LANG NỐI 2 TẦNG (DÃY B ⇄ HÀNH CHÍNH) -->
       <button class="tool-btn btn-special" onclick="viewer.setCameraPreset('bridge_west')"
         title="Xem chi tiết hành lang nối Dãy B và Dãy Hành Chính ở cả 2 tầng">
         🎯 Xem Hành Lang Nối 2 Tầng (Dãy B ⇄ Hành Chính)
@@ -262,6 +505,75 @@
     </div>
   </header>
 
+  <!-- 🧭 3D WAYFINDING & NAVIGATION PANEL -->
+  <div class="nav-panel-3d" id="nav-panel-3d">
+    <div class="nav-panel-header" onclick="toggleNavPanel()">
+      <div class="nav-panel-title">
+        <span>🧭</span>
+        <span>Chỉ Đường 3D Thông Minh</span>
+      </div>
+      <button type="button" class="nav-toggle-btn" id="nav-toggle-btn" title="Thu gọn / Mở rộng">—</button>
+    </div>
+
+    <div class="nav-panel-body">
+      <!-- Điểm xuất phát -->
+      <div class="nav-input-group">
+        <label class="nav-label" for="select-start-3d">
+          <span>🟢</span> Điểm xuất phát
+        </label>
+        <select id="select-start-3d" class="nav-select">
+          <option value="">-- Chọn vị trí bắt đầu --</option>
+        </select>
+      </div>
+
+      <!-- Đổi chiều -->
+      <button type="button" class="btn-swap-3d" onclick="swapNavPoints()" title="Hoán đổi điểm xuất phát và đích đến">
+        ⇅ Đổi chiều di chuyển
+      </button>
+
+      <!-- Điểm đến -->
+      <div class="nav-input-group">
+        <label class="nav-label" for="select-dest-3d">
+          <span>🔴</span> Điểm cần đến
+        </label>
+        <select id="select-dest-3d" class="nav-select">
+          <option value="">-- Chọn phòng / vị trí đích đến --</option>
+        </select>
+      </div>
+
+      <!-- Nút chỉ đường -->
+      <button type="button" class="btn-route-action" onclick="executeRoute3D()">
+        <span>🚀</span> Tìm Đường Đi 3D
+      </button>
+
+      <!-- Khung hiển thị kết quả -->
+      <div class="nav-result-box" id="nav-result-box" style="display: none;">
+        <div class="nav-stats-row">
+          <div class="stat-pill">
+            <span class="stat-val" id="stat-dist">0m</span>
+            <span class="stat-lbl">Khoảng cách</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-val" id="stat-time">0'</span>
+            <span class="stat-lbl">Thời gian</span>
+          </div>
+        </div>
+
+        <div class="nav-btn-row">
+          <button type="button" class="btn-sub-action btn-tour" onclick="startCameraTour()" title="Bay theo đường đi 3D ở tầm mắt người đi">
+            <span>▶️</span> Tham quan 3D
+          </button>
+          <button type="button" class="btn-sub-action" onclick="clearActiveRoute()" title="Xóa đường vẽ">
+            <span>🗑️</span> Xóa đường
+          </button>
+        </div>
+
+        <!-- Danh sách các bước đi -->
+        <div class="steps-timeline" id="steps-timeline"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Floating Floor Selector (Tách Tầng) -->
   <div class="floor-switcher">
     <span
@@ -275,7 +587,7 @@
   </div>
 
   <!-- Legend Overlay -->
-  <div class="legend-card">
+  <div class="legend-card" id="legend-card">
     <div class="legend-title">🏫 Chú Thích Màu Khối Lớp & Kết Nối</div>
     <div class="legend-item">
       <div class="legend-color" style="background: #fef08a; border: 2px solid #ca8a04;"></div>
@@ -304,6 +616,8 @@
   </div>
 
   <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="router.js"></script>
   <script src="three.min.js"></script>
   <script src="OrbitControls.js"></script>
   <script src="campus3d.js"></script>
@@ -312,6 +626,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       viewer = new Campus3DViewer('canvas3d-container');
+      populateLocationSelects();
     });
 
     function setActiveCam(btn, preset) {
@@ -324,6 +639,158 @@
       document.querySelectorAll('.floor-switcher .floor-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       viewer.filterFloor(floorKey);
+    }
+
+    // Đổ danh sách địa điểm phân nhóm vào 2 thẻ Select
+    function populateLocationSelects() {
+      if (!window.CAMPUS_LOCATIONS) return;
+
+      const startSel = document.getElementById('select-start-3d');
+      const destSel = document.getElementById('select-dest-3d');
+
+      const groups = {
+        campus: { label: "🏫 Sân trường & Khuôn viên", items: [] },
+        k10: { label: "🟡 Khối 10 (Dãy A & B)", items: [] },
+        k11: { label: "🔵 Khối 11 (Dãy A)", items: [] },
+        k12: { label: "🟠 Khối 12 (Dãy B)", items: [] },
+        admin: { label: "🏢 Dãy Hành Chính & Ban Giám Hiệu", items: [] },
+        dept: { label: "🔬 Dãy Bộ Môn, Tin Học & Khác", items: [] }
+      };
+
+      window.CAMPUS_LOCATIONS.forEach(loc => {
+        const id = loc.id;
+        const name = loc.name;
+        const fl = loc.floor ? ` (${loc.floor})` : '';
+
+        if (id.includes('cong_truong') || id.includes('cot_co') || id.includes('canopy') || id.includes('nha_xe') || id.includes('hoi_truong')) {
+          groups.campus.items.push({ id, text: `${name}${fl}` });
+        } else if (name.includes('10A')) {
+          groups.k10.items.push({ id, text: `${name}${fl}` });
+        } else if (name.includes('11A')) {
+          groups.k11.items.push({ id, text: `${name}${fl}` });
+        } else if (name.includes('12A')) {
+          groups.k12.items.push({ id, text: `${name}${fl}` });
+        } else if (id.includes('hc_') || id.includes('hieu_truong') || id.includes('van_thu') || id.includes('ke_toan') || id.includes('chi_bo') || id.includes('ho_so') || id.includes('pho_ht') || id.includes('truyen_thong') || id.includes('tiep_dan')) {
+          groups.admin.items.push({ id, text: `${name}${fl}` });
+        } else {
+          groups.dept.items.push({ id, text: `${name}${fl}` });
+        }
+      });
+
+      const fill = (selectEl, defaultId) => {
+        selectEl.innerHTML = '<option value="">-- Chọn vị trí --</option>';
+        for (const gKey in groups) {
+          const g = groups[gKey];
+          if (g.items.length === 0) continue;
+          const optGroup = document.createElement('optgroup');
+          optGroup.label = g.label;
+          g.items.forEach(it => {
+            const opt = document.createElement('option');
+            opt.value = it.id;
+            opt.textContent = it.text;
+            if (defaultId && it.id === defaultId) opt.selected = true;
+            optGroup.appendChild(opt);
+          });
+          selectEl.appendChild(optGroup);
+        }
+      };
+
+      fill(startSel, 'cong_truong');
+      fill(destSel, 'b_t3_12a1');
+    }
+
+    // Toggle đóng mở bảng chỉ đường
+    function toggleNavPanel() {
+      const panel = document.getElementById('nav-panel-3d');
+      const btn = document.getElementById('nav-toggle-btn');
+      panel.classList.toggle('collapsed');
+      btn.textContent = panel.classList.contains('collapsed') ? '➕' : '—';
+    }
+
+    // Hoán đổi điểm đi và điểm đến
+    function swapNavPoints() {
+      const s = document.getElementById('select-start-3d');
+      const d = document.getElementById('select-dest-3d');
+      const tmp = s.value;
+      s.value = d.value;
+      d.value = tmp;
+    }
+
+    // Thiết lập điểm từ tooltip khi click vào phòng 3D
+    window.setNavPoint = function(roomName, type) {
+      const targetLoc = viewer.findLocation(roomName);
+      if (!targetLoc) return;
+
+      const sel = type === 'start' ? document.getElementById('select-start-3d') : document.getElementById('select-dest-3d');
+      sel.value = targetLoc.id;
+
+      // Mở panel nếu đang bị thu gọn
+      const panel = document.getElementById('nav-panel-3d');
+      if (panel.classList.contains('collapsed')) {
+        toggleNavPanel();
+      }
+
+      // Tự động tìm đường nếu đã có cả 2 điểm
+      const startVal = document.getElementById('select-start-3d').value;
+      const destVal = document.getElementById('select-dest-3d').value;
+      if (startVal && destVal && startVal !== destVal) {
+        executeRoute3D();
+      }
+    };
+
+    // Thực hiện tìm đường 3D
+    function executeRoute3D() {
+      const startId = document.getElementById('select-start-3d').value;
+      const destId = document.getElementById('select-dest-3d').value;
+
+      if (!startId || !destId) {
+        alert("Vui lòng chọn cả điểm xuất phát và điểm đến!");
+        return;
+      }
+
+      if (startId === destId) {
+        alert("Điểm xuất phát và điểm đến trùng nhau!");
+        return;
+      }
+
+      const res = viewer.draw3DRoute(startId, destId);
+      if (!res || !res.success) {
+        alert(res ? res.message : "Không tìm thấy tuyến đường!");
+        return;
+      }
+
+      // Hiển thị kết quả
+      const resBox = document.getElementById('nav-result-box');
+      resBox.style.display = 'flex';
+      document.getElementById('stat-dist').textContent = `${Math.round(res.totalDistanceMeters)}m`;
+      document.getElementById('stat-time').textContent = `~${Math.ceil(res.estimatedMinutes)} ph`;
+
+      // Render timeline các bước đi
+      const timeline = document.getElementById('steps-timeline');
+      timeline.innerHTML = '';
+      if (res.instructions && res.instructions.length > 0) {
+        res.instructions.forEach((ins, idx) => {
+          const item = document.createElement('div');
+          item.className = 'step-node';
+          item.innerHTML = `<span>${ins.icon || '🚶'}</span><div><b>${ins.text}</b>${ins.detail ? `<div style="color: #94a3b8; font-size: 10.5px;">${ins.detail}</div>` : ''}</div>`;
+          timeline.appendChild(item);
+        });
+      }
+    }
+
+    // Tham quan góc nhìn người đi bộ
+    function startCameraTour() {
+      if (!viewer.activeCurve) {
+        alert("Hãy tìm đường trước khi tham quan!");
+        return;
+      }
+      viewer.startTour();
+    }
+
+    // Xóa tuyến đường
+    function clearActiveRoute() {
+      viewer.clearRoute();
+      document.getElementById('nav-result-box').style.display = 'none';
     }
   </script>
 </body>
