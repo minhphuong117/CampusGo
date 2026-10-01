@@ -472,12 +472,12 @@
 
     <!-- Quick Camera Presets -->
     <div class="btn-group">
-      <button class="tool-btn btn-special" onclick="viewer.setCameraPreset('bridge_west')"
-        title="Xem chi tiết hành lang nối Dãy B và Dãy Hành Chính ở cả 2 tầng">
-        🎯 Xem Hành Lang Nối 2 Tầng (Dãy B ⇄ Hành Chính)
+      <button class="tool-btn active" id="btn-drone" onclick="setActiveCam(this, 'drone_view')"
+        title="Góc nhìn Flycam thực tế từ trên cao nhìn vào sân trường và các dãy nhà">
+        🚁 Góc Flycam Thực Tế
       </button>
 
-      <button class="tool-btn active" id="btn-isometric" onclick="setActiveCam(this, 'isometric')">
+      <button class="tool-btn" id="btn-isometric" onclick="setActiveCam(this, 'isometric')">
         📐 Toàn Cảnh 3D
       </button>
 
@@ -491,6 +491,11 @@
 
       <button class="tool-btn" id="btn-topdown" onclick="setActiveCam(this, 'top_down')">
         ⬇️ Nhìn Từ Trên Xuống
+      </button>
+
+      <button class="tool-btn btn-special" onclick="viewer.setCameraPreset('bridge_west')"
+        title="Xem chi tiết hành lang nối Dãy B và Dãy Hành Chính ở cả 2 tầng">
+        🎯 Hành Lang Nối 2 Tầng (Dãy B ⇄ HC)
       </button>
     </div>
 
