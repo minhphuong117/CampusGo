@@ -801,61 +801,402 @@ body {
   user-select: none;
 }
 
-/* MAP OVERLAY STYLES */
+/* ==========================================================================
+   GOOGLE MAPS WALKING ROUTE OVERLAY STYLES
+   ========================================================================== */
 .nav-route-glow {
   fill: none;
-  stroke: #60a5fa;
-  stroke-width: 12;
+  stroke: #93c5fd;
+  stroke-width: 14;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: 0.45;
-  filter: blur(4px);
+  opacity: 0.55;
+  filter: drop-shadow(0 0 6px #60a5fa);
 }
 
+/* Đường viền ngoài xanh thẫm kiểu Google Maps */
+.nav-route-casing {
+  fill: none;
+  stroke: #1e40af;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Đường tim chính màu xanh dương Google Maps rực rỡ */
 .nav-route-line {
   fill: none;
   stroke: #2563eb;
-  stroke-width: 6;
+  stroke-width: 5;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 10, 8;
-  animation: dashAnimation 1.2s linear infinite;
 }
 
-@keyframes dashAnimation {
+/* Hạt chấm trắng / chevron chuyển động theo hướng đi */
+.nav-route-dots {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 4, 14;
+  animation: walkDotsAnimation 0.8s linear infinite;
+}
+
+@keyframes walkDotsAnimation {
   from {
     stroke-dashoffset: 36;
   }
-
   to {
     stroke-dashoffset: 0;
   }
 }
 
-.marker-pin {
+/* Vòng tròn điểm gãy góc 90 độ (Waypoint) */
+.waypoint-corner {
+  fill: #ffffff;
+  stroke: #1e40af;
+  stroke-width: 2;
+  cursor: default;
+}
+
+/* Ghim điểm đi & đến chuẩn phong cách Google Maps */
+.marker-pin-google {
   cursor: pointer;
-  transition: transform 0.2s;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.marker-pin:hover {
-  transform: scale(1.15);
+.marker-pin-google:hover {
+  transform: scale(1.2);
 }
 
-.marker-pulse {
-  animation: pulseRipple 1.6s infinite ease-out;
+.marker-pulse-blue {
+  animation: pulseRippleBlue 1.8s infinite ease-out;
   transform-origin: center;
 }
 
-@keyframes pulseRipple {
+@keyframes pulseRippleBlue {
   0% {
     transform: scale(0.8);
-    opacity: 0.9;
+    opacity: 0.8;
   }
-
   100% {
-    transform: scale(2.4);
+    transform: scale(2.6);
     opacity: 0;
   }
+}
+
+/* AVATAR MÔ PHỎNG ĐANG ĐI (WALKING SIMULATOR) */
+.avatar-walker {
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgba(37, 99, 235, 0.6));
+  z-index: 100;
+}
+
+/* ==========================================================================
+   GOOGLE MAPS FLOATING LOCATION POPOVER (CHỌN NHANH ĐỊA ĐIỂM)
+   ========================================================================== */
+.map-location-popover {
+  position: absolute;
+  z-index: 80;
+  transform: translate(-50%, -100%) translateY(-14px);
+  pointer-events: auto;
+  animation: popoverBounce 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popoverBounce {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) translateY(-14px) scale(1);
+  }
+}
+
+.popover-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #cbd5e1;
+  padding: 16px;
+  width: 280px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Mũi tên chỉ xuống chân popover */
+.popover-card::after {
+  content: "";
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 9px solid #ffffff;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+}
+
+.popover-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.popover-close-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.popover-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 20px;
+}
+
+.popover-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.popover-title-box h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 2px 0;
+  line-height: 1.25;
+}
+
+.popover-meta {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.popover-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.popover-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease-out;
+  justify-content: flex-start;
+}
+
+.btn-set-start {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.btn-set-start:hover {
+  background: #d1fae5;
+  border-color: #34d399;
+  transform: translateY(-1px);
+}
+
+.btn-set-dest {
+  background: #eff6ff;
+  color: #1e40af;
+  border-color: #bfdbfe;
+}
+
+.btn-set-dest:hover {
+  background: #dbeafe;
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+}
+
+.popover-sub-actions {
+  display: flex;
+  gap: 6px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 8px;
+}
+
+.popover-sub-btn {
+  flex: 1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.15s;
+}
+
+.popover-sub-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   TOAST NOTIFICATION (THÔNG BÁO NHANH KIỂU GOOGLE MAPS)
+   ========================================================================== */
+.toast-notification {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 13.5px;
+  font-weight: 600;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* BANNER LỘ TRÌNH TỐI ƯU */
+.optimal-route-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #15803d;
+  background: #dcfce7;
+  padding: 4px 10px;
+  border-radius: 20px;
+  width: fit-content;
+  margin-bottom: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+.optimal-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16a34a;
+  animation: pulseDot 1.2s infinite;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(0.9); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+  100% { transform: scale(0.9); opacity: 1; }
+}
+
+.badge-steps {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.badge-cal {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.route-quick-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.btn-tour-action {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+
+.btn-tour-action:hover {
+  background: #f8fafc;
+  border-color: #0284c7;
+  color: #0284c7;
+}
+
+.qr-search-input {
+  width: 100%;
+  height: 40px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+}
+
+.btn-secondary-tool {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s;
+}
+
+.btn-secondary-tool:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 /* ROOM HIGHLIGHT EFFECT */
@@ -1436,6 +1777,51 @@ body {
 
   .sidebar-footer {
     padding: 10px 16px;
+  }
+
+  /* Mobile Google Maps Location Popover (Bottom Action Sheet) */
+  .map-location-popover {
+    position: fixed !important;
+    top: auto !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 16px !important;
+    transform: none !important;
+    width: auto !important;
+    z-index: 120 !important;
+    animation: mobileCardSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  @keyframes mobileCardSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(60px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .popover-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+    border: 1.5px solid #94a3b8 !important;
+    padding: 16px 18px !important;
+  }
+
+  .popover-card::after {
+    display: none !important;
+  }
+
+  .toast-notification {
+    top: max(16px, env(safe-area-inset-top));
+    width: calc(100% - 32px);
+    justify-content: center;
+    box-sizing: border-box;
+    font-size: 13px;
   }
 }
 

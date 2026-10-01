@@ -157,29 +157,29 @@ class CampusRouter {
       return { success: false, message: "Không thể tìm thấy tuyến đường kết nối 2 điểm này." };
     }
 
-    // Tạo danh sách điểm tọa độ vẽ trên SVG
-    const svgPoints = [];
+    // 1. Thu thập danh sách các điểm nút đồ thị
+    const rawPoints = [];
+    rawPoints.push({ x: startLoc.x, y: startLoc.y });
 
-    // Điểm đầu là tọa độ chính xác của startLoc
-    svgPoints.push({ x: startLoc.x, y: startLoc.y });
-
-    // Các điểm nút trên đồ thị
     routeResult.path.forEach(nodeId => {
       const n = this.nodes[nodeId];
-      // Tránh lặp lại điểm quá gần
-      const last = svgPoints[svgPoints.length - 1];
-      if (!last || Math.hypot(last.x - n.x, last.y - n.y) > 8) {
-        svgPoints.push({ x: n.x, y: n.y });
+      if (n) {
+        const last = rawPoints[rawPoints.length - 1];
+        if (!last || Math.hypot(last.x - n.x, last.y - n.y) > 6) {
+          rawPoints.push({ x: n.x, y: n.y });
+        }
       }
     });
 
-    // Điểm cuối là tọa độ chính xác của destLoc
-    const lastPoint = svgPoints[svgPoints.length - 1];
-    if (Math.hypot(lastPoint.x - destLoc.x, lastPoint.y - destLoc.y) > 8) {
-      svgPoints.push({ x: destLoc.x, y: destLoc.y });
+    const lastRaw = rawPoints[rawPoints.length - 1];
+    if (Math.hypot(lastRaw.x - destLoc.x, lastRaw.y - destLoc.y) > 6) {
+      rawPoints.push({ x: destLoc.x, y: destLoc.y });
     }
 
-    // Tính toán tổng khoảng cách
+    // 2. KHỬ HOÀN TOÀN CÁC ĐOẠN ĐƯỜNG XIÊN VẸO: BẺ GÓC 90 ĐỘ THẲNG HÀNG CHUẨN GOOGLE MAPS
+    const svgPoints = this.orthogonalizePoints(rawPoints);
+
+    // 3. Tính toán tổng khoảng cách thực tế (theo lối đi vuông góc)
     let totalPixelDist = 0;
     for (let i = 0; i < svgPoints.length - 1; i++) {
       totalPixelDist += Math.hypot(
@@ -188,11 +188,29 @@ class CampusRouter {
       );
     }
 
-    const totalDistanceMeters = Math.round(totalPixelDist * this.PIXEL_TO_METERS);
-    const estimatedMinutes = Math.max(1, Math.round((totalDistanceMeters / this.WALKING_SPEED_MPM) * 10) / 10);
+    const totalDistanceMeters = Math.max(10, Math.round(totalPixelDist * this.PIXEL_TO_METERS));
+    // Tốc độ đi bộ học sinh ~1.2 m/s (~72m/phút). Mỗi tầng cầu thang cộng thêm ~0.4 phút
+    const floorDiff = Math.abs(this.getFloorNumber(startLoc.floor) - this.getFloorNumber(destLoc.floor));
+    const rawWalkMinutes = (totalDistanceMeters / 70) + (floorDiff * 0.4);
+    const estimatedMinutes = Math.max(1, Math.round(rawWalkMinutes * 10) / 10);
+    const estimatedSeconds = Math.round(rawWalkMinutes * 60);
+    
+    // Định dạng thời gian di chuyển kiểu Google Maps
+    let formattedTime = "";
+    if (estimatedSeconds < 60) {
+      formattedTime = `< 1 phút (${estimatedSeconds} giây)`;
+    } else {
+      const mins = Math.floor(estimatedSeconds / 60);
+      const secs = estimatedSeconds % 60;
+      formattedTime = secs > 10 ? `${mins} phút ${secs}s` : `~${mins} phút`;
+    }
 
-    // Tạo chỉ dẫn từng bước trực quan
-    const instructions = this.generateStepInstructions(startLoc, destLoc, routeResult.steps);
+    // Số bước chân & calo tiêu thụ
+    const estimatedSteps = Math.round(totalDistanceMeters * 1.35);
+    const calorieBurn = Math.round(totalDistanceMeters * 0.042 * 10) / 10;
+
+    // 4. Tạo chỉ dẫn từng bước chi tiết theo phong cách Google Maps
+    const instructions = this.generateStepInstructions(startLoc, destLoc, routeResult.steps, svgPoints);
 
     return {
       success: true,
@@ -201,41 +219,105 @@ class CampusRouter {
       points: svgPoints,
       totalDistanceMeters,
       estimatedMinutes,
+      formattedTime,
+      estimatedSteps,
+      calorieBurn,
+      optimalBadge: "Tuyến đường tối ưu nhất (Ngắn & Nhanh nhất)",
       instructions
     };
   }
 
-  // Tạo chỉ dẫn chi tiết bằng chữ tiếng Việt
-  generateStepInstructions(startLoc, destLoc, pathSteps) {
+  // Thuật toán nắn thẳng mọi đoạn đường thành các trục ngang - dọc vuông góc 90° (không xiên vẹo)
+  orthogonalizePoints(points) {
+    if (!points || points.length <= 1) return points;
+    const clean = [];
+    clean.push({ x: points[0].x, y: points[0].y });
+
+    for (let i = 1; i < points.length; i++) {
+      const prev = clean[clean.length - 1];
+      const curr = points[i];
+
+      const dx = curr.x - prev.x;
+      const dy = curr.y - prev.y;
+
+      // Nếu cả X và Y đều lệch nhau (đoạn xiên chéo), chèn điểm bẻ góc 90 độ
+      if (Math.abs(dx) > 3 && Math.abs(dy) > 3) {
+        // Nhận diện xem điểm đích có nằm trên hành lang ngang (y cố định) hay trục dọc không
+        const isHorizontalCorridor = [918, 835, 777, 697, 612, 576, 538, 500, 378, 304, 260, 216, 186].some(y => Math.abs(curr.y - y) <= 6);
+        if (isHorizontalCorridor) {
+          // Đi thẳng trục dọc trước để nhập vào hành lang ngang, rồi đi ngang
+          clean.push({ x: prev.x, y: curr.y });
+        } else {
+          // Đi ngang trước rồi rẽ vào trục dọc
+          clean.push({ x: curr.x, y: prev.y });
+        }
+      }
+      clean.push({ x: curr.x, y: curr.y });
+    }
+
+    // Đơn giản hóa: bỏ các điểm thẳng hàng liên tiếp
+    const simplified = [clean[0]];
+    for (let i = 1; i < clean.length - 1; i++) {
+      const pPrev = simplified[simplified.length - 1];
+      const pCurr = clean[i];
+      const pNext = clean[i + 1];
+
+      const isCollinearX = Math.abs(pPrev.x - pCurr.x) < 1 && Math.abs(pCurr.x - pNext.x) < 1;
+      const isCollinearY = Math.abs(pPrev.y - pCurr.y) < 1 && Math.abs(pCurr.y - pNext.y) < 1;
+      if (!isCollinearX && !isCollinearY) {
+        simplified.push(pCurr);
+      }
+    }
+    simplified.push(clean[clean.length - 1]);
+    return simplified;
+  }
+
+  getFloorNumber(floorStr) {
+    if (!floorStr) return 0;
+    if (floorStr.includes("3")) return 3;
+    if (floorStr.includes("2")) return 2;
+    if (floorStr.includes("1")) return 1;
+    return 0;
+  }
+
+  // Tạo chỉ dẫn chi tiết từng bước chuẩn Google Maps
+  generateStepInstructions(startLoc, destLoc, pathSteps, svgPoints) {
     const steps = [];
 
     // Bước 1: Khởi hành
     steps.push({
       icon: "🟢",
       badge: "Xuất phát",
-      title: `Bắt đầu từ: ${startLoc.name}`,
-      detail: `Vị trí: ${startLoc.floor} • ${startLoc.building}. Chuẩn bị di chuyển.`
+      title: `Bắt đầu tại: ${startLoc.name}`,
+      detail: `Vị trí: ${startLoc.floor} • ${startLoc.building}. Chuẩn bị di chuyển theo đường kẻ xanh.`
     });
 
-    // Các bước di chuyển qua khuôn viên
+    // Các bước di chuyển dọc theo hành lang
     if (pathSteps && pathSteps.length > 0) {
       pathSteps.forEach((desc, idx) => {
-        let icon = "🚶‍♂️";
-        if (desc.includes("Cầu Thang") || desc.includes("Cầu thang")) icon = "🪜";
-        else if (desc.includes("Rẽ") || desc.includes("khúc cua")) icon = "↪️";
-        else if (desc.includes("Cổng")) icon = "🚪";
-        else if (desc.includes("Sân") || desc.includes("Cột Cờ")) icon = "🚩";
+        let icon = "⬆️";
+        if (desc.includes("Cầu Thang") || desc.includes("Cầu thang") || desc.includes("Leo")) {
+          icon = "🪜";
+        } else if (desc.includes("Rẽ trái") || desc.includes("trái")) {
+          icon = "↰";
+        } else if (desc.includes("Rẽ phải") || desc.includes("phải")) {
+          icon = "↱";
+        } else if (desc.includes("Cổng")) {
+          icon = "🚪";
+        } else if (desc.includes("Cột Cờ") || desc.includes("Sân")) {
+          icon = "🚩";
+        }
 
         steps.push({
           icon,
           badge: `Chặng ${idx + 1}`,
           title: desc,
-          detail: "Đi theo lối chỉ dẫn trên bản đồ"
+          detail: "Đi theo lối kẻ thẳng màu xanh trên bản đồ"
         });
       });
     }
 
-    // Xử lý thông tin thay đổi tầng lầu (nếu có)
+    // Xử lý thông tin chuyển tầng
     const floorInstruction = this.getFloorTransition(startLoc, destLoc);
     if (floorInstruction) {
       steps.push(floorInstruction);
@@ -246,7 +328,7 @@ class CampusRouter {
       icon: "🎯",
       badge: "Đích đến",
       title: `Đến: ${destLoc.name}`,
-      detail: `${destLoc.floor} • ${destLoc.description || 'Bạn đã đến nơi.'}`
+      detail: `${destLoc.floor} • ${destLoc.description || 'Bạn đã đến nơi cần tìm.'}`
     });
 
     return steps;
