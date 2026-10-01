@@ -295,55 +295,63 @@ class Campus3DViewer {
     // 4 tầng xếp chồng
     const floorsData = [
       // Tầng trệt
-      { floor: 0, label: "Tầng trệt", rooms: [
-        { name: "WC", w: 3.5, color: 0xccfbf1, textColor: 0x0f766e },
-        { name: "P.03", isHighlight: true },
-        { name: "P.04", isHighlight: true },
-        { isStair1: true },
-        { name: "THƯ VIỆN", isLibrary: true, w: roomW * 3 + 1, color: 0xe0f2fe, textColor: 0x0284c7 },
-        { isStair2: true },
-        { name: "P.05", isHighlight: true },
-        { name: "P.06", isHighlight: true }
-      ]},
+      {
+        floor: 0, label: "Tầng trệt", rooms: [
+          { name: "WC", w: 3.5, color: 0xccfbf1, textColor: 0x0f766e },
+          { name: "P.03", isHighlight: true },
+          { name: "P.04", isHighlight: true },
+          { isStair1: true },
+          { name: "THƯ VIỆN", isLibrary: true, w: roomW * 3 + 1, color: 0xe0f2fe, textColor: 0x0284c7 },
+          { isStair2: true },
+          { name: "P.05", isHighlight: true },
+          { name: "P.06", isHighlight: true }
+        ]
+      },
       // Tầng 1
-      { floor: 1, label: "Tầng 1", rooms: [
-        { name: "WC", w: 3.5, color: 0xccfbf1, textColor: 0x0f766e },
-        { name: "P.15" },
-        { name: "P.16" },
-        { isStair1: true },
-        { name: "P.17" },
-        { name: "P.18" },
-        { name: "P.19" },
-        { isStair2: true },
-        { name: "P.08", isHighlight: true },
-        { name: "P.07", isHighlight: true }
-      ]},
+      {
+        floor: 1, label: "Tầng 1", rooms: [
+          { name: "WC", w: 3.5, color: 0xccfbf1, textColor: 0x0f766e },
+          { name: "P.15" },
+          { name: "P.16" },
+          { isStair1: true },
+          { name: "P.17" },
+          { name: "P.18" },
+          { name: "P.19" },
+          { isStair2: true },
+          { name: "P.08", isHighlight: true },
+          { name: "P.07", isHighlight: true }
+        ]
+      },
       // Tầng 2
-      { floor: 2, label: "Tầng 2", rooms: [
-        { name: "WC", w: 3.5, color: 0xccfbf1, textColor: 0x0f766e },
-        { name: "P.09", isHighlight: true },
-        { name: "P.10", isHighlight: true },
-        { isStair1: true },
-        { name: "P.11", isHighlight: true },
-        { name: "P.12", isHighlight: true },
-        { name: "P.20" },
-        { isStair2: true },
-        { name: "P.13", isHighlight: true },
-        { name: "P.14", isHighlight: true }
-      ]},
+      {
+        floor: 2, label: "Tầng 2", rooms: [
+          { name: "WC", w: 3.5, color: 0xccfbf1, textColor: 0x0f766e },
+          { name: "P.09", isHighlight: true },
+          { name: "P.10", isHighlight: true },
+          { isStair1: true },
+          { name: "P.11", isHighlight: true },
+          { name: "P.12", isHighlight: true },
+          { name: "P.20" },
+          { isStair2: true },
+          { name: "P.13", isHighlight: true },
+          { name: "P.14", isHighlight: true }
+        ]
+      },
       // Tầng 3
-      { floor: 3, label: "Tầng 3", rooms: [
-        { name: "WC", w: 3.5, color: 0xccfbf1, textColor: 0x0f766e },
-        { name: "-" },
-        { name: "-" },
-        { isStair1: true },
-        { name: "-" },
-        { name: "P.18", isHighlight: true },
-        { name: "P.17", isHighlight: true },
-        { isStair2: true },
-        { name: "P.16", isHighlight: true },
-        { name: "P.15", isHighlight: true }
-      ]}
+      {
+        floor: 3, label: "Tầng 3", rooms: [
+          { name: "WC", w: 3.5, color: 0xccfbf1, textColor: 0x0f766e },
+          { name: "-" },
+          { name: "-" },
+          { isStair1: true },
+          { name: "-" },
+          { name: "P.18", isHighlight: true },
+          { name: "P.17", isHighlight: true },
+          { isStair2: true },
+          { name: "P.16", isHighlight: true },
+          { name: "P.15", isHighlight: true }
+        ]
+      }
     ];
 
     floorsData.forEach(fl => {
@@ -605,12 +613,56 @@ class Campus3DViewer {
     const eastStair = this.createStairTower(xPos - bW / 2 - 2.5, zPos - 6, 3, floorH, 4.5, bD * 0.4, "CẦU THANG");
     building.add(eastStair);
 
-    // HỘI TRƯỜNG LỚN (Phía Nam Khối Chức Năng - Tầng trệt, trần cao thông thoáng)
+    // =========================================================================
+    // CỤM HỘI TRƯỜNG & CHỖ ĐỂ XE 10A13 KẸP GIỮA 2 BỒN CÂY XANH
+    // =========================================================================
     const hallW = bW + 2;
+
+    // 1. Bồn cây xanh phía trên kẹp chỗ để xe 10A13
+    const bonCayTop = this.createRoomBlock("🌿 BỒN CÂY", xPos, 0.4, zPos + 1.2, hallW * 0.8, 0.8, 2.2, {
+      color: 0xdcfce7,
+      textColor: 0x15803d,
+      stroke: 0x16a34a,
+      subtext: "Cây xanh cảnh quan",
+      floorKey: 'fl_0'
+    });
+    building.add(bonCayTop);
+
+    // 2. Chỗ để xe lớp 10A13 kẹp ở giữa
+    const park10A13 = this.createRoomBlock("10A13", xPos, 0.15, zPos + 4.2, hallW * 0.8, 0.3, 3.2, {
+      color: 0xffffff,
+      textColor: 0x0284c7,
+      stroke: 0x64748b,
+      subtext: "Chỗ để xe lớp 10A13",
+      floorKey: 'fl_0'
+    });
+    building.add(park10A13);
+
+    // 3. Bồn cây xanh phía dưới kẹp chỗ để xe 10A13
+    const bonCayBot = this.createRoomBlock("🌿 BỒN CÂY", xPos - 1.2, 0.4, zPos + 7.2, hallW * 0.6, 0.8, 2.2, {
+      color: 0xdcfce7,
+      textColor: 0x15803d,
+      stroke: 0x16a34a,
+      subtext: "Cây xanh cảnh quan",
+      floorKey: 'fl_0'
+    });
+    building.add(bonCayBot);
+
+    // Ô WC cạnh bồn cây dưới
+    const wcHoiTruong = this.createRoomBlock("WC", xPos + hallW * 0.3, floorH * 0.4, zPos + 7.2, hallW * 0.2, floorH * 0.8, 2.2, {
+      color: 0xccfbf1,
+      textColor: 0x0f766e,
+      stroke: 0x0d9488,
+      subtext: "Vệ sinh",
+      floorKey: 'fl_0'
+    });
+    building.add(wcHoiTruong);
+
+    // 4. HỘI TRƯỜNG LỚN (Phía Nam Khối Chức Năng - Tầng trệt, trần cao thông thoáng)
     const hallH = floorH * 1.5;
-    const hallD = 14;
+    const hallD = 12;
     const hallY = hallH / 2;
-    const hallBox = this.createRoomBlock("HỘI TRƯỜNG LỚN", xPos, hallY, zPos + 10, hallW, hallH, hallD, {
+    const hallBox = this.createRoomBlock("HỘI TRƯỜNG LỚN", xPos, hallY, zPos + 15, hallW, hallH, hallD, {
       color: 0xfef08a,
       textColor: 0x854d0e,
       stroke: 0xca8a04,

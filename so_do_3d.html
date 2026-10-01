@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sơ Đồ 3D Không Gian Trường Học - Hệ Thống Hành Lang & Cầu Thang</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    body, html {
+    body,
+    html {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -211,6 +213,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- 3D Canvas Container -->
@@ -225,9 +228,10 @@
 
     <!-- Quick Camera Presets -->
     <div class="btn-group">
-      <!-- NÚT ĐẶC BIỆT: ZOOM THẲNG VÀO CẦU HÀNH LANG TÂY NỐI P.01 & P.05 -->
-      <button class="tool-btn btn-special" onclick="viewer.setCameraPreset('bridge_west')" title="Xem chi tiết hành lang nối Dãy Lớp Trước và Dãy Hội Đồng">
-        🎯 Xem Cầu Hành Lang Tây (P.01 & P.05)
+      <!-- NÚT ĐẶC BIỆT: ZOOM THẲNG VÀO CẦU HÀNH LANG NỐI 2 TẦNG (DÃY B ⇄ HÀNH CHÍNH) -->
+      <button class="tool-btn btn-special" onclick="viewer.setCameraPreset('bridge_west')"
+        title="Xem chi tiết hành lang nối Dãy B và Dãy Hành Chính ở cả 2 tầng">
+        🎯 Xem Hành Lang Nối 2 Tầng (Dãy B ⇄ Hành Chính)
       </button>
 
       <button class="tool-btn active" id="btn-isometric" onclick="setActiveCam(this, 'isometric')">
@@ -260,7 +264,9 @@
 
   <!-- Floating Floor Selector (Tách Tầng) -->
   <div class="floor-switcher">
-    <span style="font-size: 10px; color: #64748b; font-weight: bold; text-align: center; text-transform: uppercase;">Chọn Tầng</span>
+    <span
+      style="font-size: 10px; color: #64748b; font-weight: bold; text-align: center; text-transform: uppercase;">Chọn
+      Tầng</span>
     <button class="floor-btn active" onclick="setFloor(this, 'all')">Tất Cả Tầng</button>
     <button class="floor-btn" onclick="setFloor(this, 'fl_3')">Tầng 3</button>
     <button class="floor-btn" onclick="setFloor(this, 'fl_2')">Tầng 2</button>
@@ -270,18 +276,18 @@
 
   <!-- Legend Overlay -->
   <div class="legend-card">
-    <div class="legend-title">ℹ️ Hệ Thống Kết Nối 2 Dãy Phía Tây</div>
+    <div class="legend-title">ℹ️ Hệ Thống Kết Nối 2 Dãy (Nối Cả 2 Tầng)</div>
     <div class="legend-item">
-      <div class="legend-color" style="background: #e2e8f0; border: 2px solid #0284c7;"></div>
-      <div><b>Hành lang Tầng trệt:</b> Nối từ cửa phòng <b>P.01 (Màu Vàng)</b> Dãy Lớp Trước sang Dãy Hành Chính.</div>
+      <div class="legend-color" style="background: #e2e8f0; border: 2px solid #0d9488;"></div>
+      <div><b>Hành lang Tầng trệt:</b> Nối thông tầng trệt giữa <b>Dãy B (12A10)</b> sang <b>Dãy Hành Chính (Tiếp dân)</b>.</div>
     </div>
     <div class="legend-item">
       <div class="legend-color" style="background: #1e40af; border: 2px solid #60a5fa;"></div>
-      <div><b>Cầu hành lang Lầu 1:</b> Nối từ cửa phòng <b>P.05</b> sang <b>Phòng Hội Đồng</b> (ngay phía trên song song).</div>
+      <div><b>Cầu hành lang Tầng 2:</b> Cầu vượt trên cao nối <b>Tầng 2 Dãy B (12A6)</b> sang <b>Phòng Chi bộ (Họp GV)</b> song song.</div>
     </div>
     <div class="legend-item">
       <div class="legend-color" style="background: #64748b;"></div>
-      <div><b>Cầu thang 3D:</b> Kết nối thông tầng nội bộ (Trệt ➔ Lầu 1 ➔ Lầu 2 ➔ Lầu 3).</div>
+      <div><b>Cầu thang 3D:</b> Kết nối thông tầng nội bộ các dãy nhà.</div>
     </div>
   </div>
 
@@ -313,4 +319,5 @@
     }
   </script>
 </body>
+
 </html>
