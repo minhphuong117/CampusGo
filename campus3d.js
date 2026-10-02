@@ -294,25 +294,40 @@ class Campus3DViewer {
     return bench;
   }
 
-  // Băng rôn khẩu hiệu trường học nền đỏ chữ vàng
+  // Băng rôn khẩu hiệu trường học nền đỏ chữ vàng sắc nét, tự co giãn chữ chống tràn viền
   createSloganBanner(text, x, y, z, w, h, rotY = 0) {
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 96;
+    canvas.width = 1024;
+    canvas.height = 180;
     const ctx = canvas.getContext('2d');
+
+    // Nền đỏ cờ
     ctx.fillStyle = '#dc2626';
-    ctx.fillRect(0, 0, 512, 96);
-    ctx.lineWidth = 6;
+    ctx.fillRect(0, 0, 1024, 180);
+
+    // Viền kép vàng sang trọng
+    ctx.lineWidth = 8;
     ctx.strokeStyle = '#fef08a';
-    ctx.strokeRect(4, 4, 504, 88);
+    ctx.strokeRect(8, 8, 1008, 164);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(16, 16, 992, 148);
+
+    // Tự động tính cỡ chữ để đảm bảo lề an toàn tối thiểu 60px 2 bên
+    const maxTextW = 1024 - 140;
+    let fontSize = 54;
+    ctx.font = `bold ${fontSize}px "Segoe UI", Roboto, -apple-system, sans-serif`;
+    while (ctx.measureText(text).width > maxTextW && fontSize > 20) {
+      fontSize -= 2;
+      ctx.font = `bold ${fontSize}px "Segoe UI", Roboto, -apple-system, sans-serif`;
+    }
 
     ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 36px "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(text, 256, 48);
+    ctx.fillText(text, 512, 90);
 
     const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter;
     const banner = new THREE.Mesh(
       new THREE.PlaneGeometry(w, h),
       new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })
@@ -322,39 +337,99 @@ class Campus3DViewer {
     return banner;
   }
 
-  // Tạo texture chữ viết sắc nét cho phòng và nhãn
-  createCanvasLabel(text, subtext = '', bgColor = '#ffffff', textColor = '#0f172a', borderColor = '#94a3b8', width = 256, height = 128) {
+  // Tạo texture chữ viết sắc nét cho phòng và nhãn, tự động co giãn cỡ chữ (auto-fit) chống dính viền và khuyết chữ
+  createCanvasLabel(text, subtext = '', bgColor = '#ffffff', textColor = '#0f172a', borderColor = '#94a3b8', width = 320, height = 160) {
     const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
+    // Nhân đôi độ phân giải texture (HiDPI / Retina) để chữ cực kỳ sắc nét khi zoom cận cảnh
+    const renderScale = 2;
+    const cw = Math.round((width || 320) * renderScale);
+    const ch = Math.round((height || 160) * renderScale);
+    canvas.width = cw;
+    canvas.height = ch;
     const ctx = canvas.getContext('2d');
 
-    // Nền
+    const cleanText = (text || '').trim();
+    const cleanSub = (subtext || '').trim();
+    const hasSub = Boolean(cleanSub.length > 0);
+
+    // 1. Vẽ nền bo góc và viền hộp
+    const borderWidth = Math.max(5, Math.round(ch * 0.038));
+    const borderRadius = Math.max(14, Math.round(ch * 0.15));
+    const borderOffset = Math.round(borderWidth / 2) + 2;
+
     ctx.fillStyle = bgColor;
     ctx.beginPath();
-    ctx.roundRect(4, 4, width - 8, height - 8, 12);
+    ctx.roundRect(borderOffset, borderOffset, cw - borderOffset * 2, ch - borderOffset * 2, borderRadius);
     ctx.fill();
-    ctx.lineWidth = 6;
+
+    ctx.lineWidth = borderWidth;
     ctx.strokeStyle = borderColor;
     ctx.stroke();
 
-    // Tiêu đề
-    ctx.fillStyle = textColor;
-    ctx.font = `bold ${subtext ? 36 : 44}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = subtext ? 'bottom' : 'middle';
-    ctx.fillText(text, width / 2, subtext ? height / 2 + 6 : height / 2);
+    // 2. Vùng an toàn cho chữ (Safe Margin / Padding):
+    // Dành ít nhất 13% chiều ngang mỗi bên và 12% chiều dọc -> Chữ tuyệt đối KHÔNG BAO GIỜ dính hoặc tràn viền
+    const paddingX = Math.max(28, Math.round(cw * 0.13));
+    const maxTextWidth = cw - 2 * paddingX;
+    const fontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
-    // Phụ đề
-    if (subtext) {
-      ctx.fillStyle = '#64748b';
-      ctx.font = '600 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    // 3. Tự động tính toán cỡ chữ Tiêu đề (Auto-fit title font size)
+    let titleFontSize = hasSub ? Math.round(ch * 0.34) : Math.round(ch * 0.46);
+    const maxTitleSize = hasSub ? Math.round(ch * 0.36) : Math.round(ch * 0.50);
+    if (titleFontSize > maxTitleSize) titleFontSize = maxTitleSize;
+
+    ctx.font = `bold ${titleFontSize}px ${fontStack}`;
+    let measuredTitleW = ctx.measureText(cleanText).width;
+    while (measuredTitleW > maxTextWidth && titleFontSize > 14) {
+      titleFontSize -= 1.5;
+      ctx.font = `bold ${titleFontSize}px ${fontStack}`;
+      measuredTitleW = ctx.measureText(cleanText).width;
+    }
+
+    // 4. Tự động tính toán cỡ chữ Phụ đề (Auto-fit subtext font size)
+    let subFontSize = 0;
+    let measuredSubW = 0;
+    if (hasSub) {
+      subFontSize = Math.min(Math.round(titleFontSize * 0.60), Math.round(ch * 0.22));
+      ctx.font = `600 ${subFontSize}px ${fontStack}`;
+      measuredSubW = ctx.measureText(cleanSub).width;
+      while (measuredSubW > maxTextWidth && subFontSize > 12) {
+        subFontSize -= 1.2;
+        ctx.font = `600 ${subFontSize}px ${fontStack}`;
+        measuredSubW = ctx.measureText(cleanSub).width;
+      }
+    }
+
+    // 5. Căn chỉnh vị trí chữ chính giữa tâm hộp với khoảng cách hài hòa
+    ctx.textAlign = 'center';
+
+    if (hasSub) {
+      const gap = Math.max(6, Math.round(ch * 0.055));
+      const totalBlockH = titleFontSize + gap + subFontSize;
+      const startY = Math.round((ch - totalBlockH) / 2);
+
+      // Vẽ Tiêu đề chính
+      ctx.fillStyle = textColor;
+      ctx.font = `bold ${titleFontSize}px ${fontStack}`;
       ctx.textBaseline = 'top';
-      ctx.fillText(subtext, width / 2, height / 2 + 10);
+      ctx.fillText(cleanText, cw / 2, startY);
+
+      // Vẽ Phụ đề
+      const subColor = (textColor === '#ffffff' || textColor === '#fff') ? 'rgba(255, 255, 255, 0.88)' : '#64748b';
+      ctx.fillStyle = subColor;
+      ctx.font = `600 ${subFontSize}px ${fontStack}`;
+      ctx.textBaseline = 'top';
+      ctx.fillText(cleanSub, cw / 2, startY + titleFontSize + gap);
+    } else {
+      // Chỉ có tiêu đề duy nhất -> căn giữa hoàn hảo theo cả 2 trục
+      ctx.fillStyle = textColor;
+      ctx.font = `bold ${titleFontSize}px ${fontStack}`;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(cleanText, cw / 2, ch / 2);
     }
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.minFilter = THREE.LinearFilter;
+    texture.generateMipmaps = false;
     return texture;
   }
 
@@ -491,18 +566,22 @@ class Campus3DViewer {
     // Mặt nhãn hiển thị tên phòng trên mái/mặt trước
     if (name && name !== '-') {
       const labelMat = new THREE.MeshBasicMaterial({
-        map: this.createCanvasLabel(name, options.subtext || '', isHighlight ? '#fef08a' : '#ffffff', textColor, strokeColor),
+        map: this.createCanvasLabel(name, options.subtext || '', isHighlight ? '#fef08a' : '#ffffff', textColor, strokeColor, 340, 160),
         transparent: true
       });
-      // Nhãn trên nóc phòng
-      const topLabelGeo = new THREE.PlaneGeometry(w * 0.85, d * 0.7);
+      // Nhãn trên nóc phòng (tỷ lệ cân đối ~2:1, không bị kéo dãn méo mó)
+      const topW = Math.min(w * 0.88, 7.2);
+      const topH = Math.min(d * 0.72, topW / 1.8);
+      const topLabelGeo = new THREE.PlaneGeometry(topW, topH);
       const topLabel = new THREE.Mesh(topLabelGeo, labelMat);
       topLabel.rotation.x = -Math.PI / 2;
       topLabel.position.y = h / 2 + 0.05;
       group.add(topLabel);
 
-      // Nhãn mặt trước phòng (hướng ra hành lang)
-      const frontLabelGeo = new THREE.PlaneGeometry(w * 0.8, h * 0.45);
+      // Nhãn mặt trước phòng (hướng ra hành lang, tỷ lệ chuẩn 2.1:1 khớp canvas)
+      const frontW = Math.min(w * 0.88, 7.0);
+      const frontH = Math.min(h * 0.52, frontW / 2.1);
+      const frontLabelGeo = new THREE.PlaneGeometry(frontW, frontH);
       const frontLabel = new THREE.Mesh(frontLabelGeo, labelMat);
       frontLabel.position.set(0, 0, d / 2 + 0.05);
       group.add(frontLabel);
@@ -563,12 +642,13 @@ class Campus3DViewer {
         group.add(step);
       }
 
-      // Biển báo tầng ở lồng cầu thang
+      // Biển báo tầng ở lồng cầu thang chuẩn tỷ lệ 2.1:1
       const labelMat = new THREE.MeshBasicMaterial({
-        map: this.createCanvasLabel(`Cầu Thang`, f === 0 ? 'Tầng Trệt' : `Tầng ${f + 1}`, '#e2e8f0', '#1e293b', '#64748b', 256, 128),
+        map: this.createCanvasLabel(`Cầu Thang`, f === 0 ? 'Tầng Trệt' : `Tầng ${f + 1}`, '#e2e8f0', '#1e293b', '#64748b', 340, 160),
         transparent: true
       });
-      const lbl = new THREE.Mesh(new THREE.PlaneGeometry(width * 0.7, 1.8), labelMat);
+      const lblW = width * 0.7;
+      const lbl = new THREE.Mesh(new THREE.PlaneGeometry(lblW, lblW / 2.1), labelMat);
       lbl.position.set(0, baseY + 2.2, depth / 2 + 0.08);
       group.add(lbl);
     }
@@ -1289,10 +1369,10 @@ class Campus3DViewer {
 
     // Biển định danh 3D cho hành lang trệt
     const gLabelMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("HÀNH LANG TẦNG TRỆT", "12A10 (Dãy B) ➔ Tiếp dân (Hành chính)", "#ffffff", "#0284c7", "#38bdf8", 340, 120),
+      map: this.createCanvasLabel("HÀNH LANG TẦNG TRỆT", "12A10 (Dãy B) ➔ Tiếp dân (Hành chính)", "#ffffff", "#0284c7", "#38bdf8", 420, 150),
       transparent: true
     });
-    const gLabel = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 1.8), gLabelMat);
+    const gLabel = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 2.0), gLabelMat);
     gLabel.position.set(-20.5, 1.5, 7);
     gLabel.rotation.y = -Math.PI / 2;
     groundWalkway.add(gLabel);
@@ -1341,10 +1421,10 @@ class Campus3DViewer {
 
     // Biển CẦU HÀNH LANG TẦNG 2
     const skyLabelMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("🪜 CẦU HÀNH LANG TẦNG 2", "12A6 (Dãy B) ➔ Phòng Chi bộ", "#1e40af", "#ffffff", "#60a5fa", 360, 130),
+      map: this.createCanvasLabel("🪜 CẦU HÀNH LANG TẦNG 2", "12A6 (Dãy B) ➔ Phòng Chi bộ", "#1e40af", "#ffffff", "#60a5fa", 420, 150),
       transparent: true
     });
-    const skyLabel = new THREE.Mesh(new THREE.PlaneGeometry(6, 2.2), skyLabelMat);
+    const skyLabel = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 2.0), skyLabelMat);
     skyLabel.position.set(-20.5, bridgeY + 1.4, 7);
     skyLabel.rotation.y = -Math.PI / 2;
     skybridge.add(skyLabel);
@@ -1463,10 +1543,10 @@ class Campus3DViewer {
 
     // Biển MÁI TAM GIÁC
     const canopyLblMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("MÁI CHE TRUNG TÂM", "Sảnh hành lang & Lối vào", "#ffffff", "#0284c7", "#38bdf8", 320, 120),
+      map: this.createCanvasLabel("MÁI CHE TRUNG TÂM", "Sảnh hành lang & Lối vào", "#ffffff", "#0284c7", "#38bdf8", 380, 140),
       transparent: true
     });
-    const canopyLbl = new THREE.Mesh(new THREE.PlaneGeometry(6, 2.2), canopyLblMat);
+    const canopyLbl = new THREE.Mesh(new THREE.PlaneGeometry(5.5, 2.0), canopyLblMat);
     canopyLbl.position.set(0, 2.2, 5.5);
     canopyGroup.add(canopyLbl);
 
@@ -1528,10 +1608,10 @@ class Campus3DViewer {
 
     // Biển CỘT CỜ
     const flagLblMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("CỘT CỜ", "Sân trường trung tâm", "#ffffff", "#0f172a", "#64748b", 256, 110),
+      map: this.createCanvasLabel("CỘT CỜ", "Sân trường trung tâm", "#ffffff", "#0f172a", "#64748b", 340, 140),
       transparent: true
     });
-    const flagLbl = new THREE.Mesh(new THREE.PlaneGeometry(4, 1.7), flagLblMat);
+    const flagLbl = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 1.7), flagLblMat);
     flagLbl.position.set(0, 1.2, 4.2);
     flagGroup.add(flagLbl);
 
@@ -1588,10 +1668,10 @@ class Campus3DViewer {
     envGroup.add(gate);
 
     const gateLblMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("CỔNG TRƯỜNG CHÍNH", "Ra vào khuôn viên", "#ffffff", "#dc2626", "#dc2626", 360, 120),
+      map: this.createCanvasLabel("CỔNG TRƯỜNG CHÍNH", "Ra vào khuôn viên", "#ffffff", "#dc2626", "#dc2626", 450, 150),
       transparent: true
     });
-    const gateLbl = new THREE.Mesh(new THREE.PlaneGeometry(10, 3.2), gateLblMat);
+    const gateLbl = new THREE.Mesh(new THREE.PlaneGeometry(12, 4.0), gateLblMat);
     gateLbl.position.set(-6, 3, 53.3);
     envGroup.add(gateLbl);
 
@@ -1600,8 +1680,8 @@ class Campus3DViewer {
     gvParking.position.set(-36, 1.5, 42);
     gvParking.castShadow = true;
     envGroup.add(gvParking);
-    const gvLbl = new THREE.Mesh(new THREE.PlaneGeometry(8, 2), new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("NHÀ XE GIÁO VIÊN", "", "#ffffff", "#0f172a", "#94a3b8"),
+    const gvLbl = new THREE.Mesh(new THREE.PlaneGeometry(9, 3.0), new THREE.MeshBasicMaterial({
+      map: this.createCanvasLabel("NHÀ XE GIÁO VIÊN", "Khu vực để xe GV", "#ffffff", "#0f172a", "#94a3b8", 360, 120),
       transparent: true
     }));
     gvLbl.position.set(-36, 1.8, 46.1);
@@ -2083,11 +2163,11 @@ class Campus3DViewer {
       isStart ? "#10b981" : "#ef4444",
       "#ffffff",
       "#ffffff",
-      320,
-      120
+      360,
+      140
     );
     const labelMat = new THREE.MeshBasicMaterial({ map: labelCanvas, transparent: true });
-    const lbl = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 1.8), labelMat);
+    const lbl = new THREE.Mesh(new THREE.PlaneGeometry(5.4, 2.1), labelMat);
     lbl.position.y = 6.8;
     pinGroup.add(lbl);
 
