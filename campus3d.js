@@ -1820,13 +1820,45 @@ class Campus3DViewer {
     }
   }
 
-  // Đổi góc nhìn camera theo thiết lập sẵn
+  // Bật / Tắt chế độ tự động xoay 360 độ quanh khuôn viên
+  toggle360AutoRotate(forceState) {
+    if (!this.controls) return false;
+    if (typeof forceState === 'boolean') {
+      this.controls.autoRotate = forceState;
+    } else {
+      this.controls.autoRotate = !this.controls.autoRotate;
+    }
+    if (this.controls.autoRotate) {
+      if (!this.controls.autoRotateSpeed) this.controls.autoRotateSpeed = 2.0;
+    }
+    return this.controls.autoRotate;
+  }
+
+  // Cài đặt tốc độ xoay 360 (1.0 = chậm, 2.0 = vừa, 3.5 = nhanh)
+  set360RotateSpeed(speed = 2.0) {
+    if (!this.controls) return;
+    const sign = Math.sign(this.controls.autoRotateSpeed) || 1;
+    this.controls.autoRotateSpeed = Math.abs(speed) * sign;
+  }
+
+  // Đổi chiều xoay 360 độ (theo chiều hoặc ngược chiều kim đồng hồ)
+  reverse360Direction() {
+    if (!this.controls) return 1;
+    this.controls.autoRotateSpeed = -this.controls.autoRotateSpeed;
+    return this.controls.autoRotateSpeed > 0 ? 1 : -1;
+  }
+
+  // Đổi góc nhìn camera theo thiết lập sẵn & Điểm nhìn 360 Panorama
   setCameraPreset(presetName) {
     const duration = 1000;
     const startPos = this.camera.position.clone();
     const startTarget = this.controls.target.clone();
     let endPos = new THREE.Vector3();
     let endTarget = new THREE.Vector3();
+
+    // Reset giới hạn góc xoay mặc định
+    this.controls.minDistance = 15;
+    this.controls.maxPolarAngle = Math.PI / 2 - 0.03;
 
     switch (presetName) {
       case 'drone_view': // Góc Flycam trực diện từ trên cao chuẩn ảnh flycam thực tế
@@ -1853,6 +1885,51 @@ class Campus3DViewer {
         endPos.set(0, 10, 22);
         endTarget.set(0, 4, 3);
         break;
+
+      // ================= CÁC ĐIỂM NHÌN TOÀN CẢNH 360° THỰC TẾ =================
+      case '360_san_truong': // 1. Đứng giữa Sân trường trung tâm nhìn 360°
+        this.controls.minDistance = 2.0;
+        this.controls.maxPolarAngle = Math.PI * 0.58;
+        endPos.set(0, 3.2, 8);
+        endTarget.set(0, 3.6, 0);
+        break;
+      case '360_cong_truong': // 2. Đứng tại Cổng trường chính nhìn 360°
+        this.controls.minDistance = 2.0;
+        this.controls.maxPolarAngle = Math.PI * 0.58;
+        endPos.set(-6, 2.6, 48);
+        endTarget.set(-6, 3.2, 20);
+        break;
+      case '360_cot_co': // 3. Đứng trước Cột cờ & Mái tam giác nhìn 360°
+        this.controls.minDistance = 2.0;
+        this.controls.maxPolarAngle = Math.PI * 0.58;
+        endPos.set(0, 2.5, 14);
+        endTarget.set(0, 3.5, 2);
+        break;
+      case '360_hoi_truong': // 4. Đứng trước Hội trường mái vòm nhìn 360°
+        this.controls.minDistance = 2.0;
+        this.controls.maxPolarAngle = Math.PI * 0.58;
+        endPos.set(24, 2.8, 25);
+        endTarget.set(28, 3.6, 18);
+        break;
+      case '360_day_hanh_chinh': // 5. Đứng trước sảnh Dãy Hành chính nhìn 360°
+        this.controls.minDistance = 2.0;
+        this.controls.maxPolarAngle = Math.PI * 0.58;
+        endPos.set(-20, 2.8, 24);
+        endTarget.set(-20, 3.2, 18);
+        break;
+      case '360_skybridge': // 6. Đứng trên Cầu vượt Tầng 2 nhìn toàn cảnh 360°
+        this.controls.minDistance = 1.5;
+        this.controls.maxPolarAngle = Math.PI * 0.58;
+        endPos.set(-20.5, 4.8, 8);
+        endTarget.set(-20.5, 4.0, 0);
+        break;
+      case '360_orbit': // 7. Toàn cảnh xoay 360° từ trên cao
+        this.controls.minDistance = 15;
+        this.controls.maxPolarAngle = Math.PI / 2 - 0.03;
+        endPos.set(0, 42, 65);
+        endTarget.set(0, 6, 2);
+        break;
+
       default:
         endPos.set(0, 48, 70);
         endTarget.set(0, 7, 3);

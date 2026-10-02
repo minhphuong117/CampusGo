@@ -455,6 +455,236 @@
       color: #94a3b8;
       font-size: 12px;
     }
+
+    /* 360 Degree Feature Styles */
+    .tool-btn.btn-360 {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 95, 70, 0.4));
+      border-color: #10b981;
+      color: #34d399;
+      font-weight: 700;
+    }
+    .tool-btn.btn-360:hover {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+    }
+    .tool-btn.btn-360.active {
+      background: linear-gradient(135deg, #10b981, #047857);
+      color: white;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.8);
+      animation: pulse-360 2s infinite;
+    }
+    @keyframes pulse-360 {
+      0%, 100% { box-shadow: 0 0 14px rgba(16, 185, 129, 0.7); }
+      50% { box-shadow: 0 0 24px rgba(52, 211, 153, 0.95); }
+    }
+    .icon-spin {
+      display: inline-block;
+      transition: transform 0.3s;
+    }
+    .btn-360.active .icon-spin {
+      animation: spin-loop 4s linear infinite;
+    }
+    @keyframes spin-loop {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Floating 360 Panorama Widget */
+    .panel-360 {
+      position: fixed;
+      bottom: 56px;
+      right: 20px;
+      width: 320px;
+      z-index: 25;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .panel-360.hidden {
+      display: none;
+    }
+    .panel-360-header {
+      padding: 10px 14px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(15, 23, 42, 0.6));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-360-title {
+      font-weight: 800;
+      font-size: 13.5px;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-360-live {
+      background: #10b981;
+      color: white;
+      font-size: 9.5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .btn-close-360 {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 3px 6px;
+      border-radius: 4px;
+    }
+    .btn-close-360:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .panel-360-body {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .row-360-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-360-play {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      transition: all 0.2s;
+    }
+    .btn-360-play:hover {
+      background: rgba(16, 185, 129, 0.3);
+      color: white;
+    }
+    .btn-360-play.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+    .btn-360-dir {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      transition: all 0.2s;
+    }
+    .btn-360-dir:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+    .group-360-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .lbl-360-small {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .pill-group {
+      display: flex;
+      gap: 4px;
+    }
+    .pill-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .pill-btn:hover {
+      color: white;
+      border-color: #38bdf8;
+    }
+    .pill-btn.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: white;
+    }
+    .hotspots-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .hotspot-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .hotspot-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      transform: translateY(-1px);
+    }
+    .hotspot-btn.active {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.6), rgba(14, 165, 233, 0.6));
+      border-color: #38bdf8;
+      color: white;
+      font-weight: 700;
+    }
+    .tip-360 {
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.4;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 6px;
+    }
+
+    @media (max-width: 768px) {
+      .panel-360 {
+        width: calc(100vw - 32px);
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+      }
+      .controls-hint {
+        display: none;
+      }
+    }
   </style>
 </head>
 
@@ -470,19 +700,30 @@
       <span class="badge-3d">3D INTERACTIVE</span>
     </div>
 
-    <!-- Quick Camera Presets -->
+    <!-- Quick Camera Presets & 360 Mode -->
     <div class="btn-group">
+      <!-- Nút bật tắt chế độ tự động xoay 360 độ -->
+      <button class="tool-btn btn-360" id="btn-toggle-360" onclick="toggle360Mode()"
+        title="Bật / Tắt chế độ tự động xoay toàn cảnh 360 độ quanh khuôn viên trường">
+        <span class="icon-spin">🔄</span> <span id="lbl-360">Xoay 360°</span>
+      </button>
+
+      <button class="tool-btn" id="btn-hotspots-360" onclick="toggle360Panel()"
+        title="Mở bảng chọn điểm nhìn 360 độ toàn cảnh từ mặt đất & trên cao">
+        🌐 Điểm Nhìn 360°
+      </button>
+
       <button class="tool-btn active" id="btn-drone" onclick="setActiveCam(this, 'drone_view')"
         title="Góc nhìn Flycam thực tế từ trên cao nhìn vào sân trường và các dãy nhà">
-        🚁 Góc Flycam Thực Tế
+        🚁 Flycam Thực Tế
       </button>
 
       <button class="tool-btn" id="btn-isometric" onclick="setActiveCam(this, 'isometric')">
-        📐 Toàn Cảnh 3D
+        📐 Toàn Cảnh
       </button>
 
       <button class="tool-btn" id="btn-canopy" onclick="setActiveCam(this, 'canopy_view')">
-        🔺 Mái Tam Giác & Cột Cờ
+        🔺 Mái Tam Giác
       </button>
 
       <button class="tool-btn" id="btn-gate" onclick="setActiveCam(this, 'gate_view')">
@@ -490,12 +731,12 @@
       </button>
 
       <button class="tool-btn" id="btn-topdown" onclick="setActiveCam(this, 'top_down')">
-        ⬇️ Nhìn Từ Trên Xuống
+        ⬇️ Nhìn Từ Trên
       </button>
 
       <button class="tool-btn btn-special" onclick="viewer.setCameraPreset('bridge_west')"
         title="Xem chi tiết hành lang nối Dãy B và Dãy Hành Chính ở cả 2 tầng">
-        🎯 Hành Lang Nối 2 Tầng (Dãy B ⇄ HC)
+        🎯 Cầu Nối 2 Tầng
       </button>
     </div>
 
@@ -613,6 +854,73 @@
     <div class="legend-item">
       <div class="legend-color" style="background: #1e40af; border: 2px solid #60a5fa;"></div>
       <div><b>Cầu hành lang Tầng 2:</b> Cầu vượt trên cao nối <b>Dãy B (12A6)</b> sang <b>Phòng Chi bộ</b>.</div>
+    </div>
+  </div>
+
+  <!-- 🌐 FLOATING 360° PANORAMA CONTROLS WIDGET -->
+  <div class="panel-360" id="panel-360">
+    <div class="panel-360-header">
+      <div class="panel-360-title">
+        <span>🌐</span>
+        <span>Toàn Cảnh 360° Khuôn Viên</span>
+        <span class="badge-360-live" id="badge-360-status">LIVE 360°</span>
+      </div>
+      <button type="button" class="btn-close-360" onclick="toggle360Panel()" title="Thu gọn / Đóng">✕</button>
+    </div>
+
+    <div class="panel-360-body">
+      <!-- Tự động xoay & đổi chiều -->
+      <div class="row-360-actions">
+        <button type="button" class="btn-360-play" id="btn-360-play" onclick="toggle360Mode()">
+          <span id="icon-360-play">▶️</span>
+          <span id="text-360-play">Bật Xoay 360°</span>
+        </button>
+        <button type="button" class="btn-360-dir" onclick="reverse360Dir()" title="Đổi chiều xoay quanh trường">
+          ⇄ Đổi Chiều
+        </button>
+      </div>
+
+      <!-- Tốc độ xoay -->
+      <div class="group-360-row">
+        <span class="lbl-360-small">Tốc độ:</span>
+        <div class="pill-group">
+          <button class="pill-btn" onclick="set360Speed(1.0, this)">1x Chậm</button>
+          <button class="pill-btn active" onclick="set360Speed(2.0, this)">2x Vừa</button>
+          <button class="pill-btn" onclick="set360Speed(3.8, this)">3x Nhanh</button>
+        </div>
+      </div>
+
+      <!-- Chọn điểm nhìn 360° -->
+      <div class="group-360-col">
+        <span class="lbl-360-small" style="margin-bottom: 4px; display: block;">📍 Chọn vị trí đứng nhìn 360°:</span>
+        <div class="hotspots-grid">
+          <button class="hotspot-btn" onclick="jumpTo360('360_san_truong', this)">
+            🏛️ Sân Trường
+          </button>
+          <button class="hotspot-btn" onclick="jumpTo360('360_cong_truong', this)">
+            🚪 Cổng Trường
+          </button>
+          <button class="hotspot-btn" onclick="jumpTo360('360_cot_co', this)">
+            🚩 Cột Cờ
+          </button>
+          <button class="hotspot-btn" onclick="jumpTo360('360_hoi_truong', this)">
+            🎭 Hội Trường
+          </button>
+          <button class="hotspot-btn" onclick="jumpTo360('360_day_hanh_chinh', this)">
+            🏢 Hành Chính
+          </button>
+          <button class="hotspot-btn" onclick="jumpTo360('360_skybridge', this)">
+            🪜 Cầu Tầng 2
+          </button>
+          <button class="hotspot-btn active" onclick="jumpTo360('360_orbit', this)">
+            🚁 Toàn Cảnh
+          </button>
+        </div>
+      </div>
+
+      <div class="tip-360">
+        💡 <i>Kéo chuột hoặc vuốt ngón tay trên màn hình để chủ động nhìn 360° mọi hướng bất kỳ lúc nào!</i>
+      </div>
     </div>
   </div>
 
@@ -796,6 +1104,78 @@
     function clearActiveRoute() {
       viewer.clearRoute();
       document.getElementById('nav-result-box').style.display = 'none';
+    }
+
+    // =========================================================================
+    // 🌐 BỘ ĐIỀU KHIỂN CHẾ ĐỘ XEM 360 ĐỘ TOÀN CẢNH KHUÔN VIÊN
+    // =========================================================================
+    let is360Rotating = false;
+
+    function toggle360Mode() {
+      if (!viewer) return;
+      is360Rotating = viewer.toggle360AutoRotate();
+      update360UI();
+    }
+
+    function set360Speed(speed, btn) {
+      if (!viewer) return;
+      viewer.set360RotateSpeed(speed);
+      document.querySelectorAll('.pill-group .pill-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+    }
+
+    function reverse360Dir() {
+      if (!viewer) return;
+      viewer.reverse360Direction();
+    }
+
+    function jumpTo360(preset, btn) {
+      if (!viewer) return;
+      viewer.setCameraPreset(preset);
+      document.querySelectorAll('.hotspots-grid .hotspot-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      // Tự động bật xoay 360 để tạo trải nghiệm toàn cảnh mượt mà
+      if (!is360Rotating) {
+        is360Rotating = viewer.toggle360AutoRotate(true);
+      }
+      update360UI();
+    }
+
+    function toggle360Panel() {
+      const p = document.getElementById('panel-360');
+      if (p) p.classList.toggle('hidden');
+    }
+
+    function update360UI() {
+      const btnMain = document.getElementById('btn-toggle-360');
+      const btnPlay = document.getElementById('btn-360-play');
+      const txtPlay = document.getElementById('text-360-play');
+      const iconPlay = document.getElementById('icon-360-play');
+      const badge = document.getElementById('badge-360-status');
+      const panel = document.getElementById('panel-360');
+
+      if (is360Rotating) {
+        if (btnMain) btnMain.classList.add('active');
+        if (btnPlay) btnPlay.classList.add('active');
+        if (txtPlay) txtPlay.textContent = 'Tạm Dừng 360°';
+        if (iconPlay) iconPlay.textContent = '⏸️';
+        if (badge) {
+          badge.textContent = 'ĐANG XOAY 360°';
+          badge.style.background = '#10b981';
+        }
+        if (panel && panel.classList.contains('hidden')) {
+          panel.classList.remove('hidden');
+        }
+      } else {
+        if (btnMain) btnMain.classList.remove('active');
+        if (btnPlay) btnPlay.classList.remove('active');
+        if (txtPlay) txtPlay.textContent = 'Bật Xoay 360°';
+        if (iconPlay) iconPlay.textContent = '▶️';
+        if (badge) {
+          badge.textContent = 'TẠM DỪNG 360°';
+          badge.style.background = '#64748b';
+        }
+      }
     }
   </script>
 </body>
