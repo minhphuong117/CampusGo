@@ -497,14 +497,14 @@ class Campus3DViewer {
     const treePositions = [
       { x: -12, z: 2, s: 1.1 },
       { x: -8, z: 16, s: 1.0 },
-      { x: -14, z: 28, s: 1.15 },
+      { x: -14, z: 42, s: 1.0 }, // Lùi ra xa trước sân, không che chắn phòng Phó HT / Kế toán
       { x: -4, z: 36, s: 1.0 },
       { x: 8, z: 8, s: 1.05 },
       { x: 12, z: 22, s: 1.1 },
       { x: 10, z: 34, s: 1.0 },
       { x: -18, z: -8, s: 0.95 },
-      { x: -28, z: 12, s: 1.0 },
-      { x: -28, z: 32, s: 1.0 }
+      { x: -28, z: 10, s: 0.9 },
+      { x: -38, z: 38, s: 1.0 }  // Đặt dọc lối đi nhà xe, giải phóng toàn bộ mặt tiền Văn thư & Hiệu trưởng
     ];
     treePositions.forEach(tp => {
       const tree = this.createCourtyardTree(tp.x, tp.z, tp.s);
@@ -1231,14 +1231,21 @@ class Campus3DViewer {
     const adminStair = this.createStairTower(stairCenterX, zPos, 2, floorH, stairW, roomD + 2.2, "CẦU THANG HC");
     building.add(adminStair);
 
-    // Cột hiên đỏ gạch mặt tiền Dãy Hành Chính phân bố đều dọc hành lang
+    // Cột hiên đỏ gạch mặt tiền Dãy Hành Chính đặt CHUẨN XÁC tại vách ngăn giữa các phòng
+    // Tuyệt đối không che khuất biển tên phòng hay chữ của bất kỳ phòng nào
     const redColAdmin = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.7 });
-    [-37, -32, -27, -22, -17, -12, -7, -2].forEach(cx => {
+    const colDividers = [-37.0, -33.35, -28.1, -22.85, -17.8, -12.55, -2.15];
+    colDividers.forEach(cx => {
       const col = new THREE.Mesh(new THREE.BoxGeometry(0.45, 2 * floorH, 0.45), redColAdmin);
       col.position.set(cx, floorH, zPos + roomD / 2 + 2.6);
       col.castShadow = true;
       building.add(col);
     });
+    // Cột tầng trệt giữa Phòng Truyền Thống và Tiếp Dân (chỉ cao 1 tầng, không chắn phòng Chi bộ tầng 2)
+    const midTretCol = new THREE.Mesh(new THREE.BoxGeometry(0.45, floorH, 0.45), redColAdmin);
+    midTretCol.position.set(-7.3, floorH / 2, zPos + roomD / 2 + 2.6);
+    midTretCol.castShadow = true;
+    building.add(midTretCol);
 
     // Mái dốc tôn xanh lam nằm ngang (Hip Roof) trùm trọn vẹn toàn bộ các phòng và hành lang
     const roofAdmin = this.createHipRoofMesh(38, roomD + 4.2, 2.8, 0.8, 0x1d4ed8);
