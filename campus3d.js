@@ -1167,53 +1167,55 @@ class Campus3DViewer {
     const floorH = 3.6;
     const zPos = 18; // Nằm ngang phía trước bên trái sân trường
     const roomD = 6.4;
-    const roomW = 5.2;
+    const roomW = 5.0;
+    const stairW = 4.6;
+    const stairCenterX = -20.35; // Nằm chính giữa, khớp nối cầu thang với các phòng 2 bên
 
     // Tầng trệt (fl_0)
     const tretRooms = [
       { name: "WC", w: 3.5, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' },
-      { name: "HỒ SƠ 1", subtext: "Lưu trữ 1", color: 0xf8fafc },
-      { name: "HỒ SƠ 2", subtext: "Lưu trữ 2", color: 0xf8fafc },
-      { isStair: true },
-      { name: "PHÓ HT", subtext: "Phó Hiệu trưởng", color: 0xf8fafc },
-      { name: "TRUYỀN THỐNG", subtext: "Phòng truyền thống", color: 0xf8fafc },
-      { name: "TIẾP DÂN", subtext: "Phòng Tiếp dân", color: 0xf8fafc }
+      { name: "HỒ SƠ 1", subtext: "Lưu trữ 1", w: 5.0, color: 0xf8fafc },
+      { name: "HỒ SƠ 2", subtext: "Lưu trữ 2", w: 5.0, color: 0xf8fafc },
+      { isStair: true, w: stairW },
+      { name: "PHÓ HT", subtext: "Phó Hiệu trưởng", w: 5.0, color: 0xf8fafc },
+      { name: "TRUYỀN THỐNG", subtext: "Phòng truyền thống", w: 5.0, color: 0xf8fafc },
+      { name: "TIẾP DÂN", subtext: "Phòng Tiếp dân", w: 5.0, color: 0xf8fafc }
     ];
 
     // Tầng 2 (fl_1)
     const t2Rooms = [
       { name: "WC", w: 3.5, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' },
-      { name: "HIỆU TRƯỞNG", subtext: "Phòng Hiệu trưởng", color: 0xf8fafc },
-      { name: "VĂN THƯ", subtext: "Văn thư - Hành chính", color: 0xf8fafc },
-      { isStair: true },
-      { name: "KẾ TOÁN", subtext: "Phòng Kế toán", color: 0xf8fafc },
-      { name: "CHI BỘ (HỌP GV)", subtext: "Phòng họp GV", color: 0xfef3c7, stroke: '#d97706', textColor: '#b45309', w: 8.5 }
+      { name: "HIỆU TRƯỞNG", subtext: "Phòng Hiệu trưởng", w: 5.0, color: 0xf8fafc },
+      { name: "VĂN THƯ", subtext: "Văn thư - Hành chính", w: 5.0, color: 0xf8fafc },
+      { isStair: true, w: stairW },
+      { name: "KẾ TOÁN", subtext: "Phòng Kế toán", w: 5.0, color: 0xf8fafc },
+      { name: "CHI BỘ (HỌP GV)", subtext: "Phòng họp GV", w: 10.25, color: 0xfef3c7, stroke: '#d97706', textColor: '#b45309' }
     ];
 
-    // Vẽ 2 tầng nằm ngang
+    // Vẽ 2 tầng nằm ngang, liên tục không có khoảng trống
     [
       { floor: 0, rooms: tretRooms },
       { floor: 1, rooms: t2Rooms }
     ].forEach(fl => {
       const y = fl.floor * floorH + floorH / 2;
-      let startX = -36;
+      let curX = -37.0;
 
-      // Sàn hành lang trước màu vàng be nhạt
+      // Sàn hành lang trước màu vàng be nhạt chạy xuyên suốt toàn bộ dãy
       const slab = new THREE.Mesh(
-        new THREE.BoxGeometry(28, 0.4, roomD + 2.8),
+        new THREE.BoxGeometry(36.0, 0.4, roomD + 2.8),
         new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.6 })
       );
-      slab.position.set(-22, fl.floor * floorH, zPos + 1.4);
+      slab.position.set(-19.6, fl.floor * floorH, zPos + 1.4);
       slab.receiveShadow = true;
       building.add(slab);
 
       fl.rooms.forEach(r => {
         if (r.isStair) {
-          startX += 5.2;
+          curX += (r.w || stairW) + 0.25;
           return;
         }
         const rw = r.w || roomW;
-        const box = this.createRoomBlock(r.name, startX + rw / 2, y, zPos, rw, floorH * 0.9, roomD, {
+        const box = this.createRoomBlock(r.name, curX + rw / 2, y, zPos, rw, floorH * 0.9, roomD, {
           color: r.color || 0xffffff,
           textColor: r.textColor || '#1e293b',
           stroke: r.stroke || '#94a3b8',
@@ -1221,33 +1223,33 @@ class Campus3DViewer {
           floorKey: `fl_${fl.floor}`
         });
         building.add(box);
-        startX += rw + 0.4;
+        curX += rw + 0.25;
       });
     });
 
-    // Cầu thang Dãy Hành Chính
-    const adminStair = this.createStairTower(-20.5, zPos, 2, floorH, 5.0, roomD + 2.2, "CẦU THANG HC");
+    // Cầu thang Dãy Hành Chính khít liền mạch với phòng 2 bên
+    const adminStair = this.createStairTower(stairCenterX, zPos, 2, floorH, stairW, roomD + 2.2, "CẦU THANG HC");
     building.add(adminStair);
 
-    // Cột hiên đỏ gạch mặt tiền Dãy Hành Chính
+    // Cột hiên đỏ gạch mặt tiền Dãy Hành Chính phân bố đều dọc hành lang
     const redColAdmin = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.7 });
-    [-36, -30, -24, -18, -12].forEach(cx => {
-      const col = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2 * floorH, 0.5), redColAdmin);
+    [-37, -32, -27, -22, -17, -12, -7, -2].forEach(cx => {
+      const col = new THREE.Mesh(new THREE.BoxGeometry(0.45, 2 * floorH, 0.45), redColAdmin);
       col.position.set(cx, floorH, zPos + roomD / 2 + 2.6);
       col.castShadow = true;
       building.add(col);
     });
 
-    // Mái dốc tôn xanh lam nằm ngang (Hip Roof)
-    const roofAdmin = this.createHipRoofMesh(29, roomD + 3.8, 2.6, 0.8, 0x1d4ed8);
-    roofAdmin.position.set(-22, 2 * floorH, zPos + 1.4);
+    // Mái dốc tôn xanh lam nằm ngang (Hip Roof) trùm trọn vẹn toàn bộ các phòng và hành lang
+    const roofAdmin = this.createHipRoofMesh(38, roomD + 4.2, 2.8, 0.8, 0x1d4ed8);
+    roofAdmin.position.set(-19.6, 2 * floorH, zPos + 1.4);
     building.add(roofAdmin);
 
     // Hành lang có mái che xanh chạy dọc từ mép trái ra phía Cổng trường (chuẩn ảnh drone)
     const walkwayGeo = new THREE.BoxGeometry(3.6, 0.25, 22);
     const walkwayMat = new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.6 });
     const walkway = new THREE.Mesh(walkwayGeo, walkwayMat);
-    walkway.position.set(-35.5, 0.12, 31);
+    walkway.position.set(-36.5, 0.12, 31);
     walkway.receiveShadow = true;
     building.add(walkway);
 
@@ -1255,7 +1257,7 @@ class Campus3DViewer {
       new THREE.BoxGeometry(4.0, 0.2, 22),
       new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.35 })
     );
-    walkwayCanopy.position.set(-35.5, 2.6, 31);
+    walkwayCanopy.position.set(-36.5, 2.6, 31);
     building.add(walkwayCanopy);
 
     this.scene.add(building);
