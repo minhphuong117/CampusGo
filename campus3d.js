@@ -1298,15 +1298,55 @@ class Campus3DViewer {
       });
     });
 
-    // 4. Biển chữ HỘI TRƯỜNG và Nhãn 3D tương tác
-    const hallRoom = this.createRoomBlock("HỘI TRƯỜNG", hallX, hallH / 2, hallZ, hallW * 0.9, hallH * 0.9, hallD * 0.9, {
-      color: 0xfef9c3,
-      textColor: 0x0f172a,
-      stroke: 0xca8a04,
-      subtext: "Đại hội & Sinh hoạt trường",
-      floorKey: 'fl_0'
-    });
-    building.add(hallRoom);
+    // 4. Biển chữ HỘI TRƯỜNG lớn và sắc nét ở mặt tiền (Hướng Nam - Ra cổng trường)
+    const hallLabelTex = this.createCanvasLabel(
+      "HỘI TRƯỜNG",
+      "Khu sinh hoạt chung & Đại hội",
+      "#ffffff",
+      "#1e40af",
+      "#2563eb",
+      480,
+      160
+    );
+    const hallSignMat = new THREE.MeshBasicMaterial({ map: hallLabelTex, transparent: true });
+
+    // Biển mặt tiền phía Nam
+    const hallFrontSign = new THREE.Mesh(new THREE.PlaneGeometry(10.5, 3.5), hallSignMat);
+    hallFrontSign.position.set(hallX, 3.8, hallZ + hallD / 2 + 0.12);
+    building.add(hallFrontSign);
+
+    // Cửa chính kính màu xanh sẫm dưới biển hiệu
+    const doorMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.2, metalness: 0.5 });
+    const mainDoor = new THREE.Mesh(new THREE.BoxGeometry(6.4, 2.4, 0.15), doorMat);
+    mainDoor.position.set(hallX, 1.2, hallZ + hallD / 2 + 0.08);
+    building.add(mainDoor);
+
+    // Mái hiên che sảnh đón tiếp phía trước cửa chính
+    const entranceCanopy = new THREE.Mesh(
+      new THREE.BoxGeometry(7.6, 0.25, 2.0),
+      new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.4 })
+    );
+    entranceCanopy.position.set(hallX, 2.45, hallZ + hallD / 2 + 1.0);
+    building.add(entranceCanopy);
+
+    // Biển mặt hông phía Tây (Hướng ra sân trường trung tâm & cột cờ)
+    const hallSideSign = new THREE.Mesh(new THREE.PlaneGeometry(9.0, 3.0), hallSignMat);
+    hallSideSign.position.set(hallX - hallW / 2 - 0.12, 3.8, hallZ);
+    hallSideSign.rotation.y = -Math.PI / 2;
+    building.add(hallSideSign);
+
+    // Đăng ký tương tác click chọn phòng cho Hội Trường
+    const hallUserData = {
+      name: "HỘI TRƯỜNG",
+      floorKey: 'fl_0',
+      info: "Hội trường lớn mái vòm xanh - Nơi diễn ra các buổi đại hội, lễ mít tinh & hoạt động chung của trường"
+    };
+    hallFrontSign.userData = hallUserData;
+    hallSideSign.userData = hallUserData;
+    body.userData = hallUserData;
+    this.interactiveRooms.push(hallFrontSign);
+    this.interactiveRooms.push(hallSideSign);
+    this.interactiveRooms.push(body);
 
     // 5. Cầu hành lang có mái che xanh nối từ Cánh Phải (Dãy Bộ Môn) xuống Hội trường
     const bridgeToDept = new THREE.Mesh(
