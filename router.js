@@ -243,7 +243,7 @@ class CampusRouter {
       // Nếu cả X và Y đều lệch nhau (đoạn xiên chéo), chèn điểm bẻ góc 90 độ
       if (Math.abs(dx) > 3 && Math.abs(dy) > 3) {
         // Nhận diện xem điểm đích có nằm trên hành lang ngang (y cố định) hay trục dọc không
-        const isHorizontalCorridor = [918, 835, 777, 697, 612, 576, 538, 500, 378, 304, 260, 216, 186].some(y => Math.abs(curr.y - y) <= 6);
+        const isHorizontalCorridor = [938, 835, 777, 697, 612, 536, 498, 460, 378, 301, 263, 225, 186, 144].some(y => Math.abs(curr.y - y) <= 6);
         if (isHorizontalCorridor) {
           // Đi thẳng trục dọc trước để nhập vào hành lang ngang, rồi đi ngang
           clean.push({ x: prev.x, y: curr.y });
@@ -274,6 +274,7 @@ class CampusRouter {
 
   getFloorNumber(floorStr) {
     if (!floorStr) return 0;
+    if (floorStr.includes("4")) return 4;
     if (floorStr.includes("3")) return 3;
     if (floorStr.includes("2")) return 2;
     if (floorStr.includes("1")) return 1;
@@ -343,7 +344,8 @@ class CampusRouter {
       "Cầu thang": 0,
       "Tầng 1": 1,
       "Tầng 2": 2,
-      "Tầng 3": 3
+      "Tầng 3": 3,
+      "Tầng 4": 4
     };
 
     const sRank = floorRank[startLoc.floor] ?? 0;

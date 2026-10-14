@@ -54,6 +54,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const popoverBtnFromGate = document.getElementById("popover-btn-from-gate");
   const popoverBtnQr = document.getElementById("popover-btn-qr");
 
+  // Các phần tử ảnh thực tế trên Popover Card (Hiển thị ngay khi bấm chọn phòng)
+  const popoverPhotoBox = document.getElementById("popover-photo-box");
+  const popoverPhotoImg = document.getElementById("popover-photo-img");
+  const popoverPhotoShimmer = document.getElementById("popover-photo-shimmer");
+  const popoverPhotoBuilding = document.getElementById("popover-photo-building");
+  const popoverPhotoBadge = document.getElementById("popover-photo-badge");
+  const popoverImgPrev = document.getElementById("popover-img-prev");
+  const popoverImgNext = document.getElementById("popover-img-next");
+
   // Toast thông báo
   const toastNotification = document.getElementById("toast-notification");
   const toastIcon = document.getElementById("toast-icon");
@@ -323,6 +332,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // 4. PAN & ZOOM BẢN ĐỒ SVG
   function updateMapTransform() {
     mapSvgWrapper.style.transform = `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`;
+    if (activeClickedLoc && mapLocationPopover && mapLocationPopover.style.display !== "none") {
+      updatePopoverPosition();
+    }
   }
 
   function zoomMap(delta, centerX, centerY) {
@@ -458,11 +470,146 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 6. POPOVER CHỌN ĐỊA ĐIỂM TRỰC TIẾP TRÊN BẢN ĐỒ (KHÔNG CẦN GÕ TÌM KIẾM)
   let activeClickedLoc = null;
+  let currentPopoverPhotos = [];
+  let currentPopoverPhotoIdx = 0;
 
-  function showLocationPopover(loc, clientX, clientY) {
+  function updatePopoverPosition() {
+    if (!activeClickedLoc || mapLocationPopover.style.display === "none") return;
+
+    // Trên màn hình mobile (<= 768px), popover hoạt động dạng Bottom Action Sheet ở cạnh dưới
+    if (window.innerWidth <= 768) {
+      mapLocationPopover.style.left = "";
+      mapLocationPopover.style.top = "";
+      mapLocationPopover.style.bottom = "";
+      mapLocationPopover.style.right = "";
+      mapLocationPopover.classList.remove("placement-bottom");
+      return;
+    }
+
+    const appContainer = document.getElementById("app-container");
+    const appRect = appContainer ? appContainer.getBoundingClientRect() : { left: 0, top: 0 };
+    // Ưu tiên phần tử phòng trực quan (hình chữ nhật/khối), nếu không thì hit-area
+    const targetEl = mainMapSvg.querySelector(`.map-interactive-room[data-loc-id="${activeClickedLoc.id}"]`) ||
+                     mainMapSvg.querySelector(`[data-loc-id="${activeClickedLoc.id}"]`);
+
+    let targetX, targetY, targetHeight;
+    if (targetEl) {
+      const elRect = targetEl.getBoundingClientRect();
+      targetX = elRect.left + elRect.width / 2 - appRect.left;
+      targetY = elRect.top - appRect.top;
+      targetHeight = elRect.height;
+    } else {
+      const vpRect = mapViewport.getBoundingClientRect();
+      targetX = vpRect.left + transform.x + activeClickedLoc.x * transform.scale - appRect.left;
+      targetY = vpRect.top + transform.y + activeClickedLoc.y * transform.scale - appRect.top;
+      targetHeight = 0;
+    }
+
+    const popoverWidth = 320;
+    const halfWidth = popoverWidth / 2;
+    const containerWidth = appContainer ? appContainer.clientWidth : window.innerWidth;
+    const popoverHeight = 360; // Chiều cao của card popover kèm ảnh
+
+    // Nếu vị trí quá sát mép trên viewport (targetY < popoverHeight + 35), lật khung xuống bên dưới
+    const placeBelow = targetY < (popoverHeight + 35);
+
+    let anchorY;
+    if (placeBelow) {
+      mapLocationPopover.classList.add("placement-bottom");
+      anchorY = targetY + targetHeight + 2;
+    } else {
+      mapLocationPopover.classList.remove("placement-bottom");
+      anchorY = targetY - 2;
+    }
+
+    // Giữ khung không bị tràn khỏi mép trái / phải của màn hình
+    let cardLeft = targetX;
+    if (cardLeft < halfWidth + 12) {
+      cardLeft = halfWidth + 12;
+    } else if (cardLeft > containerWidth - halfWidth - 12) {
+      cardLeft = containerWidth - halfWidth - 12;
+    }
+
+    // Tọa độ mũi tên luôn chĩa thẳng chuẩn xác 100% vào tâm targetX
+    const deltaX = targetX - cardLeft;
+    const maxArrowOffset = halfWidth - 26;
+    const arrowOffset = Math.max(-maxArrowOffset, Math.min(maxArrowOffset, deltaX));
+
+    mapLocationPopover.style.left = `${cardLeft}px`;
+    mapLocationPopover.style.top = `${anchorY}px`;
+    mapLocationPopover.style.bottom = "auto";
+    mapLocationPopover.style.right = "auto";
+
+    const popoverCard = mapLocationPopover.querySelector(".popover-card");
+    if (popoverCard) {
+      popoverCard.style.setProperty("--arrow-left", `calc(50% + ${arrowOffset}px)`);
+    }
+  }
+
+  function getCategoryLabel(category, loc) {
+    if (loc && loc.name && loc.name.includes("WC")) return "Khu vệ sinh";
+    if (loc && loc.name && loc.name.includes("Cầu thang")) return "Cầu thang";
+    switch (category) {
+      case "admin": return "Phòng Hành chính - Chức năng";
+      case "classroom": return "Phòng học";
+      case "facility": return "Khu tiện ích";
+      case "stair": return "Cầu thang bộ";
+      case "gate": return "Cổng trường";
+      case "parking": return "Bãi giữ xe";
+      case "landmark": return "Khuôn viên trường";
+      default: return category || "Khuôn viên";
+    }
+  }
+
+  function renderPopoverPhotoCard() {
+    if (!popoverPhotoBox || !popoverPhotoImg) return;
+    if (currentPopoverPhotos && currentPopoverPhotos.length > 0) {
+      popoverPhotoBox.style.display = "block";
+      const rawSrc = currentPopoverPhotos[currentPopoverPhotoIdx];
+      const safeSrc = rawSrc.split("/").map(seg => encodeURIComponent(seg)).join("/");
+
+      if (popoverPhotoShimmer) popoverPhotoShimmer.style.display = "block";
+      popoverPhotoImg.onload = () => {
+        if (popoverPhotoShimmer) popoverPhotoShimmer.style.display = "none";
+      };
+      popoverPhotoImg.onerror = () => {
+        if (popoverPhotoShimmer) popoverPhotoShimmer.style.display = "none";
+        if (popoverPhotoImg.src !== rawSrc) {
+          popoverPhotoImg.src = rawSrc;
+        }
+      };
+      popoverPhotoImg.src = safeSrc;
+
+      if (popoverPhotoBuilding) {
+        popoverPhotoBuilding.textContent = activeClickedLoc && activeClickedLoc.building
+          ? `🏢 ${activeClickedLoc.building}`
+          : "🏫 Trường THPT";
+      }
+      if (popoverPhotoBadge) {
+        popoverPhotoBadge.textContent = currentPopoverPhotos.length > 1
+          ? `📷 ${currentPopoverPhotoIdx + 1}/${currentPopoverPhotos.length} • Chạm xem lớn`
+          : `📷 Chạm xem lớn`;
+      }
+      if (popoverImgPrev && popoverImgNext) {
+        const multi = currentPopoverPhotos.length > 1;
+        popoverImgPrev.style.display = multi ? "flex" : "none";
+        popoverImgNext.style.display = multi ? "flex" : "none";
+        popoverImgPrev.disabled = currentPopoverPhotoIdx === 0;
+        popoverImgNext.disabled = currentPopoverPhotoIdx === currentPopoverPhotos.length - 1;
+      }
+    } else {
+      popoverPhotoBox.style.display = "none";
+    }
+  }
+
+  function showLocationPopover(loc) {
     activeClickedLoc = loc;
     popoverTitle.textContent = loc.name;
-    popoverMeta.textContent = `${loc.floor} • ${loc.category || "Khuôn viên"}`;
+
+    // Định dạng danh mục & tòa nhà thành tiếng Việt thân thiện, không bao giờ để raw 'admin'
+    const categoryLabel = getCategoryLabel(loc.category, loc);
+    const buildingText = loc.building ? ` • ${loc.building}` : "";
+    popoverMeta.textContent = `${loc.floor}${buildingText} • ${categoryLabel}`;
 
     // Icon phù hợp theo danh mục
     let icon = "🏫";
@@ -470,45 +617,67 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (loc.name.includes("WC")) icon = "🚻";
     else if (loc.name.includes("Cổng")) icon = "🚪";
     else if (loc.name.includes("Xe")) icon = "🏍️";
-    else if (loc.name.includes("Hành")) icon = "🏛️";
+    else if (loc.name.includes("Hành") || loc.category === "admin") icon = "🏛️";
     else if (loc.name.includes("Y Tế")) icon = "🏥";
     else if (loc.name.includes("Thư Viện")) icon = "📚";
     else if (loc.name.includes("Cờ")) icon = "🚩";
     popoverIcon.textContent = icon;
 
-    mapLocationPopover.style.display = "block";
+    // Tải ảnh thực tế trực tiếp ngay trên card
+    currentPopoverPhotos = (window.ROOM_IMAGES && window.ROOM_IMAGES[loc.id]) || [];
+    currentPopoverPhotoIdx = 0;
+    renderPopoverPhotoCard();
 
-    if (window.innerWidth > 768 && clientX !== undefined && clientY !== undefined) {
-      const popoverWidth = 280;
-      const popoverHeight = 220;
-      let posX = clientX + 15;
-      let posY = clientY - 40;
-      if (posX + popoverWidth > window.innerWidth - 20) {
-        posX = clientX - popoverWidth - 15;
-      }
-      if (posY + popoverHeight > window.innerHeight - 20) {
-        posY = window.innerHeight - popoverHeight - 20;
-      }
-      if (posY < 70) posY = 70;
-      mapLocationPopover.style.left = `${posX}px`;
-      mapLocationPopover.style.top = `${posY}px`;
-      mapLocationPopover.style.bottom = "auto";
-      mapLocationPopover.style.right = "auto";
-    } else {
-      mapLocationPopover.style.left = "0";
-      mapLocationPopover.style.right = "0";
-      mapLocationPopover.style.bottom = "0";
-      mapLocationPopover.style.top = "auto";
+    // Trên màn hình di động, tự động thu gọn thanh chỉ đường bên dưới để hiển thị toàn bộ popover & bản đồ
+    if (window.innerWidth <= 768 && window.setBottomSheetState) {
+      setBottomSheetState("sheet-collapsed");
     }
+
+    mapLocationPopover.style.display = "block";
+    updatePopoverPosition();
+
+    // Lưu loc cho RoomPhotoViewer dùng qua custom event
+    document.dispatchEvent(new CustomEvent("rpm:loc-updated", { detail: { loc } }));
   }
 
   function hideLocationPopover() {
     mapLocationPopover.style.display = "none";
+    mapLocationPopover.classList.remove("placement-bottom");
     activeClickedLoc = null;
   }
 
   if (popoverCloseBtn) {
     popoverCloseBtn.addEventListener("click", hideLocationPopover);
+  }
+
+  // Tương tác với ảnh thực tế trên Popover Card
+  if (popoverPhotoBox) {
+    popoverPhotoBox.addEventListener("click", (e) => {
+      if (e.target.closest(".popover-img-nav")) return;
+      if (window.openRoomPhotoForLoc && activeClickedLoc) {
+        window.openRoomPhotoForLoc(activeClickedLoc, currentPopoverPhotoIdx);
+      }
+    });
+  }
+
+  if (popoverImgPrev) {
+    popoverImgPrev.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (currentPopoverPhotoIdx > 0) {
+        currentPopoverPhotoIdx--;
+        renderPopoverPhotoCard();
+      }
+    });
+  }
+
+  if (popoverImgNext) {
+    popoverImgNext.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (currentPopoverPhotoIdx < currentPopoverPhotos.length - 1) {
+        currentPopoverPhotoIdx++;
+        renderPopoverPhotoCard();
+      }
+    });
   }
 
   if (popoverBtnStart) {
@@ -572,6 +741,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 7. TƯƠNG TÁC BẤM CHỌN PHÒNG TRÊN BẢN ĐỒ SVG
   function setupMapRoomInteractions() {
+    function handleRoomSelection(loc) {
+      showLocationPopover(loc);
+    }
+
     // Click vào phòng trên SVG
     mainMapSvg.addEventListener("click", (e) => {
       const target = e.target.closest("[data-loc-id]");
@@ -580,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const loc = window.CAMPUS_LOCATIONS.find(l => l.id === locId);
         if (loc) {
           e.stopPropagation();
-          showLocationPopover(loc, e.clientX, e.clientY);
+          handleRoomSelection(loc);
           return;
         }
       }
@@ -612,7 +785,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       hitArea.addEventListener("click", (e) => {
         e.stopPropagation();
-        showLocationPopover(loc, e.clientX, e.clientY);
+        handleRoomSelection(loc);
       });
 
       mainMapSvg.appendChild(hitArea);
@@ -1137,14 +1310,21 @@ document.addEventListener("DOMContentLoaded", () => {
       const qrCodeString = `${baseUrl}?from=${loc.id}`;
 
       qrPreviewBox.innerHTML = "";
-      new QRCode(qrPreviewBox, {
-        text: qrCodeString,
-        width: 170,
-        height: 170,
-        colorDark: "#0f172a",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
+      try {
+        if (typeof QRCode !== "undefined") {
+          const correctLvl = (QRCode.CorrectLevel && QRCode.CorrectLevel.H !== undefined) ? QRCode.CorrectLevel.H : 2;
+          new QRCode(qrPreviewBox, {
+            text: qrCodeString,
+            width: 170,
+            height: 170,
+            colorDark: "#0f172a",
+            colorLight: "#ffffff",
+            correctLevel: correctLvl
+          });
+        }
+      } catch (err) {
+        console.warn("QR Code render warning:", err);
+      }
     }
     window.generateQrForSelected = generateQrForSelected;
 
@@ -1210,18 +1390,700 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // 15. CHỨC NĂNG HƯỚNG DẪN TƯƠNG TÁC (ONBOARDING TOUR GUIDE)
+  function setupOnboardingTour() {
+    const tourContainer = document.getElementById("tour-overlay-container");
+    if (!tourContainer) return;
+
+    const tourBackdrop = document.getElementById("tour-backdrop");
+    const spotlightBox = document.getElementById("tour-spotlight-box");
+    const spotlightLabel = document.getElementById("tour-spotlight-label");
+    const tourCard = document.getElementById("tour-card");
+    const tourStepCounter = document.getElementById("tour-step-counter");
+    const tourBtnClose = document.getElementById("tour-btn-close");
+    const tourStepIcon = document.getElementById("tour-step-icon");
+    const tourStepTitle = document.getElementById("tour-step-title");
+    const tourStepDesc = document.getElementById("tour-step-desc");
+    const tourDontShowAgain = document.getElementById("tour-dont-show-again");
+    const tourProgressDots = document.getElementById("tour-progress-dots");
+    const tourBtnSkip = document.getElementById("tour-btn-skip");
+    const tourBtnPrev = document.getElementById("tour-btn-prev");
+    const tourBtnNext = document.getElementById("tour-btn-next");
+    const tourMapHighlights = document.getElementById("tour-map-highlights");
+
+    const btnStartTour = document.getElementById("btn-start-tour");
+    const btnMapHelpTour = document.getElementById("btn-map-help-tour");
+
+    const STORAGE_KEY = "campusgo_2d_tour_completed";
+
+    // Danh sách các bước hướng dẫn
+    const tourSteps = [
+      {
+        target: ".sidebar-header",
+        title: "Chào mừng đến với CampusGo 2D",
+        icon: "🏫",
+        label: "Tổng quan",
+        placement: "right",
+        desc: `Hệ thống bản đồ chỉ đường nội bộ thông minh trong khuôn viên trường học.<br><br>
+        Giúp học sinh, phụ huynh và giáo viên tra cứu vị trí phòng học, các phòng bộ môn, thư viện, hội trường và nhà xe nhanh chóng, chính xác.`
+      },
+      {
+        target: "#start-location-input",
+        title: "1. Vị trí hiện tại (Điểm xuất phát)",
+        icon: "📍",
+        label: "Điểm xuất phát",
+        placement: "right",
+        desc: `Nhập nơi bạn đang đứng (ví dụ: <em>Cổng trường, Cột cờ, Lớp 10A1...</em>).<br><br>
+        <div class="tour-tip-box">
+          <span>📱</span>
+          <span><strong>Mẹo thông minh:</strong> Khi quét mã QR dán tại cửa từng phòng bằng điện thoại, hệ thống sẽ tự động nhận diện và điền ngay điểm xuất phát này cho bạn!</span>
+        </div>`
+      },
+      {
+        target: "#dest-location-input",
+        title: "2. Nơi muốn đến (Điểm đến)",
+        icon: "🎯",
+        label: "Nơi muốn đến",
+        placement: "right",
+        desc: `Nhập phòng học, phòng thực hành Tin học, phòng Y tế, Thư viện, Hội trường hoặc Nhà xe bạn muốn tới.<br><br>
+        Hệ thống hỗ trợ tìm kiếm không dấu (vd: <em>tin hoc, hoi truong, 12a1</em>) và có danh mục <strong>Điểm đến thường tìm</strong> phía dưới để bấm chọn ngay.`
+      },
+      {
+        target: ".action-buttons-group",
+        title: "3. Tìm đường & chỉ dẫn chi tiết",
+        icon: "🚀",
+        label: "Tìm đường",
+        placement: "right",
+        desc: `Bấm nút <strong>Tìm đường ngay</strong> để thuật toán tự động vẽ tuyến đường tối ưu nhất.<br><br>
+        Sau khi tìm đường, bạn sẽ nhận được:
+        <ul>
+          <li>⏱️ <strong>Thời gian & khoảng cách:</strong> Chính xác từng mét đi bộ</li>
+          <li>👣 <strong>Số bước chân & Calo:</strong> Ước tính năng lượng vận động</li>
+          <li>▶️ <strong>Nút Đi thử:</strong> Mô phỏng chuyển động người đi trên bản đồ</li>
+          <li>🔄 <strong>Đổi chiều:</strong> Đảo ngược chiều đi và về nhanh chóng</li>
+        </ul>`
+      },
+      {
+        target: "#map-viewport",
+        title: "4. Bản đồ mặt bằng tương tác 2D",
+        icon: "🗺️",
+        label: "Bản đồ tương tác",
+        placement: "center",
+        isMapStep: true,
+        desc: `Không gian bản đồ số toàn diện của khuôn viên trường học:<br>
+        <ul>
+          <li>🖐️ <strong>Kéo / Vuốt:</strong> Di chuyển bản đồ đến mọi góc sân trường</li>
+          <li>🔍 <strong>Lăn chuột / Chụm 2 ngón:</strong> Phóng to hoặc thu nhỏ tùy ý</li>
+          <li>👆 <strong>Chạm trực tiếp vào phòng:</strong> Bạn có thể nhấp chuột vào bất kỳ phòng học hoặc khu vực nào (<em>như các khung viền đỏ nổi bật</em>) để xem thông tin và chỉ đường ngay!</li>
+        </ul>`
+      },
+      {
+        target: ".view-mode-bar",
+        title: "5. Chuyển đổi chế độ 2D / 3D",
+        icon: "🏢",
+        label: "Chế độ xem",
+        placement: "bottom",
+        desc: `Bạn có thể dễ dàng chuyển đổi linh hoạt bất kỳ lúc nào:
+        <ul>
+          <li>🗺️ <strong>2D Mặt Bằng:</strong> Xem tổng thể toàn trường rõ ràng, dễ định hướng</li>
+          <li>🏢 <strong>3D Không Gian:</strong> Trải nghiệm mô hình 3 chiều sinh động, thấy rõ độ cao và các tầng lầu!</li>
+        </ul>`
+      },
+      {
+        target: ".map-floating-controls",
+        title: "6. Phím điều khiển & trợ giúp",
+        icon: "💡",
+        label: "Tiện ích & Trợ giúp",
+        placement: "left",
+        desc: `Bộ công cụ điều hướng tiện ích góc phải màn hình:
+        <ul>
+          <li><strong>+ / − :</strong> Phóng to và thu nhỏ bản đồ</li>
+          <li><strong>⟲ :</strong> Đặt lại góc nhìn về toàn cảnh sân trường</li>
+          <li><strong>❓ :</strong> Bấm vào đây bất cứ lúc nào để mở lại hướng dẫn này</li>
+        </ul>
+        <div class="tour-tip-box">
+          <span>🖨️</span>
+          <span>Dưới chân thanh chỉ đường có nút <strong>Tạo mã QR</strong> để giáo viên và nhà trường in dán trước cửa phòng!</span>
+        </div>`
+      }
+    ];
+
+    let currentStepIndex = 0;
+    let isTourActive = false;
+
+    // Render các chấm tiến trình (Dots)
+    function renderProgressDots() {
+      tourProgressDots.innerHTML = "";
+      tourSteps.forEach((_, idx) => {
+        const dot = document.createElement("div");
+        dot.className = `tour-dot ${idx === currentStepIndex ? "active" : ""}`;
+        dot.title = `Chuyển tới bước ${idx + 1}`;
+        dot.addEventListener("click", () => {
+          goToStep(idx);
+        });
+        tourProgressDots.appendChild(dot);
+      });
+    }
+
+    // Hiển thị các khung minh họa màu đỏ trên bản đồ (như trong ảnh mẫu của user)
+    function updateMapHighlights(visible) {
+      if (!tourMapHighlights) return;
+      if (!visible) {
+        tourMapHighlights.style.display = "none";
+        tourMapHighlights.innerHTML = "";
+        return;
+      }
+
+      tourMapHighlights.innerHTML = "";
+      tourMapHighlights.style.display = "block";
+
+      // Danh sách các địa điểm tạo khung đỏ minh họa giống hệt ảnh vẽ của người dùng
+      const demoLocations = [
+        { id: "canopy_triangle", label: "Mái Tam Giác (Sảnh chính)" },
+        { id: "cot_co", label: "Cột cờ" },
+        { id: "hoi_truong", label: "Hội trường" },
+        { id: "a_tret_thu_vien", label: "Thư viện (Trệt)" },
+        { id: "b_tret_12a7", label: "Dãy 12 (Trệt)" },
+        { id: "bm_tret_ly", label: "Phòng TN Lý" },
+        { id: "cong_truong", label: "Cổng trường" }
+      ];
+
+      demoLocations.forEach(item => {
+        const el = document.querySelector(`[data-loc-id="${item.id}"]`) || document.getElementById(item.id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            const box = document.createElement("div");
+            box.className = "tour-map-box";
+            box.style.left = `${rect.left}px`;
+            box.style.top = `${rect.top}px`;
+            box.style.width = `${rect.width}px`;
+            box.style.height = `${rect.height}px`;
+
+            const lbl = document.createElement("div");
+            lbl.className = "tour-map-box-label";
+            lbl.textContent = item.label;
+            box.appendChild(lbl);
+
+            tourMapHighlights.appendChild(box);
+          }
+        }
+      });
+    }
+
+    // Định vị khung spotlight và thẻ card hướng dẫn
+    function positionSpotlightAndCard(step) {
+      const targetEl = document.querySelector(step.target);
+      if (!targetEl) return;
+
+      // Xử lý mobile: mở hoặc đóng sidebar phù hợp với target
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile && typeof setBottomSheetState === "function") {
+        if (step.target.includes("sidebar") || step.target.includes("input") || step.target.includes("group")) {
+          setBottomSheetState("sheet-half");
+        } else {
+          setBottomSheetState("sheet-collapsed");
+        }
+      }
+
+      // Cuộn phần tử vào giữa màn hình nếu cần
+      if (step.target !== "#map-viewport") {
+        targetEl.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      }
+
+      // Đợi layout hoàn tất (trên mobile cần đợi bottom-sheet trượt xong)
+      const waitTime = isMobile ? 320 : 80;
+      setTimeout(() => {
+        const rect = targetEl.getBoundingClientRect();
+        const pad = step.target === "#map-viewport" ? 0 : (isMobile ? 4 : 8);
+
+        // Đảm bảo khung spotlight không bao giờ bị tràn sang phải màn hình (đặc biệt trên mobile)
+        const boxLeft = Math.max(0, rect.left - pad);
+        const boxTop = Math.max(0, rect.top - pad);
+        const maxAvailableW = Math.max(20, window.innerWidth - boxLeft - (isMobile ? 2 : 0));
+        const boxWidth = Math.min(rect.width + pad * 2, maxAvailableW);
+        const boxHeight = rect.height + pad * 2;
+
+        spotlightBox.style.top = `${boxTop}px`;
+        spotlightBox.style.left = `${boxLeft}px`;
+        spotlightBox.style.width = `${boxWidth}px`;
+        spotlightBox.style.height = `${boxHeight}px`;
+
+        if (spotlightLabel) {
+          spotlightLabel.textContent = step.label || `Bước ${currentStepIndex + 1}`;
+          if (isMobile && rect.right > window.innerWidth - 90) {
+            spotlightLabel.style.left = "auto";
+            spotlightLabel.style.right = "4px";
+          } else {
+            spotlightLabel.style.left = "8px";
+            spotlightLabel.style.right = "auto";
+          }
+        }
+
+        // Cập nhật thẻ Card
+        const cardWidth = Math.min(410, window.innerWidth - 24);
+        const cardHeight = tourCard.offsetHeight || 260;
+
+        let cardTop = 100;
+        let cardLeft = 20;
+
+        if (isMobile) {
+          // Trên mobile: luôn neo ở dưới đáy màn hình
+          tourCard.style.top = "auto";
+          tourCard.style.bottom = "max(16px, env(safe-area-inset-bottom))";
+          tourCard.style.left = "12px";
+          tourCard.style.right = "12px";
+          tourCard.style.width = "auto";
+        } else {
+          tourCard.style.bottom = "auto";
+          tourCard.style.right = "auto";
+          tourCard.style.width = `${cardWidth}px`;
+
+          if (step.placement === "right") {
+            cardLeft = rect.right + 20;
+            cardTop = rect.top;
+            if (cardLeft + cardWidth > window.innerWidth - 20) {
+              cardLeft = rect.left - cardWidth - 20;
+            }
+          } else if (step.placement === "left") {
+            cardLeft = rect.left - cardWidth - 20;
+            cardTop = rect.top;
+            if (cardLeft < 20) {
+              cardLeft = rect.right + 20;
+            }
+          } else if (step.placement === "bottom") {
+            cardLeft = Math.max(20, rect.left + (rect.width - cardWidth) / 2);
+            cardTop = rect.bottom + 16;
+          } else if (step.placement === "center") {
+            cardLeft = Math.max(460, window.innerWidth - cardWidth - 40);
+            cardTop = 120;
+          }
+
+          // Giới hạn trong viewport
+          cardLeft = Math.max(20, Math.min(cardLeft, window.innerWidth - cardWidth - 20));
+          cardTop = Math.max(20, Math.min(cardTop, window.innerHeight - cardHeight - 20));
+
+          tourCard.style.top = `${cardTop}px`;
+          tourCard.style.left = `${cardLeft}px`;
+        }
+
+        // Hiển thị khung đỏ trên map nếu là bước Map
+        updateMapHighlights(!!step.isMapStep);
+      }, waitTime);
+    }
+
+    // Hiển thị bước cụ thể
+    function showStep(index) {
+      if (index < 0 || index >= tourSteps.length) return;
+      currentStepIndex = index;
+      const step = tourSteps[index];
+
+      tourStepCounter.textContent = `Bước ${index + 1} / ${tourSteps.length}`;
+      tourStepIcon.textContent = step.icon || "📍";
+      tourStepTitle.textContent = step.title;
+      tourStepDesc.innerHTML = step.desc;
+
+      tourBtnPrev.disabled = index === 0;
+
+      if (index === tourSteps.length - 1) {
+        tourBtnNext.innerHTML = `<span>Bắt đầu ngay</span>`;
+      } else {
+        tourBtnNext.innerHTML = `<span>Tiếp theo</span>`;
+      }
+
+      renderProgressDots();
+      positionSpotlightAndCard(step);
+    }
+
+    function goToStep(index) {
+      showStep(index);
+    }
+
+    function nextStep() {
+      if (currentStepIndex < tourSteps.length - 1) {
+        showStep(currentStepIndex + 1);
+      } else {
+        finishTour();
+      }
+    }
+
+    function prevStep() {
+      if (currentStepIndex > 0) {
+        showStep(currentStepIndex - 1);
+      }
+    }
+
+    let closeTourTimeout = null;
+
+    function startTour(fromBeginning = true) {
+      if (closeTourTimeout) {
+        clearTimeout(closeTourTimeout);
+        closeTourTimeout = null;
+      }
+
+      isTourActive = true;
+      if (fromBeginning) {
+        currentStepIndex = 0;
+      }
+
+      if (tourDontShowAgain) {
+        tourDontShowAgain.checked = false;
+      }
+
+      tourContainer.style.display = "block";
+      requestAnimationFrame(() => {
+        tourContainer.classList.add("active");
+        showStep(currentStepIndex);
+      });
+    }
+    window.startCampusTour = (fromBeginning = true) => startTour(fromBeginning);
+
+    function finishTour() {
+      if (tourDontShowAgain && tourDontShowAgain.checked) {
+        localStorage.setItem(STORAGE_KEY, "true");
+      }
+      closeTour();
+      showToast("Sẵn sàng khám phá bản đồ trường!", "🎒");
+    }
+
+    function closeTour() {
+      isTourActive = false;
+      tourContainer.classList.remove("active");
+      updateMapHighlights(false);
+      closeTourTimeout = setTimeout(() => {
+        tourContainer.style.display = "none";
+        closeTourTimeout = null;
+      }, 280);
+    }
+
+    // Gắn sự kiện nút điều khiển trong Card
+    tourBtnNext.addEventListener("click", nextStep);
+    tourBtnPrev.addEventListener("click", prevStep);
+    tourBtnSkip.addEventListener("click", () => {
+      if (tourDontShowAgain && tourDontShowAgain.checked) {
+        localStorage.setItem(STORAGE_KEY, "true");
+      }
+      closeTour();
+    });
+    tourBtnClose.addEventListener("click", () => {
+      if (tourDontShowAgain && tourDontShowAgain.checked) {
+        localStorage.setItem(STORAGE_KEY, "true");
+      }
+      closeTour();
+    });
+
+    if (tourBackdrop) {
+      tourBackdrop.addEventListener("click", (e) => {
+        // Tránh đóng nhầm khi click backdrop
+        if (e.target === tourBackdrop) {
+          // Người dùng click ra vùng tối ngoài card
+        }
+      });
+    }
+
+    // Phím tắt bàn phím
+    document.addEventListener("keydown", (e) => {
+      if (!isTourActive) return;
+      if (e.key === "Escape") {
+        closeTour();
+      } else if (e.key === "ArrowRight" || e.key === "Enter") {
+        nextStep();
+      } else if (e.key === "ArrowLeft") {
+        prevStep();
+      }
+    });
+
+    // Cập nhật vị trí khi resize hoặc cuộn
+    window.addEventListener("resize", () => {
+      if (isTourActive) {
+        positionSpotlightAndCard(tourSteps[currentStepIndex]);
+      }
+    });
+
+    // Gắn sự kiện mở tour từ nút trên giao diện (Luôn chạy lại từ Bước 1)
+    if (btnStartTour) {
+      btnStartTour.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        startTour(true);
+        showToast("Bắt đầu lại hướng dẫn sử dụng", "💡");
+      });
+    }
+
+    if (btnMapHelpTour) {
+      btnMapHelpTour.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        startTour(true);
+        showToast("Bắt đầu lại hướng dẫn sử dụng", "💡");
+      });
+    }
+
+    // Tự động kích hoạt khi vào trang nếu chưa từng xem
+    const hasSeenTour = localStorage.getItem(STORAGE_KEY);
+    if (!hasSeenTour) {
+      setTimeout(() => {
+        startTour(true);
+      }, 700);
+    }
+  }
+
   // KHỞI ĐỘNG CÁC THÀNH PHẦN
   setupMapRoomInteractions();
   resetMapView();
   handleUrlQueryParams();
   setupQrGeneratorModal();
+  setupOnboardingTour();
+    setupRoomPhotoViewer();
 
-  window.addEventListener("resize", () => {
-    if (currentRoute && currentRoute.points) {
-      focusRouteBounds(currentRoute.points);
-    } else {
-      resetMapView();
+    window.addEventListener("resize", () => {
+      if (currentRoute && currentRoute.points) {
+        focusRouteBounds(currentRoute.points);
+      } else {
+        resetMapView();
+      }
+      if (activeClickedLoc && mapLocationPopover && mapLocationPopover.style.display !== "none") {
+        updatePopoverPosition();
+      }
+    });
+
+    // ============================================================================
+    // ROOM PHOTO VIEWER - Hiển thị ảnh thực tế khi bấm vào phòng trên bản đồ 2D
+    // ============================================================================
+    function setupRoomPhotoViewer() {
+      const modal = document.getElementById("room-photo-modal");
+      const backdrop = document.getElementById("rpm-backdrop");
+      const closeBtn = document.getElementById("rpm-close-btn");
+      const mainImg = document.getElementById("rpm-main-img");
+      const skeleton = document.getElementById("rpm-img-skeleton");
+      const dotsContainer = document.getElementById("rpm-dots");
+      const counter = document.getElementById("rpm-counter");
+      const prevBtn = document.getElementById("rpm-prev-btn");
+      const nextBtn = document.getElementById("rpm-next-btn");
+      const rpmName = document.getElementById("rpm-name");
+      const rpmMeta = document.getElementById("rpm-meta");
+      const rpmIcon = document.getElementById("rpm-icon");
+      const popoverBtnPhoto = document.getElementById("popover-btn-photo");
+
+      // Action buttons bên trong modal
+      const btnGate = document.getElementById("rpm-btn-gate");
+      const btnStart = document.getElementById("rpm-btn-start");
+      const btnDest = document.getElementById("rpm-btn-dest");
+
+      if (!modal) return;
+
+      let currentLoc = null;
+      let currentImages = [];
+      let currentIndex = 0;
+
+      // Lắng nghe khi showLocationPopover dispatch loc mới
+      document.addEventListener("rpm:loc-updated", (e) => {
+        currentLoc = e.detail.loc;
+      });
+
+      // Mở modal khi bấm nút "Xem ảnh thực tế" trên popover
+      if (popoverBtnPhoto) {
+        popoverBtnPhoto.addEventListener("click", () => {
+          if (!currentLoc) return;
+          const images = window.ROOM_IMAGES && window.ROOM_IMAGES[currentLoc.id];
+          if (!images || images.length === 0) return;
+          openViewer(currentLoc, images);
+        });
+      }
+
+      // Xử lý các nút hành động trực tiếp trong modal
+      if (btnGate) {
+        btnGate.addEventListener("click", () => {
+          if (!currentLoc) return;
+          const gateLoc = window.CAMPUS_LOCATIONS.find(l => l.id === "cong_truong");
+          if (gateLoc) {
+            startCombobox.selectLocation(gateLoc);
+            destCombobox.selectLocation(currentLoc);
+            handleCalculateRoute();
+            closeViewer();
+            showToast(`Đang dẫn đường từ Cổng trường đến ${currentLoc.name}`, "🚀");
+          }
+        });
+      }
+
+      if (btnStart) {
+        btnStart.addEventListener("click", () => {
+          if (!currentLoc) return;
+          startCombobox.selectLocation(currentLoc);
+          closeViewer();
+          showToast(`Đã chọn điểm xuất phát: ${currentLoc.name}`, "🟢");
+          if (selectedDestLoc && selectedDestLoc.id !== currentLoc.id) {
+            handleCalculateRoute();
+          } else {
+            highlightMarkerOnMap();
+          }
+        });
+      }
+
+      if (btnDest) {
+        btnDest.addEventListener("click", () => {
+          if (!currentLoc) return;
+          destCombobox.selectLocation(currentLoc);
+          closeViewer();
+          showToast(`Đã chọn điểm đến: ${currentLoc.name}`, "🔴");
+          if (selectedStartLoc && selectedStartLoc.id !== currentLoc.id) {
+            handleCalculateRoute();
+          } else {
+            highlightMarkerOnMap();
+          }
+        });
+      }
+
+      function openViewer(loc, images, initialIndex = 0) {
+        currentLoc = loc;
+        currentImages = images;
+        currentIndex = (initialIndex >= 0 && initialIndex < images.length) ? initialIndex : 0;
+
+        // Ẩn popover nếu đang mở để tránh vướng víu
+        hideLocationPopover();
+
+        // Điền thông tin header
+        rpmName.textContent = loc.name;
+        const catLabel = getCategoryLabel(loc.category, loc);
+        const bldText = loc.building ? ` • ${loc.building}` : "";
+        rpmMeta.textContent = `${loc.floor}${bldText} • ${catLabel}`;
+
+        // Icon sinh động theo từng loại phòng
+        let icon = "🏫";
+        if (loc.name.includes("WC")) icon = "🚻";
+        else if (loc.name.includes("Thư Viện")) icon = "📚";
+        else if (loc.name.includes("Y Tế")) icon = "🏥";
+        else if (loc.name.includes("Cầu thang")) icon = "🪜";
+        else if (loc.name.includes("Hội Trường")) icon = "🏛️";
+        else if (loc.category === "admin") icon = "🏛️";
+        rpmIcon.textContent = icon;
+
+        // Render dots & hiển thị ảnh
+        renderDots();
+        showImage(currentIndex);
+
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeViewer() {
+        modal.style.display = "none";
+        document.body.style.overflow = "";
+        mainImg.src = "";
+      }
+
+      function showImage(index) {
+        if (index < 0 || index >= currentImages.length) return;
+        currentIndex = index;
+
+        // Skeleton loading shimmer
+        skeleton.classList.add("visible");
+        mainImg.classList.add("loading");
+
+        const src = encodeImagePath(currentImages[index]);
+        mainImg.onload = () => {
+          skeleton.classList.remove("visible");
+          mainImg.classList.remove("loading");
+        };
+        mainImg.onerror = () => {
+          if (mainImg.src !== currentImages[index]) {
+            mainImg.src = currentImages[index];
+            return;
+          }
+          skeleton.classList.remove("visible");
+          mainImg.classList.remove("loading");
+          mainImg.alt = "Không tải được ảnh";
+        };
+        mainImg.src = src;
+
+        // Cập nhật bộ đếm
+        counter.textContent = `${currentIndex + 1} / ${currentImages.length}`;
+
+        // Cập nhật dots indicator
+        dotsContainer.querySelectorAll(".rpm-dot").forEach((dot, i) => {
+          dot.classList.toggle("active", i === currentIndex);
+        });
+
+        // Cập nhật trạng thái nút lùi/tiến
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === currentImages.length - 1;
+
+        // Ẩn dots + nút điều hướng nếu chỉ có 1 ảnh
+        const single = currentImages.length <= 1;
+        dotsContainer.style.display = single ? "none" : "flex";
+        prevBtn.style.display = single ? "none" : "flex";
+        nextBtn.style.display = single ? "none" : "flex";
+        counter.style.display = single ? "none" : "block";
+      }
+
+      function renderDots() {
+        dotsContainer.innerHTML = "";
+        currentImages.forEach((_, i) => {
+          const dot = document.createElement("button");
+          dot.type = "button";
+          dot.className = "rpm-dot" + (i === currentIndex ? " active" : "");
+          dot.setAttribute("aria-label", `Ảnh ${i + 1}`);
+          dot.addEventListener("click", () => showImage(i));
+          dotsContainer.appendChild(dot);
+        });
+      }
+
+      function encodeImagePath(path) {
+        return path.split("/").map(seg => encodeURIComponent(seg)).join("/");
+      }
+
+      // Event listeners điều hướng và đóng modal
+      prevBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showImage(currentIndex - 1);
+      });
+      nextBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showImage(currentIndex + 1);
+      });
+      closeBtn.addEventListener("click", closeViewer);
+      backdrop.addEventListener("click", closeViewer);
+
+      // Phím tắt bàn phím
+      document.addEventListener("keydown", (e) => {
+        if (modal.style.display !== "flex") return;
+        if (e.key === "Escape") closeViewer();
+        if (e.key === "ArrowLeft") showImage(currentIndex - 1);
+        if (e.key === "ArrowRight") showImage(currentIndex + 1);
+      });
+
+      // Vuốt chuyển ảnh ngang trên mobile
+      let touchStartX = 0;
+      mainImg.addEventListener("touchstart", (e) => {
+        touchStartX = e.touches[0].clientX;
+      }, { passive: true });
+      mainImg.addEventListener("touchend", (e) => {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(dx) > 40) {
+          if (dx < 0) showImage(currentIndex + 1);
+          else showImage(currentIndex - 1);
+        }
+      }, { passive: true });
+
+      // Vuốt trượt xuống để đóng modal trên mobile
+      let panelStartY = 0;
+      const panel = modal.querySelector(".rpm-panel");
+      if (panel) {
+        panel.addEventListener("touchstart", (e) => {
+          panelStartY = e.touches[0].clientY;
+        }, { passive: true });
+        panel.addEventListener("touchend", (e) => {
+          const dy = e.changedTouches[0].clientY - panelStartY;
+          if (dy > 90) {
+            closeViewer();
+          }
+        }, { passive: true });
+      }
+
+      // Expose hàm mở ảnh toàn cục để gọi từ click trên bản đồ
+      window.openRoomPhotoForLoc = function(loc, initialIndex = 0) {
+        const images = window.ROOM_IMAGES && window.ROOM_IMAGES[loc.id];
+        if (images && images.length > 0) openViewer(loc, images, initialIndex);
+      };
     }
   });
-});
-

@@ -37,6 +37,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
       background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -46,6 +47,25 @@
       color: white;
     }
 
+    .toolbar-top-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .toolbar-presets-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-primary-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .toolbar-title {
       display: flex;
       align-items: center;
@@ -53,6 +73,7 @@
       font-size: 16px;
       font-weight: 700;
       letter-spacing: 0.3px;
+      white-space: nowrap;
     }
 
     .toolbar-title span.badge-3d {
@@ -62,6 +83,21 @@
       padding: 3px 8px;
       border-radius: 6px;
       font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .title-short,
+    .btn-text-short,
+    .nav-title-short,
+    .floor-text-short {
+      display: none;
+    }
+
+    .title-full,
+    .btn-text-full,
+    .nav-title-full,
+    .floor-text-full {
+      display: inline;
     }
 
     .btn-group {
@@ -83,6 +119,7 @@
       align-items: center;
       gap: 6px;
       transition: all 0.2s;
+      white-space: nowrap;
     }
 
     .tool-btn:hover {
@@ -127,6 +164,7 @@
       max-width: 380px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       font-size: 13px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .legend-title {
@@ -135,8 +173,56 @@
       font-size: 14px;
       margin-bottom: 8px;
       display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 6px;
+    }
+
+    .legend-close-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 15px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: none;
+      line-height: 1;
+    }
+
+    .legend-close-btn:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Mobile Legend Floating Toggle Button */
+    .mobile-legend-btn {
+      display: none;
+      position: fixed;
+      bottom: 16px;
+      left: 12px;
+      z-index: 25;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 20px;
+      padding: 8px 14px;
+      color: #38bdf8;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .mobile-legend-btn:hover,
+    .mobile-legend-btn.active {
+      background: #0284c7;
+      color: white;
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(2, 132, 199, 0.6);
     }
 
     .legend-item {
@@ -674,13 +760,295 @@
       padding-top: 6px;
     }
 
-    @media (max-width: 768px) {
-      .panel-360 {
-        width: calc(100vw - 32px);
-        left: 16px;
-        right: 16px;
-        bottom: 16px;
+    @media (min-width: 900px) {
+      .toolbar-top-row {
+        display: contents;
       }
+      .toolbar-title {
+        order: 1;
+      }
+      .toolbar-presets-row {
+        order: 2;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .toolbar-primary-actions {
+        order: 3;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+
+    @keyframes mobileCardSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInModal {
+      from {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @media (max-width: 768px) {
+      /* Toolbar gọn gàng 2 tầng trên mobile */
+      .top-toolbar {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .toolbar-top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        gap: 8px;
+      }
+
+      .toolbar-title {
+        font-size: 13.5px;
+        gap: 6px;
+        white-space: nowrap;
+      }
+
+      .title-full {
+        display: none;
+      }
+
+      .title-short {
+        display: inline;
+      }
+
+      .badge-3d {
+        font-size: 9px !important;
+        padding: 2px 5px !important;
+      }
+
+      .toolbar-primary-actions {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .toolbar-primary-actions .tool-btn {
+        padding: 5px 8px;
+        font-size: 11.5px;
+        gap: 4px;
+        white-space: nowrap;
+      }
+
+      /* Thanh preset góc nhìn cuộn ngang cảm ứng mượt mà */
+      .toolbar-presets-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+      }
+
+      .toolbar-presets-row::-webkit-scrollbar {
+        display: none;
+      }
+
+      .toolbar-presets-row .tool-btn {
+        padding: 5px 10px;
+        font-size: 11.5px;
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+
+      .btn-text-full {
+        display: none;
+      }
+
+      .btn-text-short {
+        display: inline;
+      }
+
+      .nav-title-full {
+        display: none;
+      }
+
+      .nav-title-short {
+        display: inline;
+      }
+
+      /* Bảng chỉ đường 3D trên Mobile */
+      .nav-panel-3d {
+        transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      /* Trạng thái thu gọn ban đầu trên mobile: Nút capsule nhỏ gọn góc trên */
+      .nav-panel-3d.collapsed {
+        position: fixed;
+        top: 86px;
+        left: 8px;
+        right: auto;
+        bottom: auto;
+        width: auto;
+        max-height: 38px;
+        border-radius: 20px;
+        background: rgba(15, 23, 42, 0.94);
+        border: 1px solid rgba(56, 189, 248, 0.45);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+        z-index: 25;
+      }
+
+      .nav-panel-3d.collapsed .nav-panel-header {
+        padding: 6px 12px;
+        border-bottom: none;
+        background: transparent;
+        gap: 8px;
+      }
+
+      .nav-panel-3d.collapsed .nav-panel-title {
+        font-size: 12px;
+      }
+
+      .nav-panel-3d.collapsed .nav-toggle-btn {
+        font-size: 12px;
+        padding: 0 2px;
+      }
+
+      /* Trạng thái mở rộng trên mobile: Bottom Action Card tiện dụng */
+      .nav-panel-3d:not(.collapsed) {
+        position: fixed;
+        top: auto;
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
+        width: auto;
+        max-width: 500px;
+        margin: 0 auto;
+        max-height: 76vh;
+        border-radius: 16px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
+        z-index: 40;
+        animation: mobileCardSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .nav-panel-3d:not(.collapsed) .nav-panel-header {
+        padding: 10px 14px;
+        position: relative;
+      }
+
+      .nav-panel-3d:not(.collapsed) .nav-panel-header::before {
+        content: '';
+        position: absolute;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+      }
+
+      .nav-panel-3d:not(.collapsed) .nav-panel-body {
+        padding: 12px 14px;
+        max-height: calc(76vh - 54px);
+        overflow-y: auto;
+      }
+
+      /* Bộ chọn tầng góc dưới phải gọn gàng */
+      .floor-switcher {
+        top: auto;
+        bottom: 16px;
+        right: 8px;
+        transform: none;
+        padding: 6px 4px;
+        gap: 4px;
+        border-radius: 10px;
+        z-index: 25;
+      }
+
+      .floor-switcher-title {
+        font-size: 9px;
+        margin-bottom: 2px;
+      }
+
+      .floor-btn {
+        padding: 6px 8px;
+        font-size: 11px;
+        border-radius: 6px;
+        min-width: 44px;
+      }
+
+      .floor-text-full {
+        display: none;
+      }
+
+      .floor-text-short {
+        display: inline;
+      }
+
+      /* Bảng chú thích màu đóng/mở trên mobile */
+      .legend-card {
+        display: none;
+        position: fixed;
+        bottom: 60px;
+        left: 8px;
+        right: 8px;
+        max-width: calc(100vw - 16px);
+        z-index: 35;
+        padding: 12px 14px;
+        font-size: 12px;
+        animation: fadeInModal 0.2s ease-out;
+      }
+
+      .legend-card.open {
+        display: block;
+      }
+
+      .legend-close-btn {
+        display: inline-block;
+      }
+
+      .legend-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .mobile-legend-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .panel-360 {
+        width: calc(100vw - 16px);
+        left: 8px;
+        right: 8px;
+        bottom: 10px;
+        max-height: 80vh;
+        z-index: 50;
+      }
+
       .controls-hint {
         display: none;
       }
@@ -695,27 +1063,34 @@
 
   <!-- Top Toolbar -->
   <header class="top-toolbar">
-    <div class="toolbar-title">
-      <span>🏫 Sơ Đồ 3D Khuôn Viên Trường Học</span>
-      <span class="badge-3d">3D INTERACTIVE</span>
+    <div class="toolbar-top-row">
+      <div class="toolbar-title">
+        <span>🏫 <span class="title-full">Sơ Đồ 3D Khuôn Viên</span><span class="title-short">Sơ Đồ 3D</span></span>
+        <span class="badge-3d">3D</span>
+      </div>
+
+      <div class="toolbar-primary-actions">
+        <!-- Nút bật tắt chế độ tự động xoay 360 độ -->
+        <button class="tool-btn btn-360" id="btn-toggle-360" onclick="toggle360Mode()"
+          title="Bật / Tắt chế độ tự động xoay toàn cảnh 360 độ quanh khuôn viên trường">
+          <span class="icon-spin">🔄</span> <span id="lbl-360">Xoay 360°</span>
+        </button>
+
+        <button class="tool-btn" onclick="viewer.takeSnapshot()" title="Chụp ảnh 3D">
+          📸 <span class="btn-text-full">Chụp Ảnh</span>
+        </button>
+
+        <a href="index.html" class="tool-btn" style="text-decoration: none;" title="Chuyển về Bản đồ 2D">
+          🗺️ <span class="btn-text-full">Bản Đồ 2D</span><span class="btn-text-short">2D</span>
+        </a>
+      </div>
     </div>
 
     <!-- Quick Camera Presets & 360 Mode -->
-    <div class="btn-group">
-      <!-- Nút bật tắt chế độ tự động xoay 360 độ -->
-      <button class="tool-btn btn-360" id="btn-toggle-360" onclick="toggle360Mode()"
-        title="Bật / Tắt chế độ tự động xoay toàn cảnh 360 độ quanh khuôn viên trường">
-        <span class="icon-spin">🔄</span> <span id="lbl-360">Xoay 360°</span>
-      </button>
-
-      <button class="tool-btn" id="btn-hotspots-360" onclick="toggle360Panel()"
-        title="Mở bảng chọn điểm nhìn 360 độ toàn cảnh từ mặt đất & trên cao">
-        🌐 Điểm Nhìn 360°
-      </button>
-
+    <div class="toolbar-presets-row">
       <button class="tool-btn active" id="btn-drone" onclick="setActiveCam(this, 'drone_view')"
         title="Góc nhìn Flycam thực tế từ trên cao nhìn vào sân trường và các dãy nhà">
-        🚁 Flycam Thực Tế
+        🚁 <span class="btn-text-full">Flycam Thực Tế</span><span class="btn-text-short">Flycam</span>
       </button>
 
       <button class="tool-btn" id="btn-isometric" onclick="setActiveCam(this, 'isometric')">
@@ -731,23 +1106,18 @@
       </button>
 
       <button class="tool-btn" id="btn-topdown" onclick="setActiveCam(this, 'top_down')">
-        ⬇️ Nhìn Từ Trên
+        ⬇️ Nhìn Trên
       </button>
 
       <button class="tool-btn btn-special" onclick="viewer.setCameraPreset('bridge_west')"
         title="Xem chi tiết hành lang nối Dãy B và Dãy Hành Chính ở cả 2 tầng">
-        🎯 Cầu Nối 2 Tầng
+        🎯 Cầu Nối
       </button>
-    </div>
 
-    <!-- Switch to 2D & Export -->
-    <div class="btn-group">
-      <button class="tool-btn" onclick="viewer.takeSnapshot()">
-        📸 Chụp Ảnh 3D (PNG)
+      <button class="tool-btn" id="btn-hotspots-360" onclick="toggle360Panel()"
+        title="Mở bảng chọn điểm nhìn 360 độ toàn cảnh từ mặt đất & trên cao">
+        🌐 Điểm 360°
       </button>
-      <a href="index.html" class="tool-btn" style="text-decoration: none;">
-        🗺️ Chuyển Về Bản Đồ 2D
-      </a>
     </div>
   </header>
 
@@ -756,7 +1126,8 @@
     <div class="nav-panel-header" onclick="toggleNavPanel()">
       <div class="nav-panel-title">
         <span>🧭</span>
-        <span>Chỉ Đường 3D Thông Minh</span>
+        <span class="nav-title-full">Chỉ Đường 3D Thông Minh</span>
+        <span class="nav-title-short">Chỉ Đường 3D</span>
       </div>
       <button type="button" class="nav-toggle-btn" id="nav-toggle-btn" title="Thu gọn / Mở rộng">—</button>
     </div>
@@ -821,20 +1192,32 @@
   </div>
 
   <!-- Floating Floor Selector (Tách Tầng) -->
-  <div class="floor-switcher">
-    <span
-      style="font-size: 10px; color: #64748b; font-weight: bold; text-align: center; text-transform: uppercase;">Chọn
-      Tầng</span>
-    <button class="floor-btn active" onclick="setFloor(this, 'all')">Tất Cả Tầng</button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_3')">Tầng 4</button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_2')">Tầng 3</button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_1')">Tầng 2</button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_0')">Tầng Trệt</button>
+  <div class="floor-switcher" id="floor-switcher">
+    <span class="floor-switcher-title"
+      style="font-size: 10px; color: #64748b; font-weight: bold; text-align: center; text-transform: uppercase;">Tầng</span>
+    <button class="floor-btn active" onclick="setFloor(this, 'all')">
+      <span class="floor-text-full">Tất Cả Tầng</span><span class="floor-text-short">Tất Cả</span>
+    </button>
+    <button class="floor-btn" onclick="setFloor(this, 'fl_3')">
+      <span class="floor-text-full">Tầng 4</span><span class="floor-text-short">T4</span>
+    </button>
+    <button class="floor-btn" onclick="setFloor(this, 'fl_2')">
+      <span class="floor-text-full">Tầng 3</span><span class="floor-text-short">T3</span>
+    </button>
+    <button class="floor-btn" onclick="setFloor(this, 'fl_1')">
+      <span class="floor-text-full">Tầng 2</span><span class="floor-text-short">T2</span>
+    </button>
+    <button class="floor-btn" onclick="setFloor(this, 'fl_0')">
+      <span class="floor-text-full">Tầng Trệt</span><span class="floor-text-short">Trệt</span>
+    </button>
   </div>
 
   <!-- Legend Overlay -->
   <div class="legend-card" id="legend-card">
-    <div class="legend-title">🏫 Chú Thích Màu Khối Lớp & Kết Nối</div>
+    <div class="legend-title">
+      <span>🏫 Chú Thích Màu Khối & Kết Nối</span>
+      <button type="button" class="legend-close-btn" onclick="toggleLegendCard()" title="Đóng chú thích" aria-label="Đóng">✕</button>
+    </div>
     <div class="legend-item">
       <div class="legend-color" style="background: #fef08a; border: 2px solid #ca8a04;"></div>
       <div><b>Khối 10:</b> Vàng tươi pastel (10A1 ➔ 10A13).</div>
@@ -849,13 +1232,18 @@
     </div>
     <div class="legend-item">
       <div class="legend-color" style="background: #fef9c3; border: 2px solid #64748b;"></div>
-      <div><b>Hành lang liên dãy:</b> Màu vàng be nhạt liền mạch toàn trường.</div>
+      <div><b>Hành lang liên dãy:</b> Vàng be nhạt liền mạch toàn trường.</div>
     </div>
     <div class="legend-item">
       <div class="legend-color" style="background: #1e40af; border: 2px solid #60a5fa;"></div>
-      <div><b>Cầu hành lang Tầng 2:</b> Cầu vượt trên cao nối <b>Dãy B (12A6)</b> sang <b>Phòng Chi bộ</b>.</div>
+      <div><b>Cầu hành lang Tầng 2:</b> Cầu vượt nối <b>Dãy B (12A6)</b> sang <b>Phòng Chi bộ</b>.</div>
     </div>
   </div>
+
+  <!-- Mobile Legend Toggle Button -->
+  <button type="button" id="btn-toggle-legend" class="mobile-legend-btn" onclick="toggleLegendCard()" title="Xem chú thích màu">
+    <span>🎨</span> <span>Chú Thích</span>
+  </button>
 
   <!-- 🌐 FLOATING 360° PANORAMA CONTROLS WIDGET -->
   <div class="panel-360" id="panel-360">
@@ -940,6 +1328,41 @@
     window.addEventListener('DOMContentLoaded', () => {
       viewer = new Campus3DViewer('canvas3d-container');
       populateLocationSelects();
+
+      // Trên mobile: tự động thu gọn bảng chỉ đường ban đầu để khuôn viên 3D không bị che khuất
+      if (window.innerWidth <= 768) {
+        const navPanel = document.getElementById('nav-panel-3d');
+        const navToggleBtn = document.getElementById('nav-toggle-btn');
+        if (navPanel) {
+          navPanel.classList.add('collapsed');
+          if (navToggleBtn) navToggleBtn.textContent = '➕';
+        }
+      }
+    });
+
+    // Đóng / mở bảng chú thích màu trên màn hình mobile
+    function toggleLegendCard() {
+      const card = document.getElementById('legend-card');
+      const btn = document.getElementById('btn-toggle-legend');
+      if (!card) return;
+      card.classList.toggle('open');
+      if (btn) {
+        btn.classList.toggle('active', card.classList.contains('open'));
+      }
+    }
+
+    // Đóng chú thích khi chạm ra ngoài trên mobile
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768) {
+        const card = document.getElementById('legend-card');
+        const btn = document.getElementById('btn-toggle-legend');
+        if (card && card.classList.contains('open')) {
+          if (!card.contains(e.target) && (!btn || !btn.contains(e.target))) {
+            card.classList.remove('open');
+            if (btn) btn.classList.remove('active');
+          }
+        }
+      }
     });
 
     function setActiveCam(btn, preset) {
@@ -1096,6 +1519,15 @@
       if (!viewer.activeCurve) {
         alert("Hãy tìm đường trước khi tham quan!");
         return;
+      }
+      // Trên mobile: tự động thu gọn bảng chỉ đường để người xem thấy trọn vẹn góc bay 3D
+      if (window.innerWidth <= 768) {
+        const panel = document.getElementById('nav-panel-3d');
+        const btn = document.getElementById('nav-toggle-btn');
+        if (panel && !panel.classList.contains('collapsed')) {
+          panel.classList.add('collapsed');
+          if (btn) btn.textContent = '➕';
+        }
       }
       viewer.startTour();
     }

@@ -294,6 +294,185 @@ class Campus3DViewer {
     return bench;
   }
 
+  // Cây phượng vĩ nở hoa đỏ rực rỡ trước cổng trường (chuẩn ảnh thực tế THPT Tam Phước)
+  createPoincianaTree(x, z, scale = 1) {
+    const tree = new THREE.Group();
+    tree.position.set(x, 0, z);
+
+    // Bồn cây vuông viền gạch
+    const planter = this.createSquarePlanter(0, 0, 3.2 * scale);
+    tree.add(planter);
+
+    // Thân cây gỗ nâu đậm xù xì đặc trưng
+    const trunkGeo = new THREE.CylinderGeometry(0.3 * scale, 0.45 * scale, 4.4 * scale, 8);
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a2c16, roughness: 0.95 });
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+    trunk.position.y = (4.4 * scale) / 2;
+    trunk.castShadow = true;
+    tree.add(trunk);
+
+    // Cành nhánh xòe rộng
+    const branchMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.9 });
+    [
+      { rx: 0.35, rz: 0.5, y: 3.4 * scale, len: 2.4 * scale },
+      { rx: -0.35, rz: -0.5, y: 3.6 * scale, len: 2.4 * scale },
+      { rx: 0.45, rz: -0.4, y: 3.8 * scale, len: 2.2 * scale }
+    ].forEach(b => {
+      const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.12 * scale, 0.18 * scale, b.len, 6), branchMat);
+      branch.position.set(0, b.y, 0);
+      branch.rotation.set(b.rx, 0, b.rz);
+      tree.add(branch);
+    });
+
+    // Tán lá xanh điểm hoa phượng đỏ rực rỡ
+    const redFlowerMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.6 });
+    const brightRedFlowerMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.5 });
+    const greenFoliageMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.8 });
+
+    // Các cụm lá xanh
+    [
+      { x: 0, y: 5.0, z: 0, r: 2.1 },
+      { x: 1.4, y: 5.3, z: 0.8, r: 1.7 },
+      { x: -1.4, y: 5.1, z: -0.8, r: 1.7 },
+      { x: -0.9, y: 5.5, z: 1.0, r: 1.5 },
+      { x: 1.1, y: 5.3, z: -1.0, r: 1.5 }
+    ].forEach(f => {
+      const fol = new THREE.Mesh(new THREE.DodecahedronGeometry(f.r * scale, 1), greenFoliageMat);
+      fol.position.set(f.x * scale, f.y * scale, f.z * scale);
+      fol.castShadow = true;
+      tree.add(fol);
+    });
+
+    // Các chùm hoa phượng vĩ đỏ rực rỡ nở rộ trên tán cây (chuẩn ảnh thật cổng trường)
+    [
+      { x: 0.3, y: 6.0, z: 0.4, r: 1.4 },
+      { x: 1.6, y: 5.8, z: 0.6, r: 1.2 },
+      { x: -1.4, y: 5.7, z: 0.8, r: 1.2 },
+      { x: -0.6, y: 6.2, z: -1.0, r: 1.3 },
+      { x: 1.3, y: 5.9, z: -0.8, r: 1.1 },
+      { x: -0.2, y: 6.5, z: 0.2, r: 1.2 }
+    ].forEach((fl, idx) => {
+      const flower = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(fl.r * scale, 1),
+        idx % 2 === 0 ? redFlowerMat : brightRedFlowerMat
+      );
+      flower.position.set(fl.x * scale, fl.y * scale, fl.z * scale);
+      flower.castShadow = true;
+      tree.add(flower);
+    });
+
+    return tree;
+  }
+
+  // Tạo biển đá hoa cương đen khắc chữ vàng chuẩn bia đá cổng trường THPT Tam Phước
+  createStoneMonumentTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 440;
+    const ctx = canvas.getContext('2d');
+
+    // Nền đá hoa cương đen bóng sang trọng
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, 1024, 440);
+
+    // Họa tiết vân đá cẩm thạch nhẹ
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 6; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, 60 * i + 40);
+      ctx.bezierCurveTo(300, 50 * i + 90, 700, 70 * i, 1024, 65 * i + 50);
+      ctx.stroke();
+    }
+
+    // Viền kim loại vàng kép sang trọng
+    ctx.lineWidth = 12;
+    ctx.strokeStyle = '#d97706';
+    ctx.strokeRect(12, 12, 1000, 416);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#fde047';
+    ctx.strokeRect(26, 26, 972, 388);
+
+    // 1. Dòng trên: SỞ GIÁO DỤC VÀ ĐÀO TẠO TỈNH ĐỒNG NAI
+    ctx.fillStyle = '#fde047';
+    ctx.font = 'bold 30px "Segoe UI", Roboto, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText("SỞ GIÁO DỤC VÀ ĐÀO TẠO TỈNH ĐỒNG NAI", 512, 48);
+
+    // 2. Dòng 2: TRƯỜNG TRUNG HỌC PHỔ THÔNG
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 44px "Segoe UI", Roboto, sans-serif';
+    ctx.fillText("TRƯỜNG TRUNG HỌC PHỔ THÔNG", 512, 110);
+
+    // 3. Dòng 3 (chính): TAM PHƯỚC (chữ vàng bóng lớn)
+    ctx.fillStyle = '#facc15';
+    ctx.font = '900 86px "Segoe UI", Roboto, sans-serif';
+    ctx.shadowColor = 'rgba(250, 204, 21, 0.5)';
+    ctx.shadowBlur = 14;
+    ctx.fillText("TAM PHƯỚC", 512, 185);
+    ctx.shadowBlur = 0;
+
+    // 4. Đường kẻ phân cách vàng
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(180, 310);
+    ctx.lineTo(844, 310);
+    ctx.stroke();
+
+    // 5. Địa chỉ trường
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '600 26px "Segoe UI", Roboto, sans-serif';
+    ctx.fillText("Ấp Long Khánh 3 - P. Tam Phước - TP. Biên Hòa - Đồng Nai", 512, 345);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter;
+    return tex;
+  }
+
+  // Tạo biển khẩu hiệu cổng trường "CỔNG TRƯỜNG SẠCH ĐẸP - AN TOÀN"
+  createGateSloganTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 360;
+    const ctx = canvas.getContext('2d');
+
+    // Nền xanh dương đậm
+    ctx.fillStyle = '#1d4ed8';
+    ctx.fillRect(0, 0, 1024, 360);
+
+    // Viền trắng
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = '#ffffff';
+    ctx.strokeRect(10, 10, 1004, 340);
+
+    // Tiêu đề: CỔNG TRƯỜNG SẠCH ĐẸP - AN TOÀN
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 50px "Segoe UI", Roboto, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText("CỔNG TRƯỜNG SẠCH ĐẸP - AN TOÀN", 512, 45);
+
+    // Đường gạch trắng
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(120, 125);
+    ctx.lineTo(904, 125);
+    ctx.stroke();
+
+    // Khẩu hiệu: Học để làm cho bản thân và cộng đồng hạnh phúc!
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 44px "Segoe UI", Roboto, sans-serif';
+    ctx.fillText("Học để làm cho bản thân", 512, 160);
+    ctx.fillText("và cộng đồng hạnh phúc!", 512, 230);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter;
+    return tex;
+  }
+
   // Băng rôn khẩu hiệu trường học nền đỏ chữ vàng sắc nét, tự co giãn chữ chống tràn viền
   createSloganBanner(text, x, y, z, w, h, rotY = 0) {
     const canvas = document.createElement('canvas');
@@ -468,11 +647,11 @@ class Campus3DViewer {
     groundGroup.add(grid);
 
     // 2. Lối đi xe trải nhựa màu xám đen bên cánh trái (chạy từ cổng vào phía sau)
-    const roadGeo = new THREE.PlaneGeometry(10, 100);
+    const roadGeo = new THREE.PlaneGeometry(8, 100);
     const roadMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9 });
     const road = new THREE.Mesh(roadGeo, roadMat);
     road.rotation.x = -Math.PI / 2;
-    road.position.set(-36, 0.03, 10);
+    road.position.set(-49, 0.03, 10);
     road.receiveShadow = true;
     groundGroup.add(road);
 
@@ -481,30 +660,29 @@ class Campus3DViewer {
     const roadLineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const roadLine = new THREE.Mesh(roadLineGeo, roadLineMat);
     roadLine.rotation.x = -Math.PI / 2;
-    roadLine.position.set(-36, 0.04, 10);
+    roadLine.position.set(-49, 0.04, 10);
     groundGroup.add(roadLine);
 
-    // 3. Sân cờ trung tâm (vòng tròn lát đá xung quanh cột cờ)
-    const plazaGeo = new THREE.CircleGeometry(8, 48);
+    // 3. Sân cờ trung tâm (vòng tròn lát đá xung quanh cột cờ, thông thoáng chuẩn ảnh thực tế)
+    const plazaGeo = new THREE.CircleGeometry(7.5, 48);
     const plazaMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.7 });
     const plaza = new THREE.Mesh(plazaGeo, plazaMat);
     plaza.rotation.x = -Math.PI / 2;
-    plaza.position.set(0, 0.04, 14);
+    plaza.position.set(0, 0.04, 11);
     plaza.receiveShadow = true;
     groundGroup.add(plaza);
 
-    // 4. Các cây bóng mát có bồn cây vuông lát gạch đặt chuẩn theo ảnh Flycam
+    // 4. Các cây bóng mát có bồn cây vuông lát gạch đặt dọc mép sân trường theo ảnh Flycam
     const treePositions = [
-      { x: -12, z: 2, s: 1.1 },
-      { x: -8, z: 16, s: 1.0 },
-      { x: -14, z: 42, s: 1.0 }, // Lùi ra xa trước sân, không che chắn phòng Phó HT / Kế toán
-      { x: -4, z: 36, s: 1.0 },
-      { x: 8, z: 8, s: 1.05 },
-      { x: 12, z: 22, s: 1.1 },
-      { x: 10, z: 34, s: 1.0 },
-      { x: -18, z: -8, s: 0.95 },
-      { x: -28, z: 10, s: 0.9 },
-      { x: -38, z: 38, s: 1.0 }  // Đặt dọc lối đi nhà xe, giải phóng toàn bộ mặt tiền Văn thư & Hiệu trưởng
+      { x: -14, z: 2, s: 1.1 },
+      { x: -14, z: 18, s: 1.0 },
+      { x: -14, z: 32, s: 1.0 },
+      { x: 14, z: 4, s: 1.05 },
+      { x: 14, z: 18, s: 1.1 },
+      { x: 12, z: 32, s: 1.0 },
+      { x: -28, z: -8, s: 0.95 },
+      { x: -38, z: 10, s: 0.9 },
+      { x: -44, z: 40, s: 1.0 }
     ];
     treePositions.forEach(tp => {
       const tree = this.createCourtyardTree(tp.x, tp.z, tp.s);
@@ -513,14 +691,13 @@ class Campus3DViewer {
 
     // 5. Các dãy ghế đá trường học màu trắng xếp dọc hành lang & tán cây
     const benchPositions = [
-      { x: -16, z: 2, rot: Math.PI / 2 },
-      { x: -12, z: 16, rot: 0 },
-      { x: -18, z: 28, rot: Math.PI / 2 },
-      { x: 12, z: 8, rot: 0 },
-      { x: 16, z: 22, rot: -Math.PI / 2 },
+      { x: -15, z: 2, rot: Math.PI / 2 },
+      { x: -15, z: 18, rot: Math.PI / 2 },
+      { x: -15, z: 30, rot: Math.PI / 2 },
+      { x: 14, z: 8, rot: -Math.PI / 2 },
+      { x: 14, z: 22, rot: -Math.PI / 2 },
       { x: -21.5, z: -14, rot: Math.PI / 2 },
       { x: -21.5, z: -6, rot: Math.PI / 2 },
-      { x: -21.5, z: 2, rot: Math.PI / 2 },
       { x: -16, z: -25, rot: 0 },
       { x: 0, z: -25, rot: 0 },
       { x: 16, z: -25, rot: 0 }
@@ -1167,29 +1344,29 @@ class Campus3DViewer {
     const floorH = 3.6;
     const zPos = 18; // Nằm ngang phía trước bên trái sân trường
     const roomD = 6.4;
-    const roomW = 5.0;
-    const stairW = 4.6;
-    const stairCenterX = -20.35; // Nằm chính giữa, khớp nối cầu thang với các phòng 2 bên
+    const roomW = 4.0;
+    const stairW = 4.0;
+    const stairCenterX = -31.6; // Khớp nối cầu thang với các phòng 2 bên
 
     // Tầng trệt (fl_0)
     const tretRooms = [
-      { name: "WC", w: 3.5, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' },
-      { name: "HỒ SƠ 1", subtext: "Lưu trữ 1", w: 5.0, color: 0xf8fafc },
-      { name: "HỒ SƠ 2", subtext: "Lưu trữ 2", w: 5.0, color: 0xf8fafc },
+      { name: "WC", w: 3.2, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' },
+      { name: "HỒ SƠ 1", subtext: "Lưu trữ 1", w: 4.0, color: 0xf8fafc },
+      { name: "HỒ SƠ 2", subtext: "Lưu trữ 2", w: 4.0, color: 0xf8fafc },
       { isStair: true, w: stairW },
-      { name: "PHÓ HT", subtext: "Phó Hiệu trưởng", w: 5.0, color: 0xf8fafc },
-      { name: "TRUYỀN THỐNG", subtext: "Phòng truyền thống", w: 5.0, color: 0xf8fafc },
-      { name: "TIẾP DÂN", subtext: "Phòng Tiếp dân", w: 5.0, color: 0xf8fafc }
+      { name: "PHÓ HT", subtext: "Phó Hiệu trưởng", w: 4.0, color: 0xf8fafc },
+      { name: "TRUYỀN THỐNG", subtext: "Phòng truyền thống", w: 4.0, color: 0xf8fafc },
+      { name: "TIẾP DÂN", subtext: "Phòng Tiếp dân", w: 4.0, color: 0xf8fafc }
     ];
 
     // Tầng 2 (fl_1)
     const t2Rooms = [
-      { name: "WC", w: 3.5, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' },
-      { name: "HIỆU TRƯỞNG", subtext: "Phòng Hiệu trưởng", w: 5.0, color: 0xf8fafc },
-      { name: "VĂN THƯ", subtext: "Văn thư - Hành chính", w: 5.0, color: 0xf8fafc },
+      { name: "WC", w: 3.2, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' },
+      { name: "HIỆU TRƯỞNG", subtext: "Phòng Hiệu trưởng", w: 4.0, color: 0xf8fafc },
+      { name: "VĂN THƯ", subtext: "Văn thư - Hành chính", w: 4.0, color: 0xf8fafc },
       { isStair: true, w: stairW },
-      { name: "KẾ TOÁN", subtext: "Phòng Kế toán", w: 5.0, color: 0xf8fafc },
-      { name: "CHI BỘ (HỌP GV)", subtext: "Phòng họp GV", w: 10.25, color: 0xfef3c7, stroke: '#d97706', textColor: '#b45309' }
+      { name: "KẾ TOÁN", subtext: "Phòng Kế toán", w: 4.0, color: 0xf8fafc },
+      { name: "CHI BỘ (HỌP GV)", subtext: "Phòng họp GV", w: 8.2, color: 0xfef3c7, stroke: '#d97706', textColor: '#b45309' }
     ];
 
     // Vẽ 2 tầng nằm ngang, liên tục không có khoảng trống
@@ -1198,20 +1375,20 @@ class Campus3DViewer {
       { floor: 1, rooms: t2Rooms }
     ].forEach(fl => {
       const y = fl.floor * floorH + floorH / 2;
-      let curX = -37.0;
+      let curX = -45.4;
 
       // Sàn hành lang trước màu vàng be nhạt chạy xuyên suốt toàn bộ dãy
       const slab = new THREE.Mesh(
-        new THREE.BoxGeometry(36.0, 0.4, roomD + 2.8),
+        new THREE.BoxGeometry(29.0, 0.4, roomD + 2.8),
         new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.6 })
       );
-      slab.position.set(-19.6, fl.floor * floorH, zPos + 1.4);
+      slab.position.set(-31.2, fl.floor * floorH, zPos + 1.4);
       slab.receiveShadow = true;
       building.add(slab);
 
       fl.rooms.forEach(r => {
         if (r.isStair) {
-          curX += (r.w || stairW) + 0.25;
+          curX += (r.w || stairW) + 0.2;
           return;
         }
         const rw = r.w || roomW;
@@ -1223,7 +1400,7 @@ class Campus3DViewer {
           floorKey: `fl_${fl.floor}`
         });
         building.add(box);
-        curX += rw + 0.25;
+        curX += rw + 0.2;
       });
     });
 
@@ -1232,9 +1409,8 @@ class Campus3DViewer {
     building.add(adminStair);
 
     // Cột hiên đỏ gạch mặt tiền Dãy Hành Chính đặt CHUẨN XÁC tại vách ngăn giữa các phòng
-    // Tuyệt đối không che khuất biển tên phòng hay chữ của bất kỳ phòng nào
     const redColAdmin = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.7 });
-    const colDividers = [-37.0, -33.35, -28.1, -22.85, -17.8, -12.55, -2.15];
+    const colDividers = [-45.4, -42.1, -37.9, -33.7, -29.5, -25.3, -21.1, -16.9];
     colDividers.forEach(cx => {
       const col = new THREE.Mesh(new THREE.BoxGeometry(0.45, 2 * floorH, 0.45), redColAdmin);
       col.position.set(cx, floorH, zPos + roomD / 2 + 2.6);
@@ -1243,20 +1419,20 @@ class Campus3DViewer {
     });
     // Cột tầng trệt giữa Phòng Truyền Thống và Tiếp Dân (chỉ cao 1 tầng, không chắn phòng Chi bộ tầng 2)
     const midTretCol = new THREE.Mesh(new THREE.BoxGeometry(0.45, floorH, 0.45), redColAdmin);
-    midTretCol.position.set(-7.3, floorH / 2, zPos + roomD / 2 + 2.6);
+    midTretCol.position.set(-21.1, floorH / 2, zPos + roomD / 2 + 2.6);
     midTretCol.castShadow = true;
     building.add(midTretCol);
 
-    // Mái dốc tôn xanh lam nằm ngang (Hip Roof) trùm trọn vẹn toàn bộ các phòng và hành lang
-    const roofAdmin = this.createHipRoofMesh(38, roomD + 4.2, 2.8, 0.8, 0x1d4ed8);
-    roofAdmin.position.set(-19.6, 2 * floorH, zPos + 1.4);
+    // Mái dốc tôn xanh lam nằm ngang (Hip Roof) trùm trọn vẹn toàn bộ các phòng và hành lang (không lấn sang cột cờ)
+    const roofAdmin = this.createHipRoofMesh(29.6, roomD + 4.0, 2.8, 0.8, 0x1d4ed8);
+    roofAdmin.position.set(-31.2, 2 * floorH, zPos + 1.4);
     building.add(roofAdmin);
 
     // Hành lang có mái che xanh chạy dọc từ mép trái ra phía Cổng trường (chuẩn ảnh drone)
     const walkwayGeo = new THREE.BoxGeometry(3.6, 0.25, 22);
     const walkwayMat = new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.6 });
     const walkway = new THREE.Mesh(walkwayGeo, walkwayMat);
-    walkway.position.set(-36.5, 0.12, 31);
+    walkway.position.set(-45.8, 0.12, 31);
     walkway.receiveShadow = true;
     building.add(walkway);
 
@@ -1264,7 +1440,7 @@ class Campus3DViewer {
       new THREE.BoxGeometry(4.0, 0.2, 22),
       new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.35 })
     );
-    walkwayCanopy.position.set(-36.5, 2.6, 31);
+    walkwayCanopy.position.set(-45.8, 2.6, 31);
     building.add(walkwayCanopy);
 
     this.scene.add(building);
@@ -1289,9 +1465,9 @@ class Campus3DViewer {
     body.receiveShadow = true;
     building.add(body);
 
-    // 2. MÁI VÒM CONG LỚN MÀU XANH LAM ĐẶC TRƯNG (CURVED DOME ROOF)
-    const domeRoof = this.createCurvedDomeRoof(hallW + 2.5, hallD + 2.5, 3.2, 0x1d4ed8);
-    domeRoof.position.set(hallX, hallH, hallZ);
+    // 2. MÁI VÒM CONG LỚN MÀU XANH LAM (Đặt gọn gàng trên nóc, không nhô ra che mặt tiền)
+    const domeRoof = this.createCurvedDomeRoof(hallW + 1.0, hallD, 3.2, 0x1d4ed8);
+    domeRoof.position.set(hallX, hallH, hallZ - 0.4);
     building.add(domeRoof);
 
     // 3. Hệ thống cột trụ trang trí đỏ nổi bật quanh mặt ngoài Hội Trường (chuẩn ảnh thực tế)
@@ -1305,7 +1481,25 @@ class Campus3DViewer {
       });
     });
 
-    // 4. Biển chữ HỘI TRƯỜNG lớn và sắc nét ở mặt tiền (Hướng Nam - Ra cổng trường)
+    // 4. SẢNH ĐÓN TIẾP MẶT TIỀN & BIỂN TÊN HỘI TRƯỜNG KHÔNG BỊ MÁI CHE
+    // Khối tường trán sảnh đón tiếp vươn ra phía trước mặt tiền
+    const porticoWall = new THREE.Mesh(
+      new THREE.BoxGeometry(11.6, 4.4, 0.5),
+      new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.6 })
+    );
+    porticoWall.position.set(hallX, 2.2, hallZ + hallD / 2 + 0.35);
+    porticoWall.castShadow = true;
+    building.add(porticoWall);
+
+    // Khung viền đỏ trang trọng của biển hiệu
+    const porticoFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(10.8, 2.6, 0.25),
+      new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.7 })
+    );
+    porticoFrame.position.set(hallX, 3.4, hallZ + hallD / 2 + 0.55);
+    building.add(porticoFrame);
+
+    // Biển chữ HỘI TRƯỜNG lớn và sắc nét ở mặt tiền (Hướng Nam - Ra cổng trường)
     const hallLabelTex = this.createCanvasLabel(
       "HỘI TRƯỜNG",
       "Khu sinh hoạt chung & Đại hội",
@@ -1317,28 +1511,35 @@ class Campus3DViewer {
     );
     const hallSignMat = new THREE.MeshBasicMaterial({ map: hallLabelTex, transparent: true });
 
-    // Biển mặt tiền phía Nam
-    const hallFrontSign = new THREE.Mesh(new THREE.PlaneGeometry(10.5, 3.5), hallSignMat);
-    hallFrontSign.position.set(hallX, 3.8, hallZ + hallD / 2 + 0.12);
+    // Biển mặt tiền phía Nam (đặt nhô hẳn ra ngoài mái vòm, tuyệt đối không bị che khuất)
+    const hallFrontSign = new THREE.Mesh(new THREE.PlaneGeometry(10.4, 2.4), hallSignMat);
+    hallFrontSign.position.set(hallX, 3.4, hallZ + hallD / 2 + 0.7);
     building.add(hallFrontSign);
+
+    // Biển phụ trên nóc sảnh hướng nhìn từ trên cao xuống (Top-down view)
+    const topSignMat = new THREE.MeshBasicMaterial({ map: hallLabelTex, transparent: true });
+    const hallTopSign = new THREE.Mesh(new THREE.PlaneGeometry(10.4, 2.4), topSignMat);
+    hallTopSign.rotation.x = -Math.PI / 4; // Nghiêng 45 độ đón góc nhìn Flycam / từ trên cao
+    hallTopSign.position.set(hallX, 4.8, hallZ + hallD / 2 + 0.6);
+    building.add(hallTopSign);
 
     // Cửa chính kính màu xanh sẫm dưới biển hiệu
     const doorMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.2, metalness: 0.5 });
-    const mainDoor = new THREE.Mesh(new THREE.BoxGeometry(6.4, 2.4, 0.15), doorMat);
-    mainDoor.position.set(hallX, 1.2, hallZ + hallD / 2 + 0.08);
+    const mainDoor = new THREE.Mesh(new THREE.BoxGeometry(6.4, 2.2, 0.15), doorMat);
+    mainDoor.position.set(hallX, 1.1, hallZ + hallD / 2 + 0.62);
     building.add(mainDoor);
 
     // Mái hiên che sảnh đón tiếp phía trước cửa chính
     const entranceCanopy = new THREE.Mesh(
-      new THREE.BoxGeometry(7.6, 0.25, 2.0),
+      new THREE.BoxGeometry(7.6, 0.25, 1.8),
       new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.4 })
     );
-    entranceCanopy.position.set(hallX, 2.45, hallZ + hallD / 2 + 1.0);
+    entranceCanopy.position.set(hallX, 2.25, hallZ + hallD / 2 + 1.4);
     building.add(entranceCanopy);
 
     // Biển mặt hông phía Tây (Hướng ra sân trường trung tâm & cột cờ)
     const hallSideSign = new THREE.Mesh(new THREE.PlaneGeometry(9.0, 3.0), hallSignMat);
-    hallSideSign.position.set(hallX - hallW / 2 - 0.12, 3.8, hallZ);
+    hallSideSign.position.set(hallX - hallW / 2 - 0.2, 3.6, hallZ);
     hallSideSign.rotation.y = -Math.PI / 2;
     building.add(hallSideSign);
 
@@ -1349,9 +1550,11 @@ class Campus3DViewer {
       info: "Hội trường lớn mái vòm xanh - Nơi diễn ra các buổi đại hội, lễ mít tinh & hoạt động chung của trường"
     };
     hallFrontSign.userData = hallUserData;
+    hallTopSign.userData = hallUserData;
     hallSideSign.userData = hallUserData;
     body.userData = hallUserData;
     this.interactiveRooms.push(hallFrontSign);
+    this.interactiveRooms.push(hallTopSign);
     this.interactiveRooms.push(hallSideSign);
     this.interactiveRooms.push(body);
 
@@ -1481,28 +1684,108 @@ class Campus3DViewer {
     westBridgeGroup.add(skybridge);
 
     // -------------------------------------------------------------
-    // C. HÀNH LANG NỐI DÃY PHÍA SAU (DÃY A) SANG CÁNH TRÁI VÀ CÁNH PHẢI
+    // C. CÁNH TÒA NHÀ 4 TẦNG KẾT NỐI LIỀN MẠCH GIỮA DÃY A VÀ DÃY B / BỘ MÔN
+    // (Thiết kế chuẩn 100% theo ảnh Flycam thực tế: 4 tầng sàn hành lang,
+    // cột đỏ, lan can, tường cửa sổ và mái tôn xanh dốc che kín liên hoàn)
     // -------------------------------------------------------------
-    // Cầu nối phía Tây (Dãy A ➔ Cánh Trái Dãy B)
-    const bridgeWestNorth = new THREE.Mesh(
-      new THREE.BoxGeometry(4.2, 0.3, 19),
-      new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.7 })
-    );
-    bridgeWestNorth.position.set(-21, 0.12, -18);
-    bridgeWestNorth.receiveShadow = true;
-    westBridgeGroup.add(bridgeWestNorth);
+    // 1. Cánh kết nối phía Tây (Nối Dãy Sau A ➔ Cánh Trái Dãy B)
+    const westConnectWing = this.createConnectingWingBlock(-22.5, -28.0, -8.0, true);
+    westBridgeGroup.add(westConnectWing);
 
-    // Cầu nối phía Đông (Dãy A ➔ Cánh Phải Dãy Bộ Môn)
-    const bridgeEastNorth = new THREE.Mesh(
-      new THREE.BoxGeometry(4.2, 0.3, 19),
-      new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.7 })
-    );
-    bridgeEastNorth.position.set(21, 0.12, -18);
-    bridgeEastNorth.receiveShadow = true;
-    westBridgeGroup.add(bridgeEastNorth);
+    // 2. Cánh kết nối phía Đông (Nối Dãy Sau A ➔ Cánh Phải Dãy Bộ Môn)
+    const eastConnectWing = this.createConnectingWingBlock(22.5, -28.0, -8.0, false);
+    westBridgeGroup.add(eastConnectWing);
 
     this.scene.add(westBridgeGroup);
     this.corridorObjects.push(westBridgeGroup);
+  }
+
+  // Phương thức xây dựng cánh tòa nhà 4 tầng kết nối giữa các dãy nhà (theo ảnh drone thực tế)
+  createConnectingWingBlock(centerX, zStart, zEnd, isWest = true) {
+    const wing = new THREE.Group();
+    const floorH = 3.6;
+    const depth = Math.abs(zEnd - zStart); // 20m
+    const centerZ = (zStart + zEnd) / 2;   // -18m
+    const width = 6.4;
+
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.6 });
+    const corridorSlabMat = new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.6 });
+    const railMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.3 });
+    const redColMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.7 });
+    const windowMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.2, metalness: 0.5 });
+
+    // 4 tầng liên hoàn nối từ Dãy A sang Dãy trước
+    for (let f = 0; f < 4; f++) {
+      const baseY = f * floorH;
+
+      // Sàn hành lang kết nối (màu vàng be nhạt liền mạch)
+      const slab = new THREE.Mesh(
+        new THREE.BoxGeometry(width, 0.38, depth + 1.2),
+        corridorSlabMat
+      );
+      slab.position.set(centerX, baseY, centerZ);
+      slab.receiveShadow = true;
+      slab.userData = { floorKey: `fl_${f}` };
+      wing.add(slab);
+
+      // Tường ngoài của dãy kết nối (hướng ra ngoài khuôn viên trường)
+      const wallX = isWest ? (centerX - width / 2 + 0.25) : (centerX + width / 2 - 0.25);
+      const outerWall = new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, floorH * 0.92, depth),
+        wallMat
+      );
+      outerWall.position.set(wallX, baseY + floorH / 2, centerZ);
+      outerWall.castShadow = true;
+      outerWall.receiveShadow = true;
+      outerWall.userData = { floorKey: `fl_${f}` };
+      wing.add(outerWall);
+
+      // Các ô cửa sổ kính xanh dọc theo tường ngoài
+      for (let zw = zStart + 3.0; zw <= zEnd - 2.5; zw += 4.5) {
+        const win = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.4), windowMat);
+        win.position.set(isWest ? (wallX - 0.28) : (wallX + 0.28), baseY + floorH / 2 + 0.2, zw);
+        win.rotation.y = isWest ? -Math.PI / 2 : Math.PI / 2;
+        win.userData = { floorKey: `fl_${f}` };
+        wing.add(win);
+      }
+
+      // Lan can hành lang bảo vệ hướng vào sân trong
+      const railX = isWest ? (centerX + width / 2 - 0.15) : (centerX - width / 2 + 0.15);
+      const railing = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.9, depth),
+        railMat
+      );
+      railing.position.set(railX, baseY + 0.5, centerZ);
+      railing.userData = { floorKey: `fl_${f}` };
+      wing.add(railing);
+
+      // Các trụ cột đỏ gạch vững chắc chạy đều dọc theo hành lang
+      for (let zc = zStart + 1.5; zc <= zEnd - 1.0; zc += 4.5) {
+        const col = new THREE.Mesh(new THREE.BoxGeometry(0.48, floorH, 0.48), redColMat);
+        col.position.set(railX, baseY + floorH / 2, zc);
+        col.castShadow = true;
+        col.userData = { floorKey: `fl_${f}` };
+        wing.add(col);
+      }
+    }
+
+    // Ô lưới thông gió vuông đặc trưng đầu hồi kết nối
+    const ventTex = this.createVentilationTexture(2, 4);
+    const ventMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(width * 0.7, 4 * floorH * 0.65),
+      new THREE.MeshStandardMaterial({ map: ventTex, side: THREE.DoubleSide })
+    );
+    ventMesh.position.set(isWest ? (centerX - width / 2 - 0.05) : (centerX + width / 2 + 0.05), (4 * floorH) / 2, centerZ);
+    ventMesh.rotation.y = isWest ? -Math.PI / 2 : Math.PI / 2;
+    wing.add(ventMesh);
+
+    // MÁI TÔN XANH LAM KẾT NỐI LIỀN MẠCH TRÊN ĐỈNH TẦNG 4
+    // Nối trực tiếp từ đỉnh Dãy Sau (Dãy A) đến đỉnh Dãy Trước, tạo khối chữ U/E khép kín chuẩn ảnh drone
+    const connectRoof = this.createHipRoofMesh(width + 1.0, depth + 2.5, 3.2, 0.8, 0x1d4ed8);
+    connectRoof.position.set(centerX, 4 * floorH, centerZ);
+    wing.add(connectRoof);
+
+    return wing;
   }
 
   // 6. MÁI CHE KÍNH TAM GIÁC TRUNG TÂM & CỘT CỜ SÂN TRƯỜNG (CHUẨN ẢNH THỰC TẾ)
@@ -1602,10 +1885,10 @@ class Campus3DViewer {
     landmarkGroup.add(canopyGroup);
 
     // -------------------------------------------------------------
-    // B. CỘT CỜ TRUNG TÂM SÂN TRƯỜNG (Z ≈ 14, TÁCH BIỆT PHÍA TRƯỚC)
+    // B. CỘT CỜ TRUNG TÂM SÂN TRƯỜNG (Z = 11, TÁCH BIỆT HOÀN TOÀN MỌI DÃY NHÀ)
     // -------------------------------------------------------------
     const flagGroup = new THREE.Group();
-    flagGroup.position.set(0, 0, 14);
+    flagGroup.position.set(0, 0, 11);
 
     // Bục tròn tam cấp
     const base1 = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.8, 0.4, 32), new THREE.MeshStandardMaterial({ color: 0xe2e8f0 }));
@@ -1704,25 +1987,440 @@ class Campus3DViewer {
     return new THREE.CanvasTexture(canvas);
   }
 
+  // Helper tạo hoa văn bia đá hoa cương cổng trường THPT Tam Phước chuẩn ảnh thật
+  createStoneMonumentTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // Nền đá hoa cương đen bóng
+    const grad = ctx.createLinearGradient(0, 0, 1024, 512);
+    grad.addColorStop(0, '#1c1917');
+    grad.addColorStop(0.5, '#292524');
+    grad.addColorStop(1, '#0c0a09');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1024, 512);
+
+    // Viền kép mạ vàng sang trọng
+    ctx.strokeStyle = '#eab308';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(18, 18, 988, 476);
+    ctx.strokeStyle = '#ca8a04';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(34, 34, 956, 444);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Dòng 1: Sở GD&ĐT
+    ctx.fillStyle = '#fef08a';
+    ctx.font = 'bold 28px "Segoe UI", Arial, sans-serif';
+    ctx.fillText('SỞ GIÁO DỤC VÀ ĐÀO TẠO TỈNH ĐỒNG NAI', 512, 85);
+
+    // Dòng 2: Cấp trường
+    ctx.fillStyle = '#fde047';
+    ctx.font = 'bold 44px "Segoe UI", Arial, sans-serif';
+    ctx.fillText('TRƯỜNG TRUNG HỌC PHỔ THÔNG', 512, 175);
+
+    // Dòng 3: TÊN TRƯỜNG NỔI BẬT
+    ctx.shadowColor = 'rgba(250, 204, 21, 0.6)';
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 80px "Arial Black", "Segoe UI", sans-serif';
+    ctx.fillText('TAM PHƯỚC', 512, 290);
+    ctx.shadowBlur = 0;
+
+    // Đường kẻ trang trí vàng dưới tên trường
+    ctx.strokeStyle = '#eab308';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(260, 360);
+    ctx.lineTo(764, 360);
+    ctx.stroke();
+
+    // Dòng 4: Địa chỉ
+    ctx.fillStyle = '#fef9c3';
+    ctx.font = 'italic 25px "Segoe UI", Arial, sans-serif';
+    ctx.fillText('Ấp Long Khánh 3 - P. Tam Phước - TP. Biên Hòa - Đồng Nai', 512, 420);
+
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  // Helper tạo biển khẩu hiệu xanh "CỔNG TRƯỜNG SẠCH ĐẸP - AN TOÀN" chuẩn ảnh thật
+  createGateSloganTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 360;
+    const ctx = canvas.getContext('2d');
+
+    // Nền xanh dương đặc trưng như ảnh thực tế
+    ctx.fillStyle = '#1d4ed8';
+    ctx.fillRect(0, 0, 1024, 360);
+
+    // Viền trắng
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(12, 12, 1000, 336);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Dòng trên
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 42px "Segoe UI", Arial, sans-serif';
+    ctx.fillText('CỔNG TRƯỜNG SẠCH ĐẸP - AN TOÀN', 512, 100);
+
+    // Đường gạch mảnh
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(150, 175);
+    ctx.lineTo(874, 175);
+    ctx.stroke();
+
+    // Dòng khẩu hiệu
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px "Segoe UI", Arial, sans-serif';
+    ctx.fillText('Học để làm cho bản thân và cộng đồng hạnh phúc!', 512, 250);
+
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  // Helper tạo cây phượng vĩ nở hoa đỏ rực rỡ đặc trưng trước cổng trường
+  createPoincianaTree(x, z, scale = 1.0) {
+    const treeGroup = new THREE.Group();
+    // Thân cây
+    const trunkGeo = new THREE.CylinderGeometry(0.35 * scale, 0.65 * scale, 6.5 * scale, 8);
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c3d2e, roughness: 0.9 });
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+    trunk.position.y = (6.5 * scale) / 2;
+    trunk.rotation.z = 0.08;
+    trunk.castShadow = true;
+    treeGroup.add(trunk);
+
+    // Tán lá xanh xòe rộng
+    const leavesMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.8 });
+    const flowerMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.7, emissive: 0x7f1d1d, emissiveIntensity: 0.2 });
+
+    const canopyPositions = [
+      { dx: 0, dy: 6.2 * scale, dz: 0, r: 3.2 * scale },
+      { dx: 1.8 * scale, dy: 5.6 * scale, dz: 1.2 * scale, r: 2.6 * scale },
+      { dx: -1.8 * scale, dy: 5.8 * scale, dz: -0.8 * scale, r: 2.5 * scale },
+      { dx: 0.8 * scale, dy: 6.8 * scale, dz: -1.5 * scale, r: 2.4 * scale }
+    ];
+
+    canopyPositions.forEach(p => {
+      const leaves = new THREE.Mesh(new THREE.DodecahedronGeometry(p.r, 1), leavesMat);
+      leaves.position.set(p.dx, p.dy, p.dz);
+      leaves.castShadow = true;
+      treeGroup.add(leaves);
+
+      // Cụm hoa phượng đỏ rực rỡ
+      for (let i = 0; i < 4; i++) {
+        const angle = (i / 4) * Math.PI * 2;
+        const flw = new THREE.Mesh(new THREE.DodecahedronGeometry(p.r * 0.42, 0), flowerMat);
+        flw.position.set(
+          p.dx + Math.cos(angle) * (p.r * 0.75),
+          p.dy + (Math.sin(angle * 2) * 0.5 + 0.3) * scale,
+          p.dz + Math.sin(angle) * (p.r * 0.75)
+        );
+        treeGroup.add(flw);
+      }
+    });
+
+    treeGroup.position.set(x, 0, z);
+    return treeGroup;
+  }
+
   // 7. NGOẠI CẢNH & KHU VỰC XE & SÂN BÓNG
   buildCampusEnvironment() {
     const envGroup = new THREE.Group();
 
-    // Cổng trường (Phía Nam)
-    const gateGeo = new THREE.BoxGeometry(18, 4.5, 2.5);
-    const gateMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
-    const gate = new THREE.Mesh(gateGeo, gateMat);
-    gate.position.set(-6, 2.25, 52);
-    gate.castShadow = true;
-    envGroup.add(gate);
+    // ==========================================
+    // KHU VỰC CỔNG TRƯỜNG THPT TAM PHƯỚC (THEO ẢNH THỰC TẾ)
+    // ==========================================
+    const gateGroup = new THREE.Group();
 
-    const gateLblMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("CỔNG TRƯỜNG CHÍNH", "Ra vào khuôn viên", "#ffffff", "#dc2626", "#dc2626", 450, 150),
-      transparent: true
+    // 1. Lòng đường nhựa ra vào cổng
+    const road = new THREE.Mesh(
+      new THREE.PlaneGeometry(16, 22),
+      new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9 })
+    );
+    road.rotation.x = -Math.PI / 2;
+    road.position.set(-2, 0.02, 53);
+    road.receiveShadow = true;
+    gateGroup.add(road);
+
+    // Vạch kẻ đường viền trắng hai bên
+    const roadStripeMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
+    const stripeLeft = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 22), roadStripeMat);
+    stripeLeft.rotation.x = -Math.PI / 2;
+    stripeLeft.position.set(-9.8, 0.03, 53);
+    gateGroup.add(stripeLeft);
+
+    const stripeRight = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 22), roadStripeMat);
+    stripeRight.rotation.x = -Math.PI / 2;
+    stripeRight.position.set(5.8, 0.03, 53);
+    gateGroup.add(stripeRight);
+
+    // Dữ liệu tương tác khi click vào Cổng Trường
+    const gateUserData = {
+      name: "Cổng Trường",
+      floorKey: 'fl_0',
+      info: "Cổng chính THPT Tam Phước - Ấp Long Khánh 3, Phường Tam Phước, TP. Biên Hòa, Tỉnh Đồng Nai",
+      img: "cong_truong.png"
+    };
+
+    // 2. BIA ĐÁ HOA CƯƠNG TÊN TRƯỜNG THPT TAM PHƯỚC (THEO ẢNH THẬT)
+    const monumentGroup = new THREE.Group();
+    monumentGroup.position.set(-14.5, 0, 52);
+
+    // Bồn hoa gạch thẻ đỏ chân bia
+    const planterBox = new THREE.Mesh(
+      new THREE.BoxGeometry(8.6, 0.85, 2.4),
+      new THREE.MeshStandardMaterial({ color: 0x881337, roughness: 0.75 })
+    );
+    planterBox.position.y = 0.425;
+    planterBox.castShadow = true;
+    monumentGroup.add(planterBox);
+
+    // Cây hoa cỏ trong bồn
+    const shrubMat1 = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.8 });
+    const shrubMat2 = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.8 });
+    const shrubMat3 = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.8 });
+    for (let bx = -3.6; bx <= 3.6; bx += 1.2) {
+      const shrub = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), shrubMat1);
+      shrub.position.set(bx, 0.95, 0.7);
+      monumentGroup.add(shrub);
+      const flw = new THREE.Mesh(new THREE.SphereGeometry(0.18, 6, 6), (Math.abs(bx) % 2.4 === 0) ? shrubMat2 : shrubMat3);
+      flw.position.set(bx, 1.25, 0.75);
+      monumentGroup.add(flw);
+    }
+
+    // Tấm đá hoa cương lớn khắc chữ vàng
+    const stoneGeo = new THREE.BoxGeometry(8.2, 3.7, 0.7);
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.25, metalness: 0.1 });
+    const stoneSlab = new THREE.Mesh(stoneGeo, stoneMat);
+    stoneSlab.position.y = 2.65;
+    stoneSlab.castShadow = true;
+    monumentGroup.add(stoneSlab);
+
+    // Mặt trước bia khắc chữ vàng
+    const stoneTex = this.createStoneMonumentTexture();
+    const stonePlateMat = new THREE.MeshStandardMaterial({
+      map: stoneTex,
+      roughness: 0.3,
+      metalness: 0.2
     });
-    const gateLbl = new THREE.Mesh(new THREE.PlaneGeometry(12, 4.0), gateLblMat);
-    gateLbl.position.set(-6, 3, 53.3);
-    envGroup.add(gateLbl);
+    const stonePlateFront = new THREE.Mesh(new THREE.PlaneGeometry(8.0, 3.5), stonePlateMat);
+    stonePlateFront.position.set(0, 2.65, 0.36);
+    monumentGroup.add(stonePlateFront);
+
+    // Mặt sau bia
+    const stonePlateBack = new THREE.Mesh(new THREE.PlaneGeometry(8.0, 3.5), stonePlateMat);
+    stonePlateBack.rotation.y = Math.PI;
+    stonePlateBack.position.set(0, 2.65, -0.36);
+    monumentGroup.add(stonePlateBack);
+
+    monumentGroup.userData = gateUserData;
+    this.interactiveRooms.push(monumentGroup);
+    gateGroup.add(monumentGroup);
+
+    // 3. BẢNG KHẨU HIỆU XANH & HÀNG RÀO THEO ẢNH
+    const sloganGroup = new THREE.Group();
+    sloganGroup.position.set(-23.8, 0, 52);
+
+    // Chân bệ hàng rào đỏ thẫm
+    const fenceBase = new THREE.Mesh(
+      new THREE.BoxGeometry(9.6, 0.7, 0.6),
+      new THREE.MeshStandardMaterial({ color: 0x7f1d1d, roughness: 0.7 })
+    );
+    fenceBase.position.y = 0.35;
+    sloganGroup.add(fenceBase);
+
+    // Song sắt đứng màu kem
+    const ironMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.5 });
+    for (let fx = -4.4; fx <= 4.4; fx += 0.4) {
+      const ironBar = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.8, 8), ironMat);
+      ironBar.position.set(fx, 2.1, 0);
+      sloganGroup.add(ironBar);
+    }
+
+    // Bảng khẩu hiệu màu xanh biển
+    const sloganTex = this.createGateSloganTexture();
+    const sloganMat = new THREE.MeshStandardMaterial({ map: sloganTex, roughness: 0.3 });
+    const sloganBoardFront = new THREE.Mesh(new THREE.PlaneGeometry(7.8, 2.7), sloganMat);
+    sloganBoardFront.position.set(0, 2.35, 0.12);
+    sloganGroup.add(sloganBoardFront);
+
+    const sloganBoardBack = new THREE.Mesh(new THREE.PlaneGeometry(7.8, 2.7), sloganMat);
+    sloganBoardBack.rotation.y = Math.PI;
+    sloganBoardBack.position.set(0, 2.35, -0.12);
+    sloganGroup.add(sloganBoardBack);
+
+    gateGroup.add(sloganGroup);
+
+    // 4. TRỤ CỔNG BÊ TÔNG VỚI Ô VÒM ĐỎ THẪM ĐẶC TRƯNG
+    const pillarMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 });
+    const pillarInnerMat = new THREE.MeshStandardMaterial({ color: 0x881337, roughness: 0.5 });
+    [-10.2, -18.8, -28.6].forEach(px => {
+      const pil = new THREE.Group();
+      pil.position.set(px, 0, 52);
+
+      const pilBody = new THREE.Mesh(new THREE.BoxGeometry(1.4, 4.4, 1.2), pillarMat);
+      pilBody.position.y = 2.2;
+      pilBody.castShadow = true;
+      pil.add(pilBody);
+
+      const recessedFront = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.8, 0.1), pillarInnerMat);
+      recessedFront.position.set(0, 2.2, 0.56);
+      pil.add(recessedFront);
+
+      const recessedBack = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.8, 0.1), pillarInnerMat);
+      recessedBack.position.set(0, 2.2, -0.56);
+      pil.add(recessedBack);
+
+      const pilCap = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.75, 0.4, 16), pillarMat);
+      pilCap.position.y = 4.5;
+      pil.add(pilCap);
+
+      gateGroup.add(pil);
+    });
+
+    // 5. CÂY PHƯỢNG VĨ HOA ĐỎ NỞ RỘ TRÊN HÀNG RÀO
+    const tree1 = this.createPoincianaTree(-23.5, 47.5, 1.25);
+    gateGroup.add(tree1);
+    const tree2 = this.createPoincianaTree(-15, 46.8, 1.1);
+    gateGroup.add(tree2);
+
+    // 6. PHÒNG TRỰC BẢO VỆ MÁI XANH DƯƠNG (THEO ẢNH)
+    const guardGroup = new THREE.Group();
+    guardGroup.position.set(6.5, 0, 51.5);
+
+    const guardBody = new THREE.Mesh(
+      new THREE.BoxGeometry(6.6, 3.6, 5.2),
+      new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.7 })
+    );
+    guardBody.position.y = 1.8;
+    guardBody.castShadow = true;
+    guardGroup.add(guardBody);
+
+    const door = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.6, 2.6),
+      new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.2, metalness: 0.5 })
+    );
+    door.position.set(-1.6, 1.3, 2.62);
+    guardGroup.add(door);
+
+    const win = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.4, 1.6),
+      new THREE.MeshStandardMaterial({ color: 0x93c5fd, roughness: 0.1, metalness: 0.8, transparent: true, opacity: 0.85 })
+    );
+    win.position.set(1.4, 2.0, 2.62);
+    guardGroup.add(win);
+
+    const roofGeo = new THREE.ConeGeometry(5.4, 2.4, 4);
+    roofGeo.rotateY(Math.PI / 4);
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.35 });
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.scale.set(1.15, 1.0, 1.0);
+    roof.position.y = 4.8;
+    roof.castShadow = true;
+    guardGroup.add(roof);
+
+    const guardLblTex = this.createCanvasLabel("PHÒNG BẢO VỆ", "Trực an ninh 24/7", "#ffffff", "#0f172a", "#0284c7", 340, 120);
+    const guardLbl = new THREE.Mesh(
+      new THREE.PlaneGeometry(3.6, 1.3),
+      new THREE.MeshBasicMaterial({ map: guardLblTex, transparent: true })
+    );
+    guardLbl.position.set(0, 3.2, 2.63);
+    guardGroup.add(guardLbl);
+
+    guardGroup.userData = {
+      name: "Phòng Bảo Vệ",
+      floorKey: 'fl_0',
+      info: "Phòng trực bảo vệ an ninh cổng trường THPT Tam Phước"
+    };
+    this.interactiveRooms.push(guardGroup);
+    gateGroup.add(guardGroup);
+
+    // ==========================================
+    // 7. BẢNG TRƯNG BÀY ẢNH THỰC TẾ CỔNG TRƯỜNG 3D
+    // ==========================================
+    const photoGroup = new THREE.Group();
+    photoGroup.position.set(16.5, 0, 53.5);
+
+    // Đế bê tông trụ bảng ảnh
+    const photoBase = new THREE.Mesh(
+      new THREE.BoxGeometry(9.6, 0.4, 2.2),
+      new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 })
+    );
+    photoBase.position.y = 0.2;
+    photoGroup.add(photoBase);
+
+    // 2 cột trụ inox nâng đỡ
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.85, roughness: 0.2 });
+    const pole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 16), poleMat);
+    pole1.position.set(-3.6, 1.8, 0);
+    const pole2 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 16), poleMat);
+    pole2.position.set(3.6, 1.8, 0);
+    photoGroup.add(pole1);
+    photoGroup.add(pole2);
+
+    // Khung bảng ảnh
+    const photoFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(9.2, 4.3, 0.25),
+      new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4 })
+    );
+    photoFrame.position.y = 4.2;
+    photoGroup.add(photoFrame);
+
+    // Tấm ảnh thực tế mặt trước (Tỉ lệ 2.2:1 chuẩn theo ảnh thật 485x220)
+    const textureLoader = new THREE.TextureLoader();
+    const realGateTex = textureLoader.load('cong_truong.png');
+    realGateTex.generateMipmaps = true;
+    realGateTex.minFilter = THREE.LinearMipmapLinearFilter;
+
+    const realPhotoMat = new THREE.MeshBasicMaterial({
+      map: realGateTex,
+      side: THREE.FrontSide
+    });
+    const photoFront = new THREE.Mesh(new THREE.PlaneGeometry(8.9, 4.05), realPhotoMat);
+    photoFront.position.set(0, 4.2, 0.14);
+    photoGroup.add(photoFront);
+
+    // Tấm ảnh thực tế mặt sau (nhìn từ trong trường ra cũng thấy rõ)
+    const photoBackMat = new THREE.MeshBasicMaterial({
+      map: realGateTex,
+      side: THREE.FrontSide
+    });
+    const photoBack = new THREE.Mesh(new THREE.PlaneGeometry(8.9, 4.05), photoBackMat);
+    photoBack.rotation.y = Math.PI;
+    photoBack.position.set(0, 4.2, -0.14);
+    photoGroup.add(photoBack);
+
+    // Biển tiêu đề trang trọng phía trên bảng ảnh
+    const titleTex = this.createCanvasLabel(
+      "📸 ẢNH THỰC TẾ CỔNG TRƯỜNG",
+      "TRƯỜNG THPT TAM PHƯỚC",
+      "#0f172a",
+      "#38bdf8",
+      "#0284c7",
+      540,
+      170
+    );
+    const titleMat = new THREE.MeshBasicMaterial({ map: titleTex, transparent: true, side: THREE.DoubleSide });
+    const titleMesh = new THREE.Mesh(new THREE.PlaneGeometry(8.2, 2.0), titleMat);
+    titleMesh.position.set(0, 6.7, 0.05);
+    photoGroup.add(titleMesh);
+
+    // Gán dữ liệu tương tác khi click
+    photoGroup.userData = gateUserData;
+    this.interactiveRooms.push(photoGroup);
+    envGroup.add(photoGroup);
+
+    envGroup.add(gateGroup);
 
     // Nhà xe giáo viên (Góc Tây Nam)
     const gvParking = new THREE.Mesh(new THREE.BoxGeometry(16, 3, 8), new THREE.MeshStandardMaterial({ color: 0xf1f5f9 }));
@@ -1738,7 +2436,7 @@ class Campus3DViewer {
 
     // Dãy để xe học sinh (Dọc phía Tây)
     const westBike = new THREE.Mesh(new THREE.BoxGeometry(5, 2.5, 50), new THREE.MeshStandardMaterial({ color: 0xffffff }));
-    westBike.position.set(-42, 1.25, -4);
+    westBike.position.set(-53, 1.25, -4);
     westBike.castShadow = true;
     envGroup.add(westBike);
 
@@ -1997,13 +2695,14 @@ class Campus3DViewer {
         background: rgba(15, 23, 42, 0.95);
         color: white;
         padding: 12px 18px;
-        border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        border-radius: 10px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.5);
         pointer-events: none;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         font-size: 13px;
         line-height: 1.5;
         border: 1px solid #38bdf8;
+        max-width: 320px;
         transform: translate(-50%, -120%);
         transition: opacity 0.2s;
       `;
@@ -2016,6 +2715,11 @@ class Campus3DViewer {
     tooltip.innerHTML = `
       <div style="font-weight: bold; font-size: 15px; color: #38bdf8; margin-bottom: 2px;">📍 ${userData.name}</div>
       <div style="color: #cbd5e1;">🏢 Vị trí: <b>${floorLabel}</b></div>
+      ${userData.img ? `
+        <div style="margin: 8px 0 6px 0; border-radius: 8px; overflow: hidden; border: 1.5px solid rgba(56, 189, 248, 0.6); box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+          <img src="${userData.img}" alt="${userData.name}" style="width: 100%; max-height: 150px; object-fit: cover; display: block;" />
+        </div>
+      ` : ''}
       ${userData.info ? `<div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">ℹ️ ${userData.info}</div>` : ''}
       <div style="display: flex; gap: 8px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">
         <button type="button" onclick="if(window.setNavPoint) window.setNavPoint('${userData.name}', 'start')" style="background: #10b981; color: white; border: none; padding: 4px 9px; border-radius: 5px; font-size: 11px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px;">📍 Đi từ đây</button>
@@ -2032,7 +2736,7 @@ class Campus3DViewer {
     this.tooltipTimeout = setTimeout(() => {
       tooltip.style.opacity = '0';
       tooltip.style.pointerEvents = 'none';
-    }, 5000);
+    }, 6000);
   }
 
   animate() {
