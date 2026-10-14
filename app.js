@@ -1611,22 +1611,58 @@ document.addEventListener("DOMContentLoaded", () => {
         spotlightBox.style.height = `${boxHeight}px`;
 
         if (spotlightLabel) {
-          spotlightLabel.textContent = step.label || `Bước ${currentStepIndex + 1}`;
-          // Nếu phần tử sát mép trên màn hình (< 34px), đặt label phía dưới khung spotlight
-          if (boxTop < 34) {
-            spotlightLabel.style.top = "auto";
-            spotlightLabel.style.bottom = "-26px";
-          } else {
-            spotlightLabel.style.top = "-26px";
-            spotlightLabel.style.bottom = "auto";
-          }
+          spotlightLabel.innerHTML = `${step.icon ? `<span>${step.icon}</span> ` : ""}${step.label || `Bước ${currentStepIndex + 1}`}`;
+          spotlightLabel.className = "tour-spotlight-label";
 
-          if (isMobile && rect.right > window.innerWidth - 90) {
-            spotlightLabel.style.left = "auto";
-            spotlightLabel.style.right = "4px";
-          } else {
+          // Reset toàn bộ toạ độ inline để tránh xung đột giữa các bước
+          spotlightLabel.style.top = "auto";
+          spotlightLabel.style.bottom = "auto";
+          spotlightLabel.style.left = "auto";
+          spotlightLabel.style.right = "auto";
+          spotlightLabel.style.transform = "none";
+
+          // Xử lý vị trí thông minh để TUYỆT ĐỐI KHÔNG CHE LẤP các nút bấm và khung tính năng:
+          if (step.target.includes("view-mode")) {
+            // Thanh chuyển 2D / 3D:
+            if (isMobile) {
+              // Trên mobile, thanh 2D/3D nằm sát góc trên bên phải -> đặt nhãn sang TRÁI thanh để không che 2D lẫn 3D
+              if (boxLeft >= 100) {
+                spotlightLabel.classList.add("label-pos-left");
+                spotlightLabel.style.right = "calc(100% + 10px)";
+                spotlightLabel.style.top = "50%";
+                spotlightLabel.style.transform = "translateY(-50%)";
+              } else {
+                // Màn hình quá hẹp: đặt nhãn ngay DƯỚI thanh
+                spotlightLabel.classList.add("label-pos-bottom");
+                spotlightLabel.style.top = "calc(100% + 8px)";
+                spotlightLabel.style.right = "4px";
+              }
+            } else {
+              // Trên máy tính: đặt nhãn ngay DƯỚI thanh chuyển chế độ (nằm giữa)
+              spotlightLabel.classList.add("label-pos-bottom");
+              spotlightLabel.style.top = "calc(100% + 8px)";
+              spotlightLabel.style.left = "50%";
+              spotlightLabel.style.transform = "translateX(-50%)";
+            }
+          } else if (step.target.includes("controls")) {
+            // Cụm phím điều khiển Zoom & Trợ giúp góc phải -> đặt nhãn sang TRÁI cột, chừa 100% các phím (+, -, ⟲, ?)
+            spotlightLabel.classList.add("label-pos-left");
+            spotlightLabel.style.right = "calc(100% + 10px)";
+            spotlightLabel.style.top = "8px";
+          } else if (step.target === "#map-viewport") {
+            // Toàn cảnh bản đồ
+            spotlightLabel.style.top = "16px";
+            spotlightLabel.style.left = "16px";
+          } else if (boxTop < 44) {
+            // Phần tử quá sát mép trên màn hình (< 44px) -> đặt nhãn ngay dưới
+            spotlightLabel.classList.add("label-pos-bottom");
+            spotlightLabel.style.top = "calc(100% + 8px)";
             spotlightLabel.style.left = "8px";
-            spotlightLabel.style.right = "auto";
+          } else {
+            // Mặc định: đặt nhãn nổi PHÍA TRÊN phần tử (ô nhập điểm đi, điểm đến, nút tìm đường)
+            spotlightLabel.classList.add("label-pos-top");
+            spotlightLabel.style.bottom = "calc(100% + 8px)";
+            spotlightLabel.style.left = "8px";
           }
         }
 

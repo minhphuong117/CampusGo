@@ -2278,27 +2278,57 @@ body {
   }
 }
 
-/* Huy hiệu mini trên khung spotlight: nằm nổi phía trên/dưới khung, không che lấp nội dung bên trong */
+/* Huy hiệu mini trên khung spotlight: luôn nằm nổi BÊN NGOÀI khung, TUYỆT ĐỐI không che lấp nút bấm / phím tính năng */
 .tour-spotlight-label {
   position: absolute;
-  top: -26px;
-  left: 8px;
   background: linear-gradient(135deg, #ef4444, #dc2626);
   color: #ffffff;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
-  padding: 3px 10px;
+  padding: 3.5px 10px;
   border-radius: 20px;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  display: flex;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   white-space: nowrap;
-  z-index: 10;
+  z-index: 100;
   pointer-events: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Các mũi tên chỉ hướng giúp người xem nhận biết nhãn đang chỉ vào nút tính năng */
+.tour-spotlight-label.label-pos-left::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid #dc2626;
+}
+
+.tour-spotlight-label.label-pos-top::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 16px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #dc2626;
+}
+
+.tour-spotlight-label.label-pos-bottom::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 16px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 5px solid #dc2626;
 }
 
 .tour-spotlight-pulse {
