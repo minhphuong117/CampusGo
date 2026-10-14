@@ -1572,6 +1572,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Định vị khung spotlight và thẻ card hướng dẫn
+    // Định vị khung spotlight và thẻ card hướng dẫn (Tự động tính toán để KHÔNG BAO GIỜ che lấp mục tiêu đang sáng)
     function positionSpotlightAndCard(step) {
       const targetEl = document.querySelector(step.target);
       if (!targetEl) return;
@@ -1579,16 +1580,16 @@ document.addEventListener("DOMContentLoaded", () => {
       // Xử lý mobile: mở hoặc đóng sidebar phù hợp với target
       const isMobile = window.innerWidth <= 768;
       if (isMobile && typeof setBottomSheetState === "function") {
-        if (step.target.includes("sidebar") || step.target.includes("input") || step.target.includes("group")) {
+        if (step.target.includes("sidebar") || step.target.includes("input") || step.target.includes("group") || step.target.includes("action") || step.target.includes("route")) {
           setBottomSheetState("sheet-half");
         } else {
           setBottomSheetState("sheet-collapsed");
         }
       }
 
-      // Cuộn phần tử vào giữa màn hình nếu cần
-      if (step.target !== "#map-viewport") {
-        targetEl.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      // Cuộn phần tử vào màn hình nếu cần
+      if (step.target !== "#map-viewport" && typeof targetEl.scrollIntoView === "function") {
+        targetEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
       }
 
       // Đợi layout hoàn tất (trên mobile cần đợi bottom-sheet trượt xong)
@@ -1611,6 +1612,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (spotlightLabel) {
           spotlightLabel.textContent = step.label || `Bước ${currentStepIndex + 1}`;
+          // Nếu phần tử sát mép trên màn hình (< 34px), đặt label phía dưới khung spotlight
+          if (boxTop < 34) {
+            spotlightLabel.style.top = "auto";
+            spotlightLabel.style.bottom = "-26px";
+          } else {
+            spotlightLabel.style.top = "-26px";
+            spotlightLabel.style.bottom = "auto";
+          }
+
           if (isMobile && rect.right > window.innerWidth - 90) {
             spotlightLabel.style.left = "auto";
             spotlightLabel.style.right = "4px";
@@ -1620,24 +1630,44 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        // Cập nhật thẻ Card
+        // Cập nhật thẻ Card sao cho TUYỆT ĐỐI KHÔNG CHE LẤP mục đang sáng
         const cardWidth = Math.min(410, window.innerWidth - 24);
         const cardHeight = tourCard.offsetHeight || 260;
 
-        let cardTop = 100;
-        let cardLeft = 20;
-
         if (isMobile) {
-          // Trên mobile: luôn neo ở dưới đáy màn hình
-          tourCard.style.top = "auto";
-          tourCard.style.bottom = "max(16px, env(safe-area-inset-bottom))";
-          tourCard.style.left = "12px";
-          tourCard.style.right = "12px";
+          // Tính khoảng trống phía trên và phía dưới mục tiêu
+          const spaceAbove = boxTop;
+          const spaceBelow = window.innerHeight - (boxTop + boxHeight);
+
+          // Nếu là bước Map, ưu tiên card ở dưới để lộ trọn vẹn bản đồ phía trên.
+          // Đối với các mục khác (như Vị trí hiện tại, Nơi muốn đến, Nút tìm đường):
+          // nếu mục tiêu nằm ở nửa dưới màn hình (spaceAbove >= spaceBelow hoặc boxTop > 38% chiều cao màn hình),
+          // tự động đưa card lên ĐỈNH màn hình để người xem nhìn rõ 100% mục đang hướng dẫn!
+          const placeAtTop = !step.isMapStep && (spaceAbove >= spaceBelow || boxTop > window.innerHeight * 0.38);
+
+          if (placeAtTop) {
+            tourCard.classList.remove("placement-bottom");
+            tourCard.classList.add("placement-top");
+            tourCard.style.top = "max(12px, env(safe-area-inset-top))";
+            tourCard.style.bottom = "auto";
+          } else {
+            tourCard.classList.remove("placement-top");
+            tourCard.classList.add("placement-bottom");
+            tourCard.style.top = "auto";
+            tourCard.style.bottom = "max(12px, env(safe-area-inset-bottom))";
+          }
+
+          tourCard.style.left = "10px";
+          tourCard.style.right = "10px";
           tourCard.style.width = "auto";
         } else {
+          tourCard.classList.remove("placement-top", "placement-bottom");
           tourCard.style.bottom = "auto";
           tourCard.style.right = "auto";
           tourCard.style.width = `${cardWidth}px`;
+
+          let cardTop = 100;
+          let cardLeft = 20;
 
           if (step.placement === "right") {
             cardLeft = rect.right + 20;
@@ -1654,6 +1684,9 @@ document.addEventListener("DOMContentLoaded", () => {
           } else if (step.placement === "bottom") {
             cardLeft = Math.max(20, rect.left + (rect.width - cardWidth) / 2);
             cardTop = rect.bottom + 16;
+            if (cardTop + cardHeight > window.innerHeight - 20) {
+              cardTop = rect.top - cardHeight - 16;
+            }
           } else if (step.placement === "center") {
             cardLeft = Math.max(460, window.innerWidth - cardWidth - 40);
             cardTop = 120;

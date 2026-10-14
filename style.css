@@ -2278,11 +2278,11 @@ body {
   }
 }
 
-/* Huy hiệu mini trên khung spotlight: nằm an toàn bên trong góc trên khung, không bao giờ bị cắt mép màn hình */
+/* Huy hiệu mini trên khung spotlight: nằm nổi phía trên/dưới khung, không che lấp nội dung bên trong */
 .tour-spotlight-label {
   position: absolute;
-  top: 8px;
-  left: 10px;
+  top: -26px;
+  left: 8px;
   background: linear-gradient(135deg, #ef4444, #dc2626);
   color: #ffffff;
   font-size: 10px;
@@ -2298,6 +2298,7 @@ body {
   white-space: nowrap;
   z-index: 10;
   pointer-events: none;
+  transition: all 0.2s ease;
 }
 
 .tour-spotlight-pulse {
@@ -2673,21 +2674,34 @@ body {
   transform: translateY(0);
 }
 
-/* RESPONSIVE MOBILE CHO TOUR - NHỎ GỌN, CÂN ĐỐI, KHÔNG CHE KHUẤT KHU VỰC SPOTLIGHT */
+/* RESPONSIVE MOBILE CHO TOUR - TỰ ĐỘNG CHUYỂN ĐỈNH / ĐÁY KHÔNG BAO GIỜ CHE KHUẤT MỤC TIÊU */
 @media (max-width: 768px) {
   .tour-card {
     width: calc(100vw - 20px) !important;
+    max-width: 440px !important;
     left: 10px !important;
     right: 10px !important;
-    bottom: max(10px, env(safe-area-inset-bottom)) !important;
-    top: auto !important;
-    transform: translateY(0) !important;
+    margin: 0 auto !important;
     padding: 12px 14px 10px !important;
-    border-radius: 16px !important;
-    max-height: 48vh !important;
-    max-height: 48dvh !important;
+    border-radius: 18px !important;
+    max-height: 44vh !important;
+    max-height: 44dvh !important;
     overflow-y: auto !important;
-    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.4) !important;
+    box-shadow: 0 16px 45px rgba(15, 23, 42, 0.48), 0 0 0 1.5px rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(0) !important;
+    transition: top 0.28s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, transform 0.2s ease !important;
+  }
+
+  /* Khi mục được hướng dẫn nằm ở nửa dưới màn hình -> Khung hướng dẫn tự động chuyển lên ĐỈNH màn hình để KHÔNG CHE lấp mục tiêu */
+  .tour-card.placement-top {
+    top: max(12px, env(safe-area-inset-top)) !important;
+    bottom: auto !important;
+  }
+
+  /* Khi mục được hướng dẫn nằm ở nửa trên màn hình -> Khung hướng dẫn nằm ở ĐÁY màn hình */
+  .tour-card.placement-bottom {
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    top: auto !important;
   }
 
   .tour-card-header {
