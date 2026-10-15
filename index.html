@@ -247,8 +247,10 @@
             <style>
               .center-text { text-anchor: middle; dominant-baseline: central; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
               .title-main { font-size: 20px; font-weight: 800; fill: #0f172a; text-anchor: middle; dominant-baseline: central; letter-spacing: 0.5px; }
-              .fl-label { font-size: 11px; font-weight: 700; fill: #334155; text-anchor: middle; dominant-baseline: central; }
-              .rm-text { font-size: 10.5px; font-weight: 700; fill: #1e293b; text-anchor: middle; dominant-baseline: central; }
+              .fl-label { font-weight: 700; fill: #334155; text-anchor: middle; dominant-baseline: central; }
+              text.fl-label:not([font-size]) { font-size: 10px; }
+              .rm-text { font-weight: 700; fill: #1e293b; text-anchor: middle; dominant-baseline: central; }
+              text.rm-text:not([font-size]) { font-size: 10px; }
               .rm-red { fill: #dc2626 !important; font-weight: 800; }
               .rm-blue { fill: #0369a1 !important; font-weight: 800; }
               .rm-purple { fill: #6d28d9 !important; font-weight: 800; }
@@ -263,10 +265,12 @@
               .rm-k12 { fill: #fed7aa; stroke: #ea580c; stroke-width: 1.1px; rx: 2px; } /* Khối 12: Cam đào pastel */
               
               .wc-box { fill: #ccfbf1; stroke: #0d9488; stroke-width: 1.1px; rx: 2px; }
-              .wc-text { font-size: 10px; font-weight: 800; fill: #0f766e; text-anchor: middle; dominant-baseline: central; }
+              .wc-text { font-weight: 800; fill: #0f766e; text-anchor: middle; dominant-baseline: central; }
+              text.wc-text:not([font-size]) { font-size: 9.5px; }
               
               .stair-pill { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.1px; rx: 2px; }
-              .stair-text { font-size: 11px; font-weight: 700; fill: #1e293b; text-anchor: middle; dominant-baseline: central; }
+              .stair-text { font-weight: 700; fill: #1e293b; text-anchor: middle; dominant-baseline: central; }
+              text.stair-text:not([font-size]) { font-size: 9px; }
               
               /* Dải Hành Lang Kiến Trúc - MÀU VÀNG BE NHÀN NHẠT THEO YÊU CẦU */
               .hallway-band { fill: #fef9c3; stroke: #64748b; stroke-width: 1.3px; }
@@ -630,22 +634,30 @@
             <!-- Tầng 4: P16, Media, Nghỉ GV Nam -->
             <rect x="274" y="3" width="56" height="34" class="rm-norm map-interactive-room" data-loc-id="b_t4_p16" /><text x="302" y="20" class="rm-text" font-size="9.5px">P16</text>
             <rect x="334" y="3" width="56" height="34" class="rm-norm map-interactive-room" data-loc-id="b_t4_media" /><text x="362" y="20" class="rm-text" font-size="9px">Media</text>
-            <rect x="394" y="3" width="34" height="34" class="rm-norm map-interactive-room" data-loc-id="b_t4_nghi_gv_nam" /><text x="411" y="20" class="rm-text" font-size="7.5px">Nghỉ GV</text>
+            <rect x="394" y="3" width="34" height="34" class="rm-norm map-interactive-room" data-loc-id="b_t4_nghi_gv_nam" />
+            <text x="411" y="14" class="rm-text" font-size="7.5px">Nghỉ</text>
+            <text x="411" y="26" class="rm-text" font-size="7.5px">GV</text>
 
             <!-- Tầng 3 (10A10, 10A9 Vàng nổi bật, Nghỉ GV Nữ) -->
             <rect x="274" y="41" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="b_t3_10a10" /><text x="302" y="58" class="rm-text">10A10</text>
             <rect x="334" y="41" width="56" height="34" class="rm-hl-yellow map-interactive-room" data-loc-id="b_t3_10a9" /><text x="362" y="58" class="rm-text">10A9</text>
-            <rect x="394" y="41" width="34" height="34" class="rm-norm map-interactive-room" data-loc-id="b_t3_nghi_gv_nu" /><text x="411" y="58" class="rm-text" font-size="7.5px">Nghỉ GV</text>
+            <rect x="394" y="41" width="34" height="34" class="rm-norm map-interactive-room" data-loc-id="b_t3_nghi_gv_nu" />
+            <text x="411" y="52" class="rm-text" font-size="7.5px">Nghỉ</text>
+            <text x="411" y="64" class="rm-text" font-size="7.5px">GV</text>
 
             <!-- Tầng 2 (12A5, 12A6, P. Thi vụ) -->
             <rect x="274" y="79" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_t2_12a5" /><text x="302" y="96" class="rm-text">12A5</text>
             <rect x="334" y="79" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_t2_12a6" /><text x="362" y="96" class="rm-text">12A6</text>
-            <rect x="394" y="79" width="34" height="34" class="rm-norm map-interactive-room" data-loc-id="b_t2_thi_vu" /><text x="411" y="96" class="rm-text" font-size="7.5px">Thi vụ</text>
+            <rect x="394" y="79" width="34" height="34" class="rm-norm map-interactive-room" data-loc-id="b_t2_thi_vu" />
+            <text x="411" y="90" class="rm-text" font-size="7.5px">Thi</text>
+            <text x="411" y="102" class="rm-text" font-size="7.5px">vụ</text>
 
             <!-- Tầng trệt (12A9, 12A10, P. Âm thanh) -->
             <rect x="274" y="117" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_tret_12a9" /><text x="302" y="134" class="rm-text">12A9</text>
             <rect x="334" y="117" width="56" height="34" class="rm-k12 map-interactive-room" data-loc-id="b_tret_12a10" /><text x="362" y="134" class="rm-text">12A10</text>
-            <rect x="394" y="117" width="34" height="34" class="rm-norm map-interactive-room" data-loc-id="b_tret_am_thanh" /><text x="411" y="134" class="rm-text" font-size="7.5px">Âm thanh</text>
+            <rect x="394" y="117" width="34" height="34" class="rm-norm map-interactive-room" data-loc-id="b_tret_am_thanh" />
+            <text x="411" y="128" class="rm-text" font-size="7.5px">Âm</text>
+            <text x="411" y="140" class="rm-text" font-size="7.5px">thanh</text>
           </g>
 
 

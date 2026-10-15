@@ -838,6 +838,26 @@ body {
   user-select: none;
 }
 
+/* Đảm bảo chữ trong các phòng của bản đồ SVG không bị ép cỡ to làm tràn khung ô */
+#main-map text.rm-text {
+  font-weight: 700;
+  fill: #1e293b;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+#main-map text.rm-text:not([font-size]) {
+  font-size: 10px;
+}
+#main-map text.wc-text:not([font-size]) {
+  font-size: 9.5px;
+}
+#main-map text.stair-text:not([font-size]) {
+  font-size: 9px;
+}
+#main-map text.fl-label:not([font-size]) {
+  font-size: 10px;
+}
+
 /* THANH CHUYỂN ĐỔI CHẾ ĐỘ 2D / 3D */
 .view-mode-bar {
   position: absolute;
