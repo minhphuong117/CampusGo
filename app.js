@@ -1537,16 +1537,17 @@ document.addEventListener("DOMContentLoaded", () => {
       tourMapHighlights.innerHTML = "";
       tourMapHighlights.style.display = "block";
 
-      // Danh sách các địa điểm tạo khung đỏ minh họa giống hệt ảnh vẽ của người dùng
+      // 5 địa điểm tiêu biểu phân bổ đều khắp các hướng (Bắc - Nam - Đông - Tây - Trung tâm)
+      // Tách biệt hoàn toàn về không gian để TUYỆT ĐỐI KHÔNG BỊ TRÙNG LẶP HAY ĐÈ CHỮ LÊN NHAU
       const demoLocations = [
-        { id: "canopy_triangle", label: "Mái Tam Giác (Sảnh chính)" },
+        { id: "b_tret_12a7", label: "Lớp 12A7" },
+        { id: "a_tret_thu_vien", label: "Thư viện" },
         { id: "cot_co", label: "Cột cờ" },
         { id: "hoi_truong", label: "Hội trường" },
-        { id: "a_tret_thu_vien", label: "Thư viện (Trệt)" },
-        { id: "b_tret_12a7", label: "Dãy 12 (Trệt)" },
-        { id: "bm_tret_ly", label: "Phòng TN Lý" },
         { id: "cong_truong", label: "Cổng trường" }
       ];
+
+      const placedLabels = [];
 
       demoLocations.forEach(item => {
         const el = document.querySelector(`[data-loc-id="${item.id}"]`) || document.getElementById(item.id);
@@ -1566,6 +1567,55 @@ document.addEventListener("DOMContentLoaded", () => {
             box.appendChild(lbl);
 
             tourMapHighlights.appendChild(box);
+
+            // Kiểm tra và tránh va chạm chữ theo thời gian thực (Anti-Collision Engine)
+            requestAnimationFrame(() => {
+              const lblRect = lbl.getBoundingClientRect();
+              if (lblRect.width === 0) return;
+
+              let hasCollision = false;
+              const pad = 6;
+              for (const prev of placedLabels) {
+                if (!(
+                  lblRect.right + pad < prev.left ||
+                  lblRect.left - pad > prev.right ||
+                  lblRect.bottom + pad < prev.top ||
+                  lblRect.top - pad > prev.bottom
+                )) {
+                  hasCollision = true;
+                  break;
+                }
+              }
+
+              if (hasCollision) {
+                // Thử chuyển nhãn xuống phía dưới khung ô
+                lbl.style.bottom = "auto";
+                lbl.style.top = "calc(100% + 4px)";
+                const newRect = lbl.getBoundingClientRect();
+
+                let stillCollides = false;
+                for (const prev of placedLabels) {
+                  if (!(
+                    newRect.right + pad < prev.left ||
+                    newRect.left - pad > prev.right ||
+                    newRect.bottom + pad < prev.top ||
+                    newRect.top - pad > prev.bottom
+                  )) {
+                    stillCollides = true;
+                    break;
+                  }
+                }
+
+                if (stillCollides) {
+                  // Nếu vẫn va chạm, ẩn chữ đi để chỉ hiện khung viền đỏ, tuyệt đối không để chữ đè lên nhau!
+                  lbl.style.display = "none";
+                } else {
+                  placedLabels.push(newRect);
+                }
+              } else {
+                placedLabels.push(lblRect);
+              }
+            });
           }
         }
       });

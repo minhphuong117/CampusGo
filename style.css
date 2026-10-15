@@ -2398,15 +2398,20 @@ body {
   bottom: calc(100% + 4px);
   left: 50%;
   transform: translateX(-50%);
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.96);
   color: #dc2626;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 800;
   padding: 2px 7px;
-  border-radius: 4px;
-  border: 1px solid #fca5a5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border-radius: 5px;
+  border: 1.5px solid #ef4444;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   white-space: nowrap;
+  pointer-events: none;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.3px;
 }
 
 @keyframes mapBoxGlow {
@@ -2752,6 +2757,14 @@ body {
   .tour-card.placement-bottom {
     bottom: max(12px, env(safe-area-inset-bottom)) !important;
     top: auto !important;
+  }
+
+  /* Nhãn khung minh họa bản đồ trên mobile: nhỏ gọn, không bao giờ đè chữ */
+  .tour-map-box-label {
+    font-size: 8.5px !important;
+    padding: 1.5px 5px !important;
+    max-width: 90px !important;
+    border-radius: 4px !important;
   }
 
   .tour-card-header {
