@@ -2237,89 +2237,127 @@ class Campus3DViewer {
       });
     });
 
-    // 4. CHÓP MÁI KIM TỰ THÁP XANH COBAN TRONG SUỐT (CHUẨN ẢNH 1, 3, 4)
-    const pyramidW = 8.6;
-    const pyramidH = 5.2;
-    const glassPyramidGeo = new THREE.ConeGeometry(pyramidW * 0.72, pyramidH, 4);
-    const glassPyramidMat = new THREE.MeshStandardMaterial({
-      color: 0x1d4ed8,
-      roughness: 0.28,
+    // 4. MÁI CHE TAM GIÁC KIM TỰ THÁP XANH DƯƠNG - KHUNG CỬA VÒM MỞ RỘNG (CHUẨN ẢNH THỰC TẾ 2 & 4)
+    // Thiết kế chính xác theo ảnh thực tế: Mái chóp 4 mặt che sân khấu, mặt tiền khoét rỗng hoàn toàn bên dưới băng rôn
+    // để nhìn thẳng vào bên trong sân khấu, bậc tam cấp và vách phông cờ đỏ búa liềm.
+    const apexPos = new THREE.Vector3(0, 8.8, -0.6);
+    const pFL = new THREE.Vector3(-4.6, 4.4, 1.4);
+    const pFR = new THREE.Vector3(4.6, 4.4, 1.4);
+    const pRR = new THREE.Vector3(4.6, 4.4, -3.2);
+    const pRL = new THREE.Vector3(-4.6, 4.4, -3.2);
+
+    const roofMat = new THREE.MeshStandardMaterial({
+      color: 0x1d4ed8, // Màu xanh dương đậm đặc trưng của mái che trường THPT Tam Phước
+      roughness: 0.35,
       metalness: 0.25,
-      transparent: true,
-      opacity: 0.92
+      side: THREE.DoubleSide
     });
-    const glassPyramid = new THREE.Mesh(glassPyramidGeo, glassPyramidMat);
-    glassPyramid.rotation.y = Math.PI / 4;
-    glassPyramid.position.y = 5.8;
-    glassPyramid.castShadow = true;
-    canopyGroup.add(glassPyramid);
 
-    // Khung nẹp viền sống mái kim loại xanh
-    const beamGeo = new THREE.EdgesGeometry(glassPyramidGeo);
-    const beamMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, linewidth: 3 });
-    const beamFrame = new THREE.LineSegments(beamGeo, beamMat);
-    beamFrame.rotation.y = Math.PI / 4;
-    beamFrame.position.y = 5.8;
-    canopyGroup.add(beamFrame);
+    const roofMesh = this.createPyramidCanopyRoof(apexPos, pFL, pFR, pRR, pRL, roofMat);
+    canopyGroup.add(roofMesh);
 
-    // Băng rôn đỏ chữ vàng mặt tiền lễ đài: "ĐẢNG CỘNG SẢN VIỆT NAM QUANG VINH MUÔN NĂM" (chuẩn ảnh 3)
-    const bannerSlogan = this.createSloganBanner("ĐẢNG CỘNG SẢN VIỆT NAM QUANG VINH MUÔN NĂM", 0, 4.6, 2.6, 9.8, 1.15, 0);
+    // 4 đường sống mái kim loại nổi bật màu xanh sáng chạy từ đỉnh chóp xuống 4 góc mái (chuẩn ảnh 2 & 4)
+    [pFL, pFR, pRR, pRL].forEach(corner => {
+      const ridge = this.createRidgeBeam(apexPos, corner, 0.08, 0x38bdf8);
+      canopyGroup.add(ridge);
+    });
+
+    // Các thanh dầm viền mép mái (Eave Trims)
+    const eaveMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, metalness: 0.5, roughness: 0.35 });
+    // Dầm đỡ mặt tiền
+    const frontBeam = new THREE.Mesh(new THREE.BoxGeometry(9.3, 0.22, 0.28), eaveMat);
+    frontBeam.position.set(0, 4.4, 1.4);
+    canopyGroup.add(frontBeam);
+
+    // Dầm đỡ hông trái & phải
+    [-4.6, 4.6].forEach(sideX => {
+      const sideBeam = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 4.6), eaveMat);
+      sideBeam.position.set(sideX, 4.4, -0.9);
+      canopyGroup.add(sideBeam);
+    });
+
+    // Dầm đỡ phía sau
+    const rearEaveBeam = new THREE.Mesh(new THREE.BoxGeometry(9.3, 0.22, 0.25), eaveMat);
+    rearEaveBeam.position.set(0, 4.4, -3.2);
+    canopyGroup.add(rearEaveBeam);
+
+    // Đỉnh chóp nhọn trang trí (Apex Cap)
+    const apexCap = new THREE.Mesh(
+      new THREE.ConeGeometry(0.55, 0.8, 4),
+      new THREE.MeshStandardMaterial({ color: 0x1e40af, roughness: 0.3, metalness: 0.3 })
+    );
+    apexCap.rotation.y = Math.PI / 4;
+    apexCap.position.set(apexPos.x, apexPos.y + 0.35, apexPos.z);
+    canopyGroup.add(apexCap);
+
+    // Băng rôn đỏ chữ vàng mặt tiền lễ đài: "ĐẢNG CỘNG SẢN VIỆT NAM QUANG VINH MUÔN NĂM" (chuẩn ảnh 2 & 4)
+    // Đặt ở độ cao 3.95m ngay dưới mép mái trước, để hở hoàn toàn khoảng không gian phía dưới cho khán giả nhìn vào sân khấu
+    const bannerSlogan = this.createSloganBanner("ĐẢNG CỘNG SẢN VIỆT NAM QUANG VINH MUÔN NĂM", 0, 3.95, 1.42, 9.2, 0.85, 0);
     canopyGroup.add(bannerSlogan);
 
-    // Dây cờ tam giác trang trí đỏ và vàng giăng từ đỉnh mái chóp xuống sân (chuẩn ảnh 3)
-    const buntingGroup = this.createFlagBuntingMesh(0, 8.4, 0);
+    // Dây cờ tam giác trang trí đỏ và vàng giăng từ đỉnh mái chóp tỏa ra hai bên cánh (chuẩn ảnh 2 & 4)
+    const buntingGroup = this.createFlagBuntingMesh(apexPos.x, apexPos.y, apexPos.z);
     canopyGroup.add(buntingGroup);
 
-    // 5. HAI CÁNH MÁI DỐC XIÊN XANH CHẠY DÀI XUỐNG MẶT ĐẤT (CỰC KỲ ĐẶC TRƯNG CHUẨN ẢNH 1, 3, 4)
-    const rampMat = new THREE.MeshStandardMaterial({
-      color: 0x0284c7,
-      roughness: 0.3,
-      metalness: 0.2,
-      transparent: true,
-      opacity: 0.92
-    });
-    const rampFrameMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, metalness: 0.7, roughness: 0.3 });
-    const concretePadMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8 });
-
+    // 5. HAI CÁNH MÁI DỐC XIÊN XANH CHẠY DÀI XUỐNG MẶT ĐẤT (CỰC KỲ ĐẶC TRƯNG CHUẨN ẢNH 2 & 4)
     [-1, 1].forEach(side => {
       const rampGroup = new THREE.Group();
-      // Độ dài cánh dốc xiên ~ 10.5m, nghiêng góc ~38 độ
-      const rampLen = 10.2;
-      const rampW = 2.4;
-      const rampThick = 0.12;
+      const topX = side * 4.6;
+      const topY = 4.4;
+      const topZ = 0.1;
+      const botX = side * 14.0;
+      const botY = 0.12;
+      const botZ = 0.1;
 
-      // Tấm polycarbonate xanh dốc
-      const rampMesh = new THREE.Mesh(new THREE.BoxGeometry(rampLen, rampThick, rampW), rampMat);
+      const dx = botX - topX;
+      const dy = botY - topY;
+      const rampLen = Math.hypot(dx, dy); // ~10.33m
+      const angleZ = Math.atan2(dy, dx);
+      const rampW = 2.1;
+      const rampThick = 0.16;
+
+      // Tấm kim loại dốc màu xanh dương chuẩn ảnh thực tế 2 & 4
+      const rampMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(rampLen, rampThick, rampW),
+        new THREE.MeshStandardMaterial({
+          color: 0x1d4ed8,
+          roughness: 0.35,
+          metalness: 0.25
+        })
+      );
       rampMesh.castShadow = true;
       rampGroup.add(rampMesh);
 
-      // Khung sắt viền 2 mép máng dốc
+      // Khung sắt viền 2 mép máng dốc màu xanh đậm
+      const railMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, metalness: 0.6, roughness: 0.3 });
       [-rampW / 2, rampW / 2].forEach(rz => {
-        const edgeRail = new THREE.Mesh(new THREE.BoxGeometry(rampLen, 0.18, 0.1), rampFrameMat);
+        const edgeRail = new THREE.Mesh(new THREE.BoxGeometry(rampLen, 0.22, 0.1), railMat);
         edgeRail.position.z = rz;
         rampGroup.add(edgeRail);
       });
 
-      // Các thanh giằng ngang chịu lực
-      for (let rx = -rampLen / 2 + 1.2; rx <= rampLen / 2 - 1.2; rx += 2.0) {
-        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, rampW), rampFrameMat);
+      // Các thanh gân giằng ngang chia khoang dọc theo cánh dốc (chuẩn ảnh 2 & 4)
+      for (let rx = -rampLen / 2 + 1.4; rx <= rampLen / 2 - 1.4; rx += 1.8) {
+        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.2, rampW), railMat);
         strut.position.x = rx;
         rampGroup.add(strut);
       }
 
-      // Xoay nghiêng góc 38 độ chạy xuống mặt đất
-      const angle = -0.66 * side; // ~38 độ
-      rampGroup.rotation.z = angle;
-      const midX = side * 8.6;
-      const midY = 2.4;
-      rampGroup.position.set(midX, midY, 0);
+      rampGroup.rotation.z = angleZ;
+      rampGroup.position.set((topX + botX) / 2, (topY + botY) / 2, topZ);
       canopyGroup.add(rampGroup);
 
-      // Đế móng bê tông giữ chân máng dốc sát mặt sân gạch (chuẩn ảnh 1)
-      const pad = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.45, rampW + 0.4), concretePadMat);
-      pad.position.set(side * 12.8, 0.22, 0);
-      pad.castShadow = true;
-      canopyGroup.add(pad);
+      // Đế móng bê tông giữ chân máng dốc sát mặt sân gạch (chuẩn ảnh 2 & 4)
+      const concretePad = new THREE.Mesh(
+        new THREE.BoxGeometry(1.2, 0.3, rampW + 0.3),
+        new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.85 })
+      );
+      concretePad.position.set(botX, 0.15, botZ);
+      concretePad.castShadow = true;
+      canopyGroup.add(concretePad);
+
+      // Chậu cây kiểng thế bonsai lớn đặt ngay cạnh chân cánh dốc (chuẩn ảnh 2 & 4)
+      canopyGroup.add(this.createLargeBonsaiPot(side * 15.2, 0, botZ));
     });
 
     // 6. DẦM HÀNH LANG KẾT NỐI VÀ CÁC CỘT TRỤ ĐỎ GẠCH NẰM NGAY SAU LỄ ĐÀI (CHUẨN ẢNH 1 & 4)
@@ -2379,14 +2417,10 @@ class Campus3DViewer {
 
     canopyGroup.add(rearAwningGroup);
 
-    // 8. BIỂN ĐỊNH DANH 3D CHO MÁI TAM GIÁC
-    const canopyLblMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("MÁI TAM GIÁC", "Trung tâm sân trường", "#ffffff", "#0284c7", "#38bdf8", 360, 140),
-      transparent: true
-    });
-    const canopyLbl = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 1.9), canopyLblMat);
-    canopyLbl.position.set(0, 1.8, 4.8);
-    canopyGroup.add(canopyLbl);
+    // 8. ĐĂNG KÝ THÔNG TIN ĐỊNH DANH 3D CHO MÁI TAM GIÁC (KHÔNG ĐẶT BIỂN CHE MẮT SÂN KHẤU)
+    canopyGroup.name = "Mái Tam Giác";
+    canopyGroup.userData = { name: "MÁI TAM GIÁC", floorKey: "g", info: "Sân khấu lễ đài trung tâm" };
+    this.interactiveRooms.push(canopyGroup);
 
     landmarkGroup.add(canopyGroup);
 
@@ -2504,15 +2538,15 @@ class Campus3DViewer {
     return new THREE.CanvasTexture(canvas);
   }
 
-  // Helper tạo hoa văn phông lễ đài chào cờ (Mặt trước: Cờ đỏ búa liềm & Băng rôn - chuẩn ảnh 3)
+  // Helper tạo hoa văn phông lễ đài chào cờ (Mặt trước: Cờ đỏ búa liềm - chuẩn ảnh 2 & 4 thực tế)
   createStageBackdropTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
 
-    // Nền xanh nhạt / trắng xám hiện đại của sân khấu
-    ctx.fillStyle = '#f8fafc';
+    // Nền trắng kem / xám sáng trang nhã của sân khấu (chuẩn ảnh 2 và 4 thực tế)
+    ctx.fillStyle = '#f1f5f9';
     ctx.fillRect(0, 0, 1024, 512);
 
     // Mảng cờ đỏ lượn sóng lễ tân bên trái
@@ -2534,32 +2568,126 @@ class Campus3DViewer {
     ctx.fillText('☭', 90, 160);
     ctx.fillText('★', 210, 160);
 
-    // Khung áp phích sự kiện ở giữa (Chuẩn ảnh 3)
-    ctx.fillStyle = '#fef08a';
-    ctx.strokeStyle = '#ca8a04';
-    ctx.lineWidth = 4;
-    ctx.fillRect(480, 80, 500, 350);
-    ctx.strokeRect(480, 80, 500, 350);
-
-    ctx.fillStyle = '#b45309';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = '900 28px "Segoe UI", Arial, sans-serif';
-    ctx.fillText('TRƯỜNG THPT TAM PHƯỚC', 730, 150);
-
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 36px "Segoe UI", Arial, sans-serif';
-    ctx.fillText('LỄ KHAI GIẢNG NĂM HỌC', 730, 220);
-
-    ctx.fillStyle = '#dc2626';
-    ctx.font = '800 24px "Segoe UI", Arial, sans-serif';
-    ctx.fillText('THI ĐUA DẠY TỐT - HỌC TỐT', 730, 290);
-
-    ctx.fillStyle = '#64748b';
-    ctx.font = 'italic 20px "Segoe UI", Arial, sans-serif';
-    ctx.fillText('Nhiệt liệt chào mừng năm học mới!', 730, 360);
-
     return new THREE.CanvasTexture(canvas);
+  }
+
+  // Helper tạo kết cấu mái chóp 4 mặt mở vòm mặt tiền cho sân khấu (Chuẩn ảnh 2 & 4)
+  createPyramidCanopyRoof(apex, pFL, pFR, pRR, pRL, material) {
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array([
+      pFL.x, pFL.y, pFL.z,   // 0: Front-Left
+      pFR.x, pFR.y, pFR.z,   // 1: Front-Right
+      pRR.x, pRR.y, pRR.z,   // 2: Rear-Right
+      pRL.x, pRL.y, pRL.z,   // 3: Rear-Left
+      apex.x, apex.y, apex.z // 4: Apex đỉnh chóp
+    ]);
+    const indices = [
+      0, 1, 4, // Mặt tam giác phía trước (nằm trên băng rôn khẩu hiệu)
+      1, 2, 4, // Mặt mái dốc bên phải
+      2, 3, 4, // Mặt mái dốc phía sau
+      3, 0, 4  // Mặt mái dốc bên trái
+    ];
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geo, material);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    return mesh;
+  }
+
+  // Helper tạo đường gân nẹp sống mái kim loại nổi bật chạy dọc các góc dốc
+  createRidgeBeam(p1, p2, radius, color) {
+    const dir = new THREE.Vector3().subVectors(p2, p1);
+    const len = dir.length();
+    const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+
+    const geo = new THREE.CylinderGeometry(radius, radius, len, 8);
+    const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.5 });
+    const mesh = new THREE.Mesh(geo, mat);
+
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+    mesh.position.copy(mid);
+    mesh.castShadow = true;
+    return mesh;
+  }
+
+  // Helper tạo chậu cây kiểng bonsai thế lớn đặt cạnh chân cánh dốc mái che (Chuẩn ảnh 2 & 4 thực tế)
+  createLargeBonsaiPot(x, y, z) {
+    const group = new THREE.Group();
+    group.position.set(x, y, z);
+
+    // Chân bệ đôn gốm màu xám/nâu
+    const pedestal = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.85, 0.95, 0.35, 18),
+      new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.8 })
+    );
+    pedestal.position.y = 0.175;
+    pedestal.castShadow = true;
+    group.add(pedestal);
+
+    // Chậu cây hình tròn màu gốm nâu đỏ đặc trưng (chuẩn ảnh 2 & 4)
+    const pot = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.15, 0.85, 0.6, 24),
+      new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.65 })
+    );
+    pot.position.y = 0.35 + 0.3;
+    pot.castShadow = true;
+    group.add(pot);
+
+    // Vành chậu gốm nổi
+    const rim = new THREE.Mesh(
+      new THREE.TorusGeometry(1.15, 0.08, 8, 24),
+      new THREE.MeshStandardMaterial({ color: 0x7f1d1d, roughness: 0.6 })
+    );
+    rim.position.y = 0.95;
+    rim.rotation.x = Math.PI / 2;
+    group.add(rim);
+
+    // Đất trồng cây
+    const soil = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.05, 1.05, 0.1, 18),
+      new THREE.MeshStandardMaterial({ color: 0x27170a, roughness: 0.95 })
+    );
+    soil.position.y = 0.88;
+    group.add(soil);
+
+    // Thân cây bonsai uốn lượn phong cách cây kiểng trường học
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.9 });
+    const trunk1 = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 1.1, 8), trunkMat);
+    trunk1.position.set(0, 1.45, 0);
+    trunk1.rotation.z = (x > 0 ? -0.18 : 0.18);
+    trunk1.castShadow = true;
+    group.add(trunk1);
+
+    const trunk2 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 0.9, 8), trunkMat);
+    trunk2.position.set((x > 0 ? -0.22 : 0.22), 2.2, 0);
+    trunk2.rotation.z = (x > 0 ? 0.22 : -0.22);
+    trunk2.castShadow = true;
+    group.add(trunk2);
+
+    // Các tán lá xanh tỉa tròn tầng tầng lớp lớp (chuẩn ảnh 2 & 4)
+    const leafMat = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.75 });
+    const leafMat2 = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.75 });
+    const pads = [
+      { x: (x > 0 ? -0.45 : 0.45), y: 1.85, z: 0.15, rx: 0.75, ry: 0.28 },
+      { x: (x > 0 ? 0.35 : -0.35), y: 2.15, z: -0.15, rx: 0.65, ry: 0.25 },
+      { x: (x > 0 ? -0.2 : 0.2), y: 2.65, z: 0, rx: 0.95, ry: 0.35 },
+      { x: 0, y: 3.05, z: 0, rx: 0.75, ry: 0.3 }
+    ];
+
+    pads.forEach((p, idx) => {
+      const pad = new THREE.Mesh(
+        new THREE.CylinderGeometry(p.rx, p.rx * 1.1, p.ry, 14),
+        idx % 2 === 0 ? leafMat : leafMat2
+      );
+      pad.position.set(p.x, p.y, p.z);
+      pad.castShadow = true;
+      group.add(pad);
+    });
+
+    return group;
   }
 
   // Helper tạo ghế đá trường học (Chuẩn ảnh 1 và 4)
@@ -2595,15 +2723,14 @@ class Campus3DViewer {
     return benchGroup;
   }
 
-  // Helper tạo dây cờ đuôi nheo tam giác đỏ vàng trang trí lễ đài (Chuẩn ảnh 3)
+  // Helper tạo dây cờ đuôi nheo tam giác đỏ vàng trang trí lễ đài (Chuẩn ảnh 2 & 4)
   createFlagBuntingMesh(apexX, apexY, apexZ) {
     const buntingGroup = new THREE.Group();
     const targets = [
-      { x: -12, y: 3.2, z: 8 },
-      { x: -6, y: 3.0, z: 10 },
-      { x: 0, y: 2.8, z: 11 },
-      { x: 6, y: 3.0, z: 10 },
-      { x: 12, y: 3.2, z: 8 }
+      { x: -14, y: 4.2, z: 2 },
+      { x: -10, y: 3.8, z: 6 },
+      { x: 10, y: 3.8, z: 6 },
+      { x: 14, y: 4.2, z: 2 }
     ];
 
     const redMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, side: THREE.DoubleSide });
