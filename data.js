@@ -17,8 +17,8 @@ const CAMPUS_LOCATIONS = [
   { id: "cot_co", name: "Cột Cờ (Sân trường)", category: "landmark", building: "Sân trường", floor: "Mặt đất", x: 800, y: 780, node: "node_cot_co", keywords: ["cột cờ", "sân cờ", "chào cờ", "sân trường"], description: "Khu vực Cột Cờ trung tâm sân trường" },
   { id: "canopy_triangle", name: "Mái Tam Giác", category: "landmark", building: "Sân trường", floor: "Mặt đất", x: 800, y: 615, node: "node_mai_tam_giac", keywords: ["mái tam giác", "sảnh tam giác"], description: "Công trình kiến trúc Mái Tam Giác giữa sân trường" },
   { id: "nha_xe_gv", name: "Nhà xe giáo viên", category: "facility", building: "Khu vực Cổng", floor: "Mặt đất", x: 169, y: 909, node: "node_nha_xe_gv", keywords: ["nhà xe gv", "xe giáo viên", "bãi xe gv"], description: "Khu vực để xe dành riêng cho giáo viên (góc dưới bên trái)" },
-  { id: "hoi_truong", name: "Hội Trường", category: "facility", building: "Hội Trường", floor: "Tầng trệt", x: 1125, y: 775, node: "node_hoi_truong", keywords: ["hội trường", "nhà đa năng", "sự kiện", "lễ"], description: "Hội trường lớn của trường (phía trước bên phải)" },
-  { id: "wc_hoi_truong", name: "WC Hội Trường", category: "facility", building: "Hội Trường", floor: "Tầng trệt", x: 1228, y: 721, node: "node_wc_hoi_truong", keywords: ["wc", "nhà vệ sinh", "wc hội trường"], description: "Nhà vệ sinh cạnh Hội Trường" },
+  { id: "hoi_truong", name: "Hội Trường", category: "facility", building: "Hội Trường", floor: "Tầng trệt", x: 1245, y: 775, node: "node_hoi_truong", keywords: ["hội trường", "nhà đa năng", "sự kiện", "lễ"], description: "Hội trường lớn của trường (phía trước bên phải)" },
+  { id: "wc_hoi_truong", name: "WC Hội Trường", category: "facility", building: "Hội Trường", floor: "Tầng trệt", x: 1348, y: 721, node: "node_wc_hoi_truong", keywords: ["wc", "nhà vệ sinh", "wc hội trường"], description: "Nhà vệ sinh cạnh Hội Trường" },
 
   // --- DÃY HÀNH CHÍNH (HIỆU BỘ) ---
   // Tầng 2
@@ -168,7 +168,7 @@ const CAMPUS_LOCATIONS = [
   { id: "park_12a8", name: "Vị trí để xe 12A8", category: "parking", building: "Nhà xe gần Cổng sau", floor: "Mặt đất", x: 117, y: 162, node: "node_pk_12a8", keywords: ["xe 12a8"] },
 
   // --- VỊ TRÍ ĐỂ XE PHÍA TÂY & KHU VỰC HỘI TRƯỜNG ---
-  { id: "park_10a13", name: "Vị trí để xe 10A13", category: "parking", building: "Khu vực Hội Trường", floor: "Mặt đất", x: 1102, y: 684, node: "node_pk_10a13", keywords: ["xe 10a13", "10a13"] },
+  { id: "park_10a13", name: "Vị trí để xe 10A13", category: "parking", building: "Khu vực Hội Trường", floor: "Mặt đất", x: 1222, y: 684, node: "node_pk_10a13", keywords: ["xe 10a13", "10a13"] },
   { id: "park_12a9", name: "Vị trí để xe 12A9", category: "parking", building: "Dãy để xe học sinh phía Tây", floor: "Mặt đất", x: 91, y: 373, node: "node_pk_12a9", keywords: ["xe 12a9"] },
   { id: "park_12a10", name: "Vị trí để xe 12A10", category: "parking", building: "Dãy để xe học sinh phía Tây", floor: "Mặt đất", x: 91, y: 618, node: "node_pk_12a10", keywords: ["xe 12a10"] }
 ];
@@ -195,15 +195,15 @@ const CAMPUS_GRAPH_NODES = {
   "node_hl_a_east": { x: 918, y: 378, name: "Hành lang Dãy A (giao trục Đông)", floor: "Tầng trệt" },
   "node_hl_east_mid": { x: 918, y: 612, name: "Ngã ba hành lang Đông - Bộ Môn", floor: "Tầng trệt" },
 
-  // Trục dọc Hội Trường (X = 973)
-  "node_hl_ht_612": { x: 973, y: 612, name: "Đầu hành lang Hội Trường", floor: "Tầng trệt" },
-  "node_hl_ht_684": { x: 973, y: 684, name: "Lối rẽ vào bãi xe 10A13", floor: "Mặt đất" },
-  "node_hl_ht_721": { x: 973, y: 721, name: "Lối rẽ vào WC Hội Trường", floor: "Tầng trệt" },
-  "node_hl_ht_775": { x: 973, y: 775, name: "Cửa vào Hội Trường", floor: "Tầng trệt" },
-  "node_hl_ht_south": { x: 973, y: 777, name: "Hành lang Nam Hội Trường", floor: "Tầng trệt" },
-  "node_hoi_truong": { x: 1125, y: 775, name: "Hội Trường", floor: "Tầng trệt" },
-  "node_wc_hoi_truong": { x: 1228, y: 721, name: "WC Hội Trường", floor: "Tầng trệt" },
-  "node_pk_10a13": { x: 1102, y: 684, name: "Vị trí để xe 10A13", floor: "Mặt đất" },
+  // Trục dọc Hội Trường (X = 1092 - Đối diện Phòng Thí nghiệm Lý)
+  "node_hl_ht_612": { x: 1092, y: 612, name: "Đầu hành lang Hội Trường", floor: "Tầng trệt" },
+  "node_hl_ht_684": { x: 1092, y: 684, name: "Lối rẽ vào bãi xe 10A13", floor: "Mặt đất" },
+  "node_hl_ht_721": { x: 1092, y: 721, name: "Lối rẽ vào WC Hội Trường", floor: "Tầng trệt" },
+  "node_hl_ht_775": { x: 1092, y: 775, name: "Cửa vào Hội Trường", floor: "Tầng trệt" },
+  "node_hl_ht_south": { x: 1092, y: 777, name: "Hành lang Nam Hội Trường", floor: "Tầng trệt" },
+  "node_hoi_truong": { x: 1245, y: 775, name: "Hội Trường", floor: "Tầng trệt" },
+  "node_wc_hoi_truong": { x: 1348, y: 721, name: "WC Hội Trường", floor: "Tầng trệt" },
+  "node_pk_10a13": { x: 1222, y: 684, name: "Vị trí để xe 10A13", floor: "Mặt đất" },
 
   // === DÃY A (TRÊN CÙNG: KHỐI 10 & 11 & THƯ VIỆN) ===
   // Tầng trệt (Y = 378 là hành lang, Y = 339 là phòng)
@@ -498,7 +498,8 @@ const CAMPUS_GRAPH_EDGES = [
   // --- DÃY BỘ MÔN (GIỮA BÊN PHẢI - TẦNG TRỆT: Y = 612) ---
   { from: "node_hl_east_mid", to: "node_bm_stair_tret", desc: "Đi vào hành lang Dãy Bộ Môn đến Cầu thang" },
   { from: "node_bm_stair_tret", to: "node_bm_tret_yte", desc: "Đi tiếp qua Phòng Y Tế" },
-  { from: "node_bm_tret_yte", to: "node_bm_tret_ly", desc: "Đi tiếp qua Phòng Thí nghiệm Lý" },
+  { from: "node_bm_tret_yte", to: "node_hl_ht_612", desc: "Đi tiếp qua ngã rẽ vào hành lang Hội Trường" },
+  { from: "node_hl_ht_612", to: "node_bm_tret_ly", desc: "Đi tiếp qua Phòng Thí nghiệm Lý" },
   { from: "node_bm_tret_ly", to: "node_bm_tret_hoa", desc: "Đi đến Phòng Thí nghiệm Hóa" },
 
   // Cầu thang Bộ Môn (X = 928)
@@ -519,8 +520,8 @@ const CAMPUS_GRAPH_EDGES = [
   { from: "node_bm_stair_t4", to: "node_bm_t4_tin4", desc: "Hành lang Tầng 4 đến Phòng Tin 4" },
   { from: "node_bm_t4_tin4", to: "node_bm_t4_av", desc: "Đi đến Phòng Anh văn" },
 
-  // --- HỘI TRƯỜNG & KHU VỰC ĐỂ XE 10A13 (TRỤC DỌC X = 928) ---
-  { from: "node_bm_stair_tret", to: "node_hl_ht_684", desc: "Đi dọc theo hành lang xuống khu vực Hội Trường" },
+  // --- HỘI TRƯỜNG & KHU VỰC ĐỂ XE 10A13 (ĐỐI DIỆN P. THÍ NGHIỆM LÝ) ---
+  { from: "node_hl_ht_612", to: "node_hl_ht_684", desc: "Đi dọc theo hành lang trước Hội Trường" },
   { from: "node_hl_ht_684", to: "node_pk_10a13", desc: "Rẽ vào Vị trí để xe lớp 10A13" },
   { from: "node_hl_ht_684", to: "node_hl_ht_721", desc: "Đi tiếp dọc hành lang về phía Hội Trường" },
   { from: "node_hl_ht_721", to: "node_wc_hoi_truong", desc: "Rẽ vào WC Hội Trường" },
