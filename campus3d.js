@@ -2375,7 +2375,7 @@ class Campus3DViewer {
 
     // 8. BIỂN ĐỊNH DANH 3D CHO MÁI TAM GIÁC
     const canopyLblMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("MÁI TAM GIÁC (LỄ ĐÀI)", "Lễ đài trung tâm sân trường", "#ffffff", "#0284c7", "#38bdf8", 380, 140),
+      map: this.createCanvasLabel("MÁI TAM GIÁC", "Trung tâm sân trường", "#ffffff", "#0284c7", "#38bdf8", 360, 140),
       transparent: true
     });
     const canopyLbl = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 1.9), canopyLblMat);
