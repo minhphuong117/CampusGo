@@ -1837,7 +1837,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 5 địa điểm tiêu biểu phân bổ đều khắp các hướng (Bắc - Nam - Đông - Tây - Trung tâm)
       // Tách biệt hoàn toàn về không gian để TUYỆT ĐỐI KHÔNG BỊ TRÙNG LẶP HAY ĐÈ CHỮ LÊN NHAU
       const demoLocations = [
-        { id: "b_tret_12a7", label: "Lớp 12A7" },
+        { id: "vp_doan", label: "Văn phòng Đoàn" },
         { id: "a_tret_thu_vien", label: "Thư viện" },
         { id: "cot_co", label: "Cột cờ" },
         { id: "hoi_truong", label: "Hội trường" },
