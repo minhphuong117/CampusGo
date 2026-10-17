@@ -1734,19 +1734,17 @@
 
       <div class="toolbar-divider"></div>
 
-      <!-- Chế độ Di Chuyển (Pan) - Mặc định kích hoạt để kéo mượt như map 2D -->
-      <button class="tool-btn btn-mode active" id="btn-mode-pan" onclick="setControlMode('pan')" title="Chế độ Di Chuyển: Kéo ngón tay hoặc chuột để di bản đồ sang trái, phải, trước, sau như xem ảnh bản đồ">
-        🖐️ <span class="btn-text-full">Di Chuyển</span><span class="btn-text-short">Di</span>
-      </button>
-
-      <!-- Chế độ Xoay 3D (Rotate) -->
-      <button class="tool-btn btn-mode" id="btn-mode-rotate" onclick="setControlMode('rotate')" title="Chế độ Xoay 3D: Kéo để xoay 360 độ góc nhìn quanh trường">
-        🔄 <span class="btn-text-full">Xoay 3D</span><span class="btn-text-short">Xoay</span>
-      </button>
-
       <!-- Nút Về Giữa Trường -->
-      <button class="tool-btn" id="btn-recenter" onclick="recenterCampusView()" title="Đưa góc nhìn về lại chính giữa trường học">
+      <button class="tool-btn" id="btn-recenter" onclick="recenterCampusView()" title="Đưa góc nhìn về lại chính giữa trường học (Phím R)">
         🎯 <span class="btn-text-full">Về Giữa</span><span class="btn-text-short">Giữa</span>
+      </button>
+
+      <!-- Di chuyển lên / xuống giữa các tầng -->
+      <button class="tool-btn" id="btn-elev-up" onclick="if(viewer) viewer.changeFloorElevation(3.6)" title="Nâng góc nhìn lên tầng trên (Phím PageUp / W)">
+        ⬆️ <span class="btn-text-full">Lên Tầng</span><span class="btn-text-short">Lên</span>
+      </button>
+      <button class="tool-btn" id="btn-elev-down" onclick="if(viewer) viewer.changeFloorElevation(-3.6)" title="Hạ góc nhìn xuống tầng dưới (Phím PageDown / S)">
+        ⬇️ <span class="btn-text-full">Xuống Tầng</span><span class="btn-text-short">Xuống</span>
       </button>
 
       <div class="toolbar-divider"></div>
@@ -1768,14 +1766,14 @@
     </div>
   </header>
 
-  <!-- DOCK TIỆN ÍCH ĐIỀU HƯỚNG BẢN ĐỒ 3D (ZOOM, VỀ GIỮA, DI / XOAY) -->
+  <!-- DOCK TIỆN ÍCH ĐIỀU HƯỚNG BẢN ĐỒ 3D (ZOOM, VỀ GIỮA, LÊN / XUỐNG TẦNG) -->
   <aside class="map-floating-controls" id="map-floating-controls" aria-label="Điều khiển bản đồ 3D">
     <button type="button" class="map-float-btn" id="mfc-zoom-in" onclick="if(viewer) viewer.zoomIn()" title="Phóng to (+)">➕</button>
     <button type="button" class="map-float-btn" id="mfc-zoom-out" onclick="if(viewer) viewer.zoomOut()" title="Thu nhỏ (-)">➖</button>
     <button type="button" class="map-float-btn" id="mfc-recenter" onclick="recenterCampusView()" title="Đưa về giữa trường (R)">🎯</button>
     <div class="map-float-divider"></div>
-    <button type="button" class="map-float-btn active" id="mfc-mode-pan" onclick="setControlMode('pan')" title="Chế độ Di Chuyển (Kéo map)">🖐️</button>
-    <button type="button" class="map-float-btn" id="mfc-mode-rotate" onclick="setControlMode('rotate')" title="Chế độ Xoay 3D">🔄</button>
+    <button type="button" class="map-float-btn" id="mfc-elev-up" onclick="if(viewer) viewer.changeFloorElevation(3.6)" title="Lên tầng trên (PageUp / W)">⬆️</button>
+    <button type="button" class="map-float-btn" id="mfc-elev-down" onclick="if(viewer) viewer.changeFloorElevation(-3.6)" title="Xuống tầng dưới (PageDown / S)">⬇️</button>
   </aside>
 
   <!-- 2. BẢNG CHỈ ĐƯỜNG 3D THÔNG MINH (CÓ TÌM KIẾM TỰ ĐỘNG GỢI Ý DROPDOWN) -->
@@ -2056,14 +2054,14 @@
     </div>
   </div>
 
-  <!-- 7. BỘ CHỌN TẦNG (TÁCH TẦNG 3D) -->
+  <!-- 7. BỘ CHỌN TẦNG (TÁCH TẦNG 3D & DI CHUYỂN TẦNG) -->
   <div class="floor-switcher" id="floor-switcher">
     <span class="floor-switcher-title">TẦNG</span>
-    <button class="floor-btn active" onclick="setFloor(this, 'all')">Tất Cả</button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_3')">T4</button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_2')">T3</button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_1')">T2</button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_0')">Trệt</button>
+    <button class="floor-btn active" id="btn-fl-all" onclick="setFloor(this, 'all')" title="Toàn cảnh các tầng trường học">Tất Cả</button>
+    <button class="floor-btn" id="btn-fl-3" onclick="setFloor(this, 'fl_3')" title="Tầng 4 (Cao độ 12.6m)">T4</button>
+    <button class="floor-btn" id="btn-fl-2" onclick="setFloor(this, 'fl_2')" title="Tầng 3 (Cao độ 9.0m)">T3</button>
+    <button class="floor-btn" id="btn-fl-1" onclick="setFloor(this, 'fl_1')" title="Tầng 2 (Cao độ 5.4m)">T2</button>
+    <button class="floor-btn" id="btn-fl-0" onclick="setFloor(this, 'fl_0')" title="Tầng Trệt (Cao độ 1.8m)">Trệt</button>
   </div>
 
   <!-- 8. CHÚ THÍCH MÀU KHỐI LỚP -->
@@ -2733,28 +2731,10 @@
       if (viewer) viewer.setCameraPreset(preset);
     }
 
-    // ĐIỀU KHIỂN CHẾ ĐỘ DI CHUYỂN BẢN ĐỒ (PAN) & XOAY 3D (ROTATE)
+    // HỆ THỐNG ĐIỀU KHIỂN TÍCH HỢP XOAY 360° & DI CHUYỂN
     function setControlMode(mode) {
       if (!viewer) return;
       viewer.setInteractionMode(mode);
-
-      // Cập nhật trạng thái nút trên Toolbar
-      const btnPan = document.getElementById("btn-mode-pan");
-      const btnRotate = document.getElementById("btn-mode-rotate");
-      if (btnPan) btnPan.classList.toggle("active", mode === "pan");
-      if (btnRotate) btnRotate.classList.toggle("active", mode === "rotate");
-
-      // Cập nhật trạng thái nút trên Floating Dock
-      const mfcPan = document.getElementById("mfc-mode-pan");
-      const mfcRotate = document.getElementById("mfc-mode-rotate");
-      if (mfcPan) mfcPan.classList.toggle("active", mode === "pan");
-      if (mfcRotate) mfcRotate.classList.toggle("active", mode === "rotate");
-
-      if (mode === "pan") {
-        showToast3D("🖐️", "Chế độ Di Chuyển: Kéo ngón tay hoặc chuột để di bản đồ sang trái, phải, trước, sau");
-      } else {
-        showToast3D("🔄", "Chế độ Xoay 3D: Kéo ngón tay hoặc chuột để xoay 360° quanh trường");
-      }
     }
 
     // Đưa góc nhìn trở về lại chính giữa trường học
@@ -2764,10 +2744,25 @@
       showToast3D("🎯", "Đã đưa góc nhìn về trung tâm trường");
     }
 
+    // Cập nhật trạng thái nút chọn tầng khi cao độ camera thay đổi
+    window.onFloorElevationChanged = function(floorKey, floorLabel, height) {
+      document.querySelectorAll(".floor-switcher .floor-btn").forEach(b => b.classList.remove("active"));
+      const btnId = floorKey === 'all' ? 'btn-fl-all' :
+                    floorKey === 'fl_3' ? 'btn-fl-3' :
+                    floorKey === 'fl_2' ? 'btn-fl-2' :
+                    floorKey === 'fl_1' ? 'btn-fl-1' : 'btn-fl-0';
+      const targetBtn = document.getElementById(btnId);
+      if (targetBtn) targetBtn.classList.add("active");
+      showToast3D("🏢", `Góc nhìn: ${floorLabel} (${height.toFixed(1)}m)`);
+    };
+
+    // Chọn tầng và tự động di chuyển góc nhìn tới cao độ tầng đó
     function setFloor(btn, floorKey) {
       document.querySelectorAll(".floor-switcher .floor-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      if (viewer) viewer.filterFloor(floorKey);
+      if (btn) btn.classList.add("active");
+      if (viewer) {
+        viewer.focusFloor(floorKey);
+      }
     }
 
     function toggle360Panel(forceOpen) {
@@ -2870,7 +2865,7 @@
       }, 2800);
     }
 
-    // Phím tắt bàn phím tiện lợi trên máy tính (Mũi tên để di chuyển, + - để thu phóng, R về giữa, M đổi chế độ)
+    // Phím tắt bàn phím tiện lợi (Mũi tên: di chuyển, PageUp/W: lên tầng, PageDown/S: xuống tầng, + -: thu phóng, R: về giữa)
     window.addEventListener("keydown", (e) => {
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
       if (!viewer) return;
@@ -2878,13 +2873,11 @@
       else if (e.key === 'ArrowRight') { viewer.panByDirection('right'); }
       else if (e.key === 'ArrowUp') { viewer.panByDirection('up'); }
       else if (e.key === 'ArrowDown') { viewer.panByDirection('down'); }
+      else if (e.key === 'PageUp' || e.key === 'w' || e.key === 'W') { viewer.changeFloorElevation(3.6); }
+      else if (e.key === 'PageDown' || e.key === 's' || e.key === 'S') { viewer.changeFloorElevation(-3.6); }
       else if (e.key === '+' || e.key === '=') { viewer.zoomIn(); }
       else if (e.key === '-' || e.key === '_') { viewer.zoomOut(); }
       else if (e.key === 'r' || e.key === 'R') { recenterCampusView(); }
-      else if (e.key === 'm' || e.key === 'M') {
-        const nextMode = (viewer.interactionMode === 'pan') ? 'rotate' : 'pan';
-        setControlMode(nextMode);
-      }
     });
   </script>
 </body>

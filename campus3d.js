@@ -84,10 +84,10 @@ class Campus3DViewer {
     this.controls.maxDistance = 260;
     this.controls.target.set(0, 7, 3);
 
-    // Kích hoạt tính năng Di Chuyển (Pan) mượt mà
+    // Kích hoạt tính năng Di Chuyển (Pan) và Xoay 360 thống nhất
     this.controls.enablePan = true;
     this.controls.panSpeed = 1.15;
-    this.controls.screenSpacePanning = false; // Di chuyển phẳng theo mặt đất trường học (X-Z) chuẩn MapControls
+    this.controls.screenSpacePanning = true; // Cho phép kéo di chuyển theo cả chiều đứng và ngang, giúp quan sát lên xuống giữa các tầng
 
     this.controls.addEventListener('change', () => {
       if (window.updateCampus3DPopoverPosition) {
@@ -95,8 +95,8 @@ class Campus3DViewer {
       }
     });
 
-    // Chế độ tương tác mặc định: 'pan' (Di chuyển bản đồ sang trái, phải, trước, sau)
-    this.interactionMode = 'pan';
+    // Hệ thống điều khiển tích hợp đồng thời Xoay 360° và Di Chuyển bản đồ
+    this.interactionMode = 'unified';
     this.applyInteractionMode();
 
     // 4. Lights - Ánh nắng trường học buổi sáng rực rỡ chuẩn video thực tế
@@ -3236,11 +3236,11 @@ class Campus3DViewer {
   }
 
   // =========================================================================
-  // BỘ ĐIỀU KHIỂN CHẾ ĐỘ DI CHUYỂN BẢN ĐỒ (PAN) & XOAY 3D (ROTATE)
+  // BỘ ĐIỀU KHIỂN TÍCH HỢP XOAY 360° & DI CHUYỂN (PAN) & DI CHUYỂN TẦNG
   // =========================================================================
 
   setInteractionMode(mode) {
-    this.interactionMode = (mode === 'rotate') ? 'rotate' : 'pan';
+    this.interactionMode = mode;
     this.applyInteractionMode();
     return this.interactionMode;
   }
@@ -3248,40 +3248,109 @@ class Campus3DViewer {
   applyInteractionMode() {
     if (!this.controls) return;
     this.controls.enablePan = true;
-    this.controls.screenSpacePanning = false; // Luôn di chuyển phẳng song song mặt đất trường học (X-Z)
+    this.controls.enableRotate = true;
+    this.controls.enableZoom = true;
+    this.controls.screenSpacePanning = true; // Kéo di chuyển theo mặt phẳng màn hình: Cho phép di chuyển lên xuống giữa các tầng và sang trái/phải mượt mà!
 
-    if (this.interactionMode === 'rotate') {
-      // Chế độ Xoay 3D:
-      // - Chuột trái / 1 ngón tay chạm: Xoay góc nhìn 360 độ
-      // - Chuột phải / 2 ngón tay: Di chuyển bản đồ (Pan)
-      this.controls.mouseButtons = {
-        LEFT: THREE.MOUSE.ROTATE,
-        MIDDLE: THREE.MOUSE.DOLLY,
-        RIGHT: THREE.MOUSE.PAN
-      };
-      this.controls.touches = {
-        ONE: THREE.TOUCH.ROTATE,
-        TWO: THREE.TOUCH.DOLLY_PAN
-      };
-      if (this.renderer && this.renderer.domElement) {
-        this.renderer.domElement.style.cursor = 'all-scroll';
-      }
+    // HỆ THỐNG ĐIỀU KHIỂN THỐNG NHẤT TOÀN DIỆN:
+    // - Chuột trái / 1 ngón tay chạm vuốt: Xoay góc nhìn 360 độ tự do quanh trường
+    // - Chuột phải HOẶC Shift + Chuột trái / 2 ngón tay kéo: Di chuyển bản đồ (Pan) theo mọi hướng và lên xuống giữa các tầng
+    // - Con lăn chuột / 2 ngón tay chụm mở: Phóng to / Thu nhỏ mượt mà
+    this.controls.mouseButtons = {
+      LEFT: THREE.MOUSE.ROTATE,
+      MIDDLE: THREE.MOUSE.DOLLY,
+      RIGHT: THREE.MOUSE.PAN
+    };
+    this.controls.touches = {
+      ONE: THREE.TOUCH.ROTATE,
+      TWO: THREE.TOUCH.DOLLY_PAN
+    };
+
+    if (this.renderer && this.renderer.domElement) {
+      this.renderer.domElement.style.cursor = 'grab';
+    }
+  }
+
+  // Nâng / hạ góc nhìn lên xuống giữa các tầng (thay đổi cao độ Y)
+  changeFloorElevation(deltaY, duration = 400) {
+    if (!this.controls) return;
+    const currentTargetY = this.controls.target.y;
+    // Giới hạn cao độ từ tầng trệt (1.8m) đến tầng 4 / mái (17.5m)
+    const newTargetY = THREE.MathUtils.clamp(currentTargetY + deltaY, 1.8, 17.5);
+    const diffY = newTargetY - currentTargetY;
+    if (Math.abs(diffY) < 0.05) return;
+
+    const endTarget = this.controls.target.clone();
+    endTarget.y = newTargetY;
+
+    const endPos = this.camera.position.clone();
+    endPos.y += diffY;
+    endPos.y = THREE.MathUtils.clamp(endPos.y, 3.2, 55);
+
+    this.tweenCamera(endPos, endTarget, duration);
+
+    // Xác định tầng tương ứng để cập nhật UI & thông báo
+    let floorLabel = "Tầng Trệt";
+    let floorKey = "fl_0";
+    if (newTargetY >= 11.5) {
+      floorLabel = "Tầng 4";
+      floorKey = "fl_3";
+    } else if (newTargetY >= 7.8) {
+      floorLabel = "Tầng 3";
+      floorKey = "fl_2";
+    } else if (newTargetY >= 4.2) {
+      floorLabel = "Tầng 2";
+      floorKey = "fl_1";
+    }
+
+    if (window.onFloorElevationChanged) {
+      window.onFloorElevationChanged(floorKey, floorLabel, newTargetY);
+    }
+  }
+
+  // Chuyển nhanh tầm nhìn đến đúng cao độ của tầng được chọn
+  focusFloor(floorKey) {
+    this.filterFloor(floorKey);
+    if (!this.controls) return;
+
+    const floorConfigs = {
+      all:  { targetY: 7.0,  camY: 48.0, label: "Toàn Cảnh" },
+      fl_0: { targetY: 1.8,  camY: 5.2,  camDist: 28, label: "Tầng Trệt" },
+      fl_1: { targetY: 5.4,  camY: 8.8,  camDist: 28, label: "Tầng 2" },
+      fl_2: { targetY: 9.0,  camY: 12.4, camDist: 28, label: "Tầng 3" },
+      fl_3: { targetY: 12.6, camY: 16.0, camDist: 28, label: "Tầng 4" }
+    };
+
+    const cfg = floorConfigs[floorKey];
+    if (!cfg) return;
+
+    if (floorKey === 'all') {
+      const endTarget = new THREE.Vector3(0, 7, 3);
+      const endPos = new THREE.Vector3(0, 48, 70);
+      this.tweenCamera(endPos, endTarget, 650);
     } else {
-      // Chế độ Di Chuyển (Pan) - MẶC ĐỊNH:
-      // - Chuột trái / 1 ngón tay chạm: Di chuyển phẳng toàn bộ bản đồ sang trái, phải, trước, sau như xem ảnh bản đồ!
-      // - Chuột phải / 2 ngón tay: Xoay góc nhìn 3D quanh tâm
-      this.controls.mouseButtons = {
-        LEFT: THREE.MOUSE.PAN,
-        MIDDLE: THREE.MOUSE.DOLLY,
-        RIGHT: THREE.MOUSE.ROTATE
-      };
-      this.controls.touches = {
-        ONE: THREE.TOUCH.PAN,
-        TWO: THREE.TOUCH.DOLLY_ROTATE
-      };
-      if (this.renderer && this.renderer.domElement) {
-        this.renderer.domElement.style.cursor = 'grab';
+      // Di chuyển mượt mà tới cao độ của tầng đã chọn, giữ hướng nhìn hiện tại
+      const currentTarget = this.controls.target.clone();
+      const currentCam = this.camera.position.clone();
+      let dir = currentCam.clone().sub(currentTarget);
+      dir.y = 0;
+      if (dir.lengthSq() < 1) {
+        dir.set(0, 0, 1);
       }
+      dir.normalize().multiplyScalar(cfg.camDist || 28);
+
+      const endTarget = new THREE.Vector3(currentTarget.x, cfg.targetY, currentTarget.z);
+      const endPos = new THREE.Vector3(
+        endTarget.x + dir.x,
+        cfg.camY,
+        endTarget.z + dir.z
+      );
+
+      this.tweenCamera(endPos, endTarget, 550);
+    }
+
+    if (window.onFloorElevationChanged) {
+      window.onFloorElevationChanged(floorKey, cfg.label, cfg.targetY);
     }
   }
 
@@ -3339,6 +3408,12 @@ class Campus3DViewer {
         v.setFromMatrixColumn(objectMatrix, 0);
         v.crossVectors(this.camera.up, v).multiplyScalar(-distance);
         break;
+      case 'elev_up':
+        this.changeFloorElevation(3.6);
+        return;
+      case 'elev_down':
+        this.changeFloorElevation(-3.6);
+        return;
     }
 
     const startPos = this.camera.position.clone();
@@ -3366,9 +3441,7 @@ class Campus3DViewer {
     this.renderer.domElement.addEventListener('pointerdown', (e) => {
       pointerDownPos = { x: e.clientX, y: e.clientY };
       isDraggingCanvas = false;
-      if (this.interactionMode === 'pan') {
-        this.renderer.domElement.style.cursor = 'grabbing';
-      }
+      this.renderer.domElement.style.cursor = 'grabbing';
     });
 
     this.renderer.domElement.addEventListener('pointermove', (e) => {
@@ -3379,7 +3452,7 @@ class Campus3DViewer {
 
     const resetCursor = () => {
       if (this.renderer && this.renderer.domElement) {
-        this.renderer.domElement.style.cursor = (this.interactionMode === 'pan') ? 'grab' : 'all-scroll';
+        this.renderer.domElement.style.cursor = 'grab';
       }
     };
 
@@ -3503,7 +3576,7 @@ class Campus3DViewer {
       // Giới hạn phạm vi tâm nhìn (target) trong ranh giới khuôn viên trường học để không bị trôi quá xa
       this.controls.target.x = THREE.MathUtils.clamp(this.controls.target.x, -85, 85);
       this.controls.target.z = THREE.MathUtils.clamp(this.controls.target.z, -50, 90);
-      this.controls.target.y = THREE.MathUtils.clamp(this.controls.target.y, 0, 20);
+      this.controls.target.y = THREE.MathUtils.clamp(this.controls.target.y, 0, 26);
       this.controls.update();
     }
 
