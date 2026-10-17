@@ -1,8 +1,7 @@
 /**
- * data.js - Dữ liệu Vị trí, Tọa độ & Mạng lưới Lối đi Khuôn viên Trường học
+ * data.js - Dữ liệu Vị trí, Tọa độ & Mạng lưới Lối đi Khuôn viên Trường THPT TAM PHƯỚC
  * SƠ ĐỒ PHÒNG HỌC 3 KHỐI & VỊ TRÍ ĐỂ XE NĂM HỌC 2026 - 2027
  * Hệ tọa độ chuẩn: viewBox="0 0 1600 1120"
- * Toàn bộ tọa độ được căn chỉnh chính xác 100% khớp với sơ đồ 2D Mặt bằng.
  * Hệ thống chỉ đường:
  * - Đi dọc 100% theo các trục Hành Lang (Corridors) và Đường nội bộ
  * - Chuyển tầng bắt buộc đi qua Cầu Thang (Stairs)
