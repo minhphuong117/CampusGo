@@ -181,23 +181,30 @@
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.65);
     }
 
-    /* DOCK TIỆN ÍCH ĐIỀU HƯỚNG BẢN ĐỒ 3D (ZOOM, VỀ GIỮA, DI / XOAY) */
-    .map-floating-controls {
-      position: fixed;
+    /* DOCK TIỆN ÍCH ĐIỀU HƯỚNG BẢN ĐỒ 3D (ZOOM, VỀ GIỮA, DI / XOAY) - ÔM GỌN VỪA KHÍT CÁC NÚT */
+    .map-floating-controls,
+    #map-floating-controls {
+      position: fixed !important;
       right: 16px;
-      top: 70px;
-      z-index: 30;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      background: rgba(15, 23, 42, 0.9);
+      top: 68px;
+      bottom: auto !important;
+      left: auto !important;
+      width: auto !important;
+      height: auto !important;
+      max-height: fit-content !important;
+      z-index: 45;
+      display: inline-flex !important;
+      flex-direction: column !important;
+      gap: 5px;
+      background: rgba(15, 23, 42, 0.92);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 12px;
-      padding: 6px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 14px;
+      padding: 5px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
       transition: all 0.25s ease;
+      pointer-events: auto;
     }
 
     .map-float-btn {
@@ -1644,19 +1651,44 @@
         margin: 0 2px;
       }
 
-      .map-floating-controls {
+      .map-floating-controls,
+      #map-floating-controls {
         right: 8px;
-        top: 58px;
+        top: 56px;
+        bottom: auto !important;
+        left: auto !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: fit-content !important;
         padding: 4px;
         gap: 4px;
-        border-radius: 10px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
       }
 
       .map-float-btn {
         width: 34px;
         height: 34px;
         font-size: 13.5px;
-        border-radius: 7px;
+        border-radius: 8px;
+      }
+
+      .map-float-divider {
+        margin: 1px 2px;
+      }
+
+      /* Giản lược bớt trên điện thoại: ẩn 2 phím Zoom ➕ / ➖ vì người dùng chạm vuốt 2 ngón tay (pinch-to-zoom) trực tiếp */
+      #mfc-zoom-in,
+      #mfc-zoom-out {
+        display: none !important;
+      }
+
+      /* Tự động ẩn D-Pad điều hướng khi mở bảng chỉ đường hoặc mở thẻ phòng để không che chữ hay ô chức năng */
+      body.nav-open-3d .dpad-navigation,
+      body.popover-open-3d .dpad-navigation {
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(0.92);
       }
 
       .dpad-navigation {
@@ -2632,11 +2664,13 @@
       // Hiển thị và cập nhật vị trí ngay lập tức
       popover.classList.remove("hidden");
       popover.style.display = "block";
+      document.body.classList.add("popover-open-3d");
       updateLocationPopover3DPosition();
     }
 
     function hideLocationPopover3D() {
       activeTarget3DPos = null;
+      document.body.classList.remove("popover-open-3d");
       const popover = document.getElementById("map-location-popover");
       if (popover) {
         popover.classList.add("hidden");
@@ -2758,6 +2792,7 @@
       if (!panel) return;
 
       const shouldOpen = (forceOpen !== undefined) ? forceOpen : panel.classList.contains("hidden");
+      document.body.classList.toggle("nav-open-3d", shouldOpen);
       if (shouldOpen) {
         panel.classList.remove("hidden");
         if (btn) btn.classList.add("active");
