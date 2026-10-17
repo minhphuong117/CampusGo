@@ -1452,8 +1452,16 @@ class Campus3DViewer {
       building.add(slab);
 
       // Lan can hành lang: Nửa dưới bê tông vôi kem, nửa trên tay vịn thép tròn xanh dương
-      const balustrade = this.createCorridorBalustrade(36, -25.65, fl.floor * floorH, zPos + roomD / 2 + 3);
-      building.add(balustrade);
+      if (fl.floor === 0 || fl.floor === 1) {
+        // Mở lối thông hành lang vào cầu nối sang Dãy Hành chính thẳng đối diện lớp 12A9 & 12A5 (X = -20.1)
+        const balustradeL = this.createCorridorBalustrade(21.4, -32.95, fl.floor * floorH, zPos + roomD / 2 + 3);
+        const balustradeR = this.createCorridorBalustrade(10.2, -13.1, fl.floor * floorH, zPos + roomD / 2 + 3);
+        building.add(balustradeL);
+        building.add(balustradeR);
+      } else {
+        const balustrade = this.createCorridorBalustrade(36, -25.65, fl.floor * floorH, zPos + roomD / 2 + 3);
+        building.add(balustrade);
+      }
 
       fl.rooms.forEach(r => {
         if (r.isStair) {
@@ -1488,9 +1496,9 @@ class Campus3DViewer {
     const stairB = this.createStairTower(-25.45, zPos, 4, floorH, 5.2, roomD + 2.5, "CẦU THANG B");
     building.add(stairB);
 
-    // Cột trụ đỏ gạch mặt tiền Cánh Trái (dựng đều dọc hành lang hướng ra sân)
+    // Cột trụ đỏ gạch mặt tiền Cánh Trái (dựng đều tại vách ngăn giữa các phòng, chừa lối thông thẳng đối diện 12A9)
     const redColMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.7 });
-    [-43.5, -37.5, -31.5, -25.5, -19.5, -13.5, -8.0].forEach(cx => {
+    [-43.5, -39.6, -34.0, -28.4, -22.7, -17.5, -11.7, -8.0].forEach(cx => {
       const col = new THREE.Mesh(new THREE.BoxGeometry(0.55, 4 * floorH, 0.55), redColMat);
       col.position.set(cx, (4 * floorH) / 2, zPos + roomD / 2 + 3.1);
       col.castShadow = true;
@@ -1913,13 +1921,14 @@ class Campus3DViewer {
     // -------------------------------------------------------------
     // A. CẦU HÀNH LANG TẦNG TRỆT NỐI DÃY B SANG DÃY HÀNH CHÍNH (ĐỐI DIỆN CỬA 12A9)
     // -------------------------------------------------------------
+    const bridgeX = -20.1; // Trục thẳng tâm lớp 12A9 & 12A5 (Tòa 3) sang Tiếp dân & Chi bộ (Tòa GV)
     const groundWalkway = new THREE.Group();
     // Sàn gạch men kem
     const gFloor = new THREE.Mesh(
       new THREE.BoxGeometry(3.8, 0.25, 15),
       new THREE.MeshStandardMaterial({ map: corridorFloorTex, roughness: 0.6 })
     );
-    gFloor.position.set(-20.5, 0.12, 7);
+    gFloor.position.set(bridgeX, 0.12, 7);
     gFloor.receiveShadow = true;
     groundWalkway.add(gFloor);
 
@@ -1929,13 +1938,13 @@ class Campus3DViewer {
     [-1.85, 1.85].forEach(sideX => {
       // Tường lan can bê tông kem cao 0.65m
       const wall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.65, 15), parapetMat);
-      wall.position.set(-20.5 + sideX, 0.45, 7);
+      wall.position.set(bridgeX + sideX, 0.45, 7);
       groundWalkway.add(wall);
 
       // Ống thép tròn xanh tay vịn trên cùng cao 0.95m
       const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 15, 16), bluePipeMat);
       pipe.rotation.x = Math.PI / 2;
-      pipe.position.set(-20.5 + sideX, 0.85, 7);
+      pipe.position.set(bridgeX + sideX, 0.85, 7);
       groundWalkway.add(pipe);
     });
 
@@ -1944,7 +1953,7 @@ class Campus3DViewer {
       new THREE.BoxGeometry(4.4, 0.2, 15),
       new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.35 })
     );
-    canopy.position.set(-20.5, 2.7, 7);
+    canopy.position.set(bridgeX, 2.7, 7);
     groundWalkway.add(canopy);
 
     // Cột trụ vuông màu đỏ gạch đặc trưng trường học THPT Tam Phước
@@ -1952,7 +1961,7 @@ class Campus3DViewer {
     [-1.75, 1.75].forEach(px => {
       [1, 7, 13].forEach(pz => {
         const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.35, 2.7, 0.35), redColMat);
-        pillar.position.set(-20.5 + px, 1.35, pz);
+        pillar.position.set(bridgeX + px, 1.35, pz);
         pillar.castShadow = true;
         groundWalkway.add(pillar);
       });
@@ -1964,7 +1973,7 @@ class Campus3DViewer {
       transparent: true
     });
     const gLabel = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 2.0), gLabelMat);
-    gLabel.position.set(-20.5, 1.5, 7);
+    gLabel.position.set(bridgeX, 1.5, 7);
     gLabel.rotation.y = -Math.PI / 2;
     groundWalkway.add(gLabel);
 
@@ -1981,7 +1990,7 @@ class Campus3DViewer {
       new THREE.BoxGeometry(3.8, 0.3, 15),
       new THREE.MeshStandardMaterial({ map: corridorFloorTex, roughness: 0.5 })
     );
-    bFloor.position.set(-20.5, bridgeY, 7);
+    bFloor.position.set(bridgeX, bridgeY, 7);
     bFloor.castShadow = true;
     bFloor.receiveShadow = true;
     skybridge.add(bFloor);
@@ -1989,12 +1998,12 @@ class Campus3DViewer {
     // Lan can cầu vượt tầng 2: Tường bê tông kem + tay vịn ống thép xanh dương (chuẩn video)
     [-1.85, 1.85].forEach(sideX => {
       const wall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.75, 15), parapetMat);
-      wall.position.set(-20.5 + sideX, bridgeY + 0.52, 7);
+      wall.position.set(bridgeX + sideX, bridgeY + 0.52, 7);
       skybridge.add(wall);
 
       const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 15, 16), bluePipeMat);
       pipe.rotation.x = Math.PI / 2;
-      pipe.position.set(-20.5 + sideX, bridgeY + 0.98, 7);
+      pipe.position.set(bridgeX + sideX, bridgeY + 0.98, 7);
       skybridge.add(pipe);
     });
 
@@ -2002,7 +2011,7 @@ class Campus3DViewer {
     [-1.75, 1.75].forEach(px => {
       [1, 7, 13].forEach(pz => {
         const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.35, 2.8, 0.35), redColMat);
-        pillar.position.set(-20.5 + px, bridgeY + 1.4, pz);
+        pillar.position.set(bridgeX + px, bridgeY + 1.4, pz);
         pillar.castShadow = true;
         skybridge.add(pillar);
       });
@@ -2013,7 +2022,7 @@ class Campus3DViewer {
       new THREE.BoxGeometry(4.2, 0.25, 15),
       new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.4 })
     );
-    bridgeRoof.position.set(-20.5, bridgeY + 2.8, 7);
+    bridgeRoof.position.set(bridgeX, bridgeY + 2.8, 7);
     skybridge.add(bridgeRoof);
 
     // Biển CẦU HÀNH LANG TẦNG 2
@@ -2022,7 +2031,7 @@ class Campus3DViewer {
       transparent: true
     });
     const skyLabel = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 2.0), skyLabelMat);
-    skyLabel.position.set(-20.5, bridgeY + 1.4, 7);
+    skyLabel.position.set(bridgeX, bridgeY + 1.4, 7);
     skyLabel.rotation.y = -Math.PI / 2;
     skybridge.add(skyLabel);
 
@@ -4189,15 +4198,15 @@ class Campus3DViewer {
       "node_hc_stair_t2": { x: -31.6, y: 3.75, z: 22.5 },
 
       // Tầng 2 Dãy Hành Chính
-      "node_hc_t2_cb": { x: -20.5, y: 3.75, z: 22.5 },
+      "node_hc_t2_cb": { x: -20.1, y: 3.75, z: 22.5 },
       "node_hc_t2_kt": { x: -26.5, y: 3.75, z: 22.5 },
       "node_hc_t2_vt": { x: -36.0, y: 3.75, z: 22.5 },
       "node_hc_t2_ht": { x: -40.5, y: 3.75, z: 22.5 },
       "node_hc_t2_wc": { x: -44.0, y: 3.75, z: 22.5 },
 
       // Cầu nối Tây Dãy B - Dãy Hành Chính
-      "node_hl_connect_b_hc": { x: -20.5, y: 0.15, z: 12.0 },
-      "node_hl_connect_b_hc_t2": { x: -20.5, y: 3.75, z: 12.0 },
+      "node_hl_connect_b_hc": { x: -20.1, y: 0.15, z: 12.0 },
+      "node_hl_connect_b_hc_t2": { x: -20.1, y: 3.75, z: 12.0 },
 
       // Dãy B - Tầng Trệt (Hành lang z = 1.0)
       "node_b_exit_west": { x: -43.0, y: 0.15, z: 1.0 },
