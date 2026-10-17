@@ -293,13 +293,31 @@ class Campus3DViewer {
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      let title = name.toUpperCase();
-      if (!title.startsWith('PHÒNG') && !title.startsWith('LỚP') && !title.startsWith('WC') && !title.startsWith('VP') && !title.startsWith('TN') && !title.startsWith('P.')) {
-        title = `LỚP ${title}`;
+      let title = name.toUpperCase().trim();
+
+      // Kiểm tra xem phòng có thuộc Dãy Tòa Giáo Viên (Hiệu Bộ) hay không
+      const isTeacherBuilding = options.isTeacherBuilding || options.noClassPrefix || false;
+      const isTeacherRoom = isTeacherBuilding || [
+        'HIỆU TRƯỞNG', 'VĂN THƯ', 'KẾ TOÁN', 'CHI BỘ', 'HỒ SƠ', 'PHÓ HT', 'TRUYỀN THỐNG', 'TIẾP DÂN'
+      ].some(k => title.includes(k));
+
+      if (isTeacherRoom) {
+        // Tuyệt đối không có chữ "LỚP" cho phòng thuộc dãy tòa giáo viên
+        title = title.replace(/^LỚP\s+/i, '').trim();
+      } else {
+        // Chỉ thêm tiền tố "LỚP " cho các lớp học học sinh (bắt đầu bằng khối số như 10A1, 11A5, 12A9)
+        const isStudentClass = /^\d{1,2}[A-Z]/.test(title);
+        if (isStudentClass && !title.startsWith('LỚP')) {
+          title = `LỚP ${title}`;
+        }
       }
-      ctx.font = '900 25px "Segoe UI", Roboto, sans-serif';
-      if (ctx.measureText(title).width > plateW - 20) {
-        ctx.font = 'bold 19px "Segoe UI", Roboto, sans-serif';
+
+      ctx.font = '900 24px "Segoe UI", Roboto, sans-serif';
+      if (ctx.measureText(title).width > plateW - 16) {
+        ctx.font = 'bold 18px "Segoe UI", Roboto, sans-serif';
+      }
+      if (ctx.measureText(title).width > plateW - 16) {
+        ctx.font = 'bold 14px "Segoe UI", Roboto, sans-serif';
       }
       ctx.fillText(title, plateX + plateW / 2, plateY + plateH / 2);
     }
@@ -1735,7 +1753,9 @@ class Campus3DViewer {
           textColor: r.textColor || '#1e293b',
           stroke: r.stroke || '#94a3b8',
           subtext: r.subtext || '',
-          floorKey: `fl_${fl.floor}`
+          floorKey: `fl_${fl.floor}`,
+          isTeacherBuilding: true,
+          noClassPrefix: true
         });
         building.add(box);
         curX += rw + 0.2;
