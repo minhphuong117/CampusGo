@@ -1,7 +1,7 @@
 /**
- * room_images.js - Mapping toàn bộ Location ID → Ảnh thực tế chỉ đường (100% đầy đủ 118 ảnh)
+ * room_images.js - Mapping toàn bộ Location ID → Ảnh thực tế chỉ đường (118 ảnh)
  * Đường dẫn tương đối từ thư mục gốc dự án.
- * Phù hợp 100% với sơ đồ "ảnh chú thích thứ tự các dãy tòa học 1,2 và 3.png":
+ * sơ đồ "ảnh chú thích thứ tự các dãy tòa học 1,2 và 3.png":
  * - TÒA 1: Dãy Bộ Môn (bên phải)
  * - TÒA 2: Dãy A (trên cùng - Khối 10, 11 & Thư Viện)
  * - TÒA 3: Dãy B (bên trái - Khối 12)
