@@ -2043,7 +2043,10 @@
             🚶 Mắt người đi
           </button>
           <button type="button" class="tour-pill-btn" id="btn-view-tp" onclick="if(viewer) viewer.setTourViewMode('thirdPerson', this)">
-            🚁 Flycam bám theo
+            👤 Bám theo sau
+          </button>
+          <button type="button" class="tour-pill-btn" id="btn-view-be" onclick="if(viewer) viewer.setTourViewMode('birdEye', this)">
+            🚁 Toàn cảnh trên cao
           </button>
         </div>
 
@@ -2712,6 +2715,18 @@
 
     function startCameraTour() {
       if (!viewer.activeRoute) {
+        const startInput = document.getElementById("nav-start-input");
+        const destInput = document.getElementById("nav-dest-input");
+        const hasStart = startInput && startInput.value.trim().length > 0;
+        const hasDest = destInput && destInput.value.trim().length > 0;
+
+        if (!hasStart || !hasDest) {
+          // Tuyến tham quan mẫu bám sát hành lang và leo cầu thang thực tế (Cổng trường -> Phòng 12A5 Tầng 2 Dãy B)
+          if (startInput) startInput.value = "Cổng Trường";
+          if (destInput) destInput.value = "Phòng 12A5";
+          selectedStartLoc = window.CAMPUS_LOCATIONS ? window.CAMPUS_LOCATIONS.find(l => l.id === 'cong_truong') : null;
+          selectedDestLoc = window.CAMPUS_LOCATIONS ? window.CAMPUS_LOCATIONS.find(l => l.id === 'b_t2_12a5') : null;
+        }
         executeRoute3D();
       }
       if (!viewer.activeRoute) {

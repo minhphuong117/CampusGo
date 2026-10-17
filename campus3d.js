@@ -71,6 +71,10 @@ class Campus3DViewer {
     this.container.appendChild(this.renderer.domElement);
     this.scene.add(this.routeGroup);
 
+    this.tourAvatar = this.createTourAvatar();
+    this.tourAvatar.visible = false;
+    this.scene.add(this.tourAvatar);
+
     // 2. Camera - Mặc định góc nhìn Flycam trực diện từ trên cao
     this.camera = new THREE.PerspectiveCamera(this.originalFov || 40, width / height, 0.2, 1000);
     this.camera.position.set(0, 48, 70);
@@ -3721,93 +3725,14 @@ class Campus3DViewer {
     this.clearRoute();
     this.activeRoute = navRes;
 
-    // Hàm chuyển đổi tầng tiếng Việt sang cao độ Y trong không gian 3D
-    const getFloorY = (floorStr) => {
-      if (!floorStr) return 0.12;
-      const f = floorStr.toString().toLowerCase();
-      if (f.includes('4') || f.includes('lau_3') || f.includes('lầu 3')) return 10.88;
-      if (f.includes('3') || f.includes('lau_2') || f.includes('lầu 2')) return 7.28;
-      if (f.includes('2') || f.includes('lau_1') || f.includes('lầu 1')) return 3.68;
-      return 0.12; // Mặt đất / Tầng trệt
-    };
+    // 1. Tạo danh sách các điểm định vị 3D bám sát hành lang và cầu thang thực tế
+    const waypoints3D = this.buildCorridorWaypoints(navRes.nodePath, startLoc, destLoc);
 
-    // Hàm chuyển đổi 1 điểm 2D sang Vector3
-    const nodeTo3D = (p, floorStr) => {
-      const x3d = (p.x - 740) * 0.062;
-      const z3d = (p.y - 650) * 0.088;
-      const y3d = getFloorY(floorStr);
-      return new THREE.Vector3(x3d, y3d, z3d);
-    };
-
-    const rawPoints3D = [];
-
-    // Ưu tiên sử dụng chuỗi nodePath chính xác từ CampusRouter
-    if (navRes.nodePath && navRes.nodePath.length > 0) {
-      navRes.nodePath.forEach(nid => {
-        const nd = window.CAMPUS_GRAPH_NODES && window.CAMPUS_GRAPH_NODES[nid];
-        if (nd) {
-          rawPoints3D.push(nodeTo3D(nd, nd.floor));
-        }
-      });
-    } else if (navRes.points && navRes.points.length > 0) {
-      navRes.points.forEach(pt => {
-        let nodeFloor = 'tret';
-        if (window.CAMPUS_GRAPH_NODES) {
-          for (const k in window.CAMPUS_GRAPH_NODES) {
-            const nd = window.CAMPUS_GRAPH_NODES[k];
-            if (Math.hypot(nd.x - pt.x, nd.y - pt.y) < 2.0) {
-              nodeFloor = nd.floor;
-              break;
-            }
-          }
-        }
-        rawPoints3D.push(nodeTo3D(pt, nodeFloor));
-      });
-    }
-
-    // Đảm bảo điểm bắt đầu và kết thúc trùng với vị trí xuất phát / đích đến
-    if (rawPoints3D.length > 0) {
-      const pStart = nodeTo3D(startLoc, startLoc.floor);
-      if (rawPoints3D[0].distanceTo(pStart) > 0.8) {
-        rawPoints3D.unshift(pStart);
-      }
-      const pDest = nodeTo3D(destLoc, destLoc.floor);
-      if (rawPoints3D[rawPoints3D.length - 1].distanceTo(pDest) > 0.8) {
-        rawPoints3D.push(pDest);
-      }
-    }
-
-    // Làm mượt đoạn chuyển tiếp cầu thang (tránh giật phương thẳng đứng)
-    const pointsWithStairs = [];
-    for (let i = 0; i < rawPoints3D.length; i++) {
-      const pCurr = rawPoints3D[i];
-      pointsWithStairs.push(pCurr);
-
-      if (i < rawPoints3D.length - 1) {
-        const pNext = rawPoints3D[i + 1];
-        const dy = pNext.y - pCurr.y;
-        if (Math.abs(dy) > 1.5) {
-          // Leo hoặc xuống cầu thang: chèn 2 điểm trung gian tạo quỹ đạo bậc thang xoắn tự nhiên
-          const mid1 = new THREE.Vector3(
-            pCurr.x + (pNext.x - pCurr.x) * 0.35,
-            pCurr.y + dy * 0.35,
-            pCurr.z + (pNext.z - pCurr.z) * 0.35
-          );
-          const mid2 = new THREE.Vector3(
-            pCurr.x + (pNext.x - pCurr.x) * 0.70,
-            pCurr.y + dy * 0.75,
-            pCurr.z + (pNext.z - pCurr.z) * 0.70
-          );
-          pointsWithStairs.push(mid1, mid2);
-        }
-      }
-    }
-
-    // Lọc các điểm quá sát nhau (< 0.4 đơn vị)
-    const filteredPoints = [pointsWithStairs[0]];
-    for (let i = 1; i < pointsWithStairs.length; i++) {
-      if (filteredPoints[filteredPoints.length - 1].distanceTo(pointsWithStairs[i]) > 0.35) {
-        filteredPoints.push(pointsWithStairs[i]);
+    // 2. Lọc các điểm quá sát nhau (< 0.35 đơn vị) để đường cong không bị xoắn gấp
+    const filteredPoints = [waypoints3D[0]];
+    for (let i = 1; i < waypoints3D.length; i++) {
+      if (filteredPoints[filteredPoints.length - 1].distanceTo(waypoints3D[i]) > 0.35) {
+        filteredPoints.push(waypoints3D[i]);
       }
     }
 
@@ -3816,13 +3741,13 @@ class Campus3DViewer {
       curve.curveType = 'centripetal';
       this.activeCurve = curve;
 
-      // 1. Dây chỉ dẫn mặt sàn thanh mảnh (Slim Glowing Floor Ribbon) - R = 0.075m, không che tầm nhìn
-      const tubeSegments = Math.max(60, filteredPoints.length * 20);
+      // 1. Dải ruy băng neon phát sáng thanh mảnh trên sàn hành lang (R = 0.075m)
+      const tubeSegments = Math.max(70, filteredPoints.length * 20);
       const tubeGeo = new THREE.TubeGeometry(curve, tubeSegments, 0.075, 10, false);
       const tubeMat = new THREE.MeshStandardMaterial({
         color: 0x00d2ff,
         emissive: 0x0284c7,
-        emissiveIntensity: 1.2,
+        emissiveIntensity: 1.25,
         roughness: 0.2,
         metalness: 0.1
       });
@@ -3830,8 +3755,8 @@ class Campus3DViewer {
       tubeMesh.castShadow = false;
       this.routeGroup.add(tubeMesh);
 
-      // 2. Viền hào quang mềm mỏng
-      const glowGeo = new THREE.TubeGeometry(curve, tubeSegments, 0.14, 6, false);
+      // 2. Hào quang mỏng xung quanh đường đi
+      const glowGeo = new THREE.TubeGeometry(curve, tubeSegments, 0.15, 6, false);
       const glowMat = new THREE.MeshBasicMaterial({
         color: 0x38bdf8,
         wireframe: true,
@@ -3841,8 +3766,8 @@ class Campus3DViewer {
       const glowMesh = new THREE.Mesh(glowGeo, glowMat);
       this.routeGroup.add(glowMesh);
 
-      // 3. Mũi tên chỉ hướng phát sáng dọc tuyến đường (Directional Floor Chevrons)
-      const numChevrons = Math.max(4, Math.floor(filteredPoints.length * 2.2));
+      // 3. Mũi tên chỉ hướng phát sáng dọc tuyến hành lang
+      const numChevrons = Math.max(5, Math.floor(filteredPoints.length * 2.2));
       const chevronTex = this.createChevronTexture();
       const chevronMat = new THREE.MeshBasicMaterial({
         map: chevronTex,
@@ -3859,7 +3784,7 @@ class Campus3DViewer {
         chMesh.rotation.x = -Math.PI / 2;
         const angle = Math.atan2(tangent.x, tangent.z);
         chMesh.rotation.z = -angle;
-        chMesh.position.set(pt.x, pt.y + 0.05, pt.z);
+        chMesh.position.set(pt.x, pt.y + 0.06, pt.z);
         this.routeGroup.add(chMesh);
       }
 
@@ -3876,166 +3801,438 @@ class Campus3DViewer {
     return navRes;
   }
 
-  createChevronTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 128;
-    canvas.height = 128;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, 128, 128);
+  // Thuật toán xây dựng chuỗi điểm di chuyển 3D bám sát 100% trục hành lang và cầu thang
+  buildCorridorWaypoints(nodePath, startLoc, destLoc) {
+    const rawNodes = [];
 
-    // Mũi tên kép neon cyan phát sáng
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 14;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+    if (nodePath && nodePath.length > 0) {
+      nodePath.forEach(nid => {
+        const nd = window.CAMPUS_GRAPH_NODES && window.CAMPUS_GRAPH_NODES[nid];
+        const p3d = this.get3DNodePosition(nid, nd, nd ? nd.floor : null);
+        rawNodes.push({ nid, nd, p3d });
+      });
+    }
 
-    ctx.beginPath();
-    ctx.moveTo(24, 76);
-    ctx.lineTo(64, 36);
-    ctx.lineTo(104, 76);
-    ctx.stroke();
+    if (rawNodes.length === 0) {
+      const pStart = this.get3DNodePosition(startLoc.node || startLoc.id, startLoc, startLoc.floor);
+      const pDest = this.get3DNodePosition(destLoc.node || destLoc.id, destLoc, destLoc.floor);
+      rawNodes.push({ nid: startLoc.id, nd: startLoc, p3d: pStart });
+      rawNodes.push({ nid: destLoc.id, nd: destLoc, p3d: pDest });
+    }
 
-    ctx.strokeStyle = '#0284c7';
-    ctx.lineWidth = 10;
-    ctx.beginPath();
-    ctx.moveTo(28, 102);
-    ctx.lineTo(64, 66);
-    ctx.lineTo(100, 102);
-    ctx.stroke();
+    // Đảm bảo điểm đầu và cuối khớp với vị trí xuất phát / đích đến
+    const firstP = rawNodes[0].p3d;
+    const startP = this.get3DNodePosition(startLoc.node || startLoc.id, startLoc, startLoc.floor);
+    if (firstP.distanceTo(startP) > 0.8) {
+      rawNodes.unshift({ nid: startLoc.id, nd: startLoc, p3d: startP });
+    }
+    const lastP = rawNodes[rawNodes.length - 1].p3d;
+    const destP = this.get3DNodePosition(destLoc.node || destLoc.id, destLoc, destLoc.floor);
+    if (lastP.distanceTo(destP) > 0.8) {
+      rawNodes.push({ nid: destLoc.id, nd: destLoc, p3d: destP });
+    }
 
-    const tex = new THREE.CanvasTexture(canvas);
-    return tex;
+    const waypoints = [];
+
+    for (let i = 0; i < rawNodes.length; i++) {
+      const curr = rawNodes[i];
+      const pCurr = curr.p3d.clone();
+      waypoints.push(pCurr);
+
+      if (i < rawNodes.length - 1) {
+        const next = rawNodes[i + 1];
+        const pNext = next.p3d.clone();
+        const dy = pNext.y - pCurr.y;
+
+        // A. XỬ LÝ LEO / XUỐNG CẦU THANG (THANG B, THANG BỘ MÔN, THANG HÀNH CHÍNH, THANG DÃY A)
+        if (Math.abs(dy) > 1.2) {
+          // Xác định vị trí lồng cầu thang để leo bậc mượt mà bên trong buồng thang
+          let stairX = pCurr.x;
+          let stairCorridorZ = pCurr.z;
+          let stairInnerZ = stairCorridorZ - 2.4; // Đi sâu vào lòng tháp thang
+          let stairMidZ = stairCorridorZ - 4.2;   // Chiếu nghỉ trung gian
+
+          if (pCurr.x < -16 && pCurr.z < 10) {
+            // Cầu thang Dãy B (x = -21.0)
+            stairX = -21.0;
+            stairCorridorZ = 1.0;
+            stairInnerZ = -1.2;
+            stairMidZ = -3.2;
+          } else if (pCurr.x > 5 && pCurr.z < 10) {
+            // Cầu thang Dãy Bộ Môn (x = 10.5)
+            stairX = 10.5;
+            stairCorridorZ = 1.0;
+            stairInnerZ = -1.2;
+            stairMidZ = -3.2;
+          } else if (pCurr.z > 14) {
+            // Cầu thang Dãy Hành Chính (x = -31.6)
+            stairX = -31.6;
+            stairCorridorZ = 22.5;
+            stairInnerZ = 20.0;
+            stairMidZ = 18.0;
+          } else if (pCurr.z < -20) {
+            // Cầu thang Dãy A
+            stairX = pCurr.x < 0 ? -14.0 : 14.0;
+            stairCorridorZ = -26.5;
+            stairInnerZ = -28.8;
+            stairMidZ = -30.8;
+          }
+
+          // 1. Bước vào cửa buồng cầu thang ở tầng xuất phát
+          waypoints.push(new THREE.Vector3(stairX, pCurr.y, stairInnerZ));
+          // 2. Leo đợt thang thứ nhất lên chiếu nghỉ giữa tầng
+          waypoints.push(new THREE.Vector3(stairX - 0.7, pCurr.y + dy * 0.45, stairMidZ));
+          // 3. Xoay người trên chiếu nghỉ trung gian
+          waypoints.push(new THREE.Vector3(stairX + 0.7, pCurr.y + dy * 0.55, stairMidZ));
+          // 4. Leo đợt thang thứ hai lên cửa tầng mới
+          waypoints.push(new THREE.Vector3(stairX + 0.7, pCurr.y + dy * 0.95, stairInnerZ));
+          // 5. Bước ra khỏi cửa buồng thang ở tầng mới
+          waypoints.push(new THREE.Vector3(stairX, pNext.y, stairInnerZ));
+          // 6. Bước ra mặt sàn hành lang tầng mới
+          waypoints.push(new THREE.Vector3(stairX, pNext.y, stairCorridorZ));
+          continue;
+        }
+
+        // B. XỬ LÝ CHUYỂN HÀNH LANG (NỐI DÃY B SANG CẦU NỐI TÂY, HOẶC TỪ SÂN VÀO HÀNH LANG)
+        const dx = pNext.x - pCurr.x;
+        const dz = pNext.z - pCurr.z;
+
+        // Nếu đi chéo giữa 2 trục khác nhau (ví dụ từ hành lang Dãy B z=1 sang Cầu nối z=12)
+        if (Math.abs(dx) > 1.5 && Math.abs(dz) > 2.5 && Math.abs(dy) < 0.5) {
+          // Bẻ góc vuông 90 độ đi theo hành lang ngang trước, sau đó rẽ vào trục dọc
+          if (Math.abs(pCurr.z - 1.0) < 0.5) {
+            // Đang ở hành lang Dãy B (z = 1.0), đi ngang đến tim cầu nối rồi rẽ
+            waypoints.push(new THREE.Vector3(pNext.x, pCurr.y, 1.0));
+          } else if (Math.abs(pNext.z - 1.0) < 0.5) {
+            // Đang đi tới hành lang Dãy B (z = 1.0), đi dọc tới z=1.0 rồi rẽ ngang
+            waypoints.push(new THREE.Vector3(pCurr.x, pCurr.y, 1.0));
+          } else if (Math.abs(pCurr.z - 22.5) < 0.5) {
+            // Đang ở hành lang Dãy Hành Chính (z = 22.5)
+            waypoints.push(new THREE.Vector3(pNext.x, pCurr.y, 22.5));
+          } else if (Math.abs(pNext.z - 22.5) < 0.5) {
+            // Đi tới hành lang Dãy Hành Chính (z = 22.5)
+            waypoints.push(new THREE.Vector3(pCurr.x, pCurr.y, 22.5));
+          }
+        }
+      }
+    }
+
+    return waypoints;
   }
 
-  createRoutePin(pos, hexColor, labelText, isStart = true) {
-    const pinGroup = new THREE.Group();
-    pinGroup.position.copy(pos);
+  // Lấy vị trí 3D chính xác của một nút đồ thị nằm trên hành lang hoặc cầu thang
+  get3DNodePosition(nid, fallbackNode, floorStr) {
+    const fStr = floorStr || (fallbackNode && fallbackNode.floor) || 'tret';
+    let floorY = 0.15;
+    const f = String(fStr).toLowerCase();
+    if (f.includes('4') || f.includes('lầu 3') || f.includes('fl_3') || f.includes('t4')) floorY = 10.95;
+    else if (f.includes('3') || f.includes('lầu 2') || f.includes('fl_2') || f.includes('t3')) floorY = 7.35;
+    else if (f.includes('2') || f.includes('lầu 1') || f.includes('fl_1') || f.includes('t2')) floorY = 3.75;
+    else floorY = 0.15;
 
-    const colorNum = typeof hexColor === 'string' ? parseInt(hexColor.replace('#', '0x'), 16) : hexColor;
+    // Tọa độ 3D chuẩn xác thực tế từng địa điểm trong trường học THPT Tam Phước
+    const exact3DMap = {
+      // Cổng trường & Sân chính
+      "node_cong_truong": { x: 0, y: 0.15, z: 49.0 },
+      "node_truoc_cong": { x: 0, y: 0.15, z: 45.0 },
+      "node_san_truoc_hc": { x: -4.0, y: 0.15, z: 32.0 },
+      "node_duong_xe_hc": { x: -15.0, y: 0.15, z: 32.0 },
+      "node_cot_co": { x: 0, y: 0.15, z: 11.0 },
+      "node_truoc_cot_co": { x: 0, y: 0.15, z: 16.0 },
+      "node_mai_tam_giac": { x: 0, y: 0.15, z: 4.2 },
+      "node_san_giua_tay": { x: -7.0, y: 0.15, z: 4.2 },
+      "node_san_giua_dong": { x: 7.0, y: 0.15, z: 4.2 },
+      "node_nga_re_san_b": { x: -7.0, y: 0.15, z: 1.0 },
+      "node_nga_re_san_bm": { x: 7.0, y: 0.15, z: 1.0 },
 
-    // Cột trụ năng lượng
-    const beamGeo = new THREE.CylinderGeometry(0.12, 0.12, 4.5, 16);
-    const beamMat = new THREE.MeshStandardMaterial({
-      color: colorNum,
-      emissive: colorNum,
-      emissiveIntensity: 0.9,
-      transparent: true,
-      opacity: 0.75
+      // Hội trường & WC Hội Trường
+      "node_hoi_truong": { x: 26.0, y: 0.15, z: 18.0 },
+      "node_wc_hoi_truong": { x: 36.5, y: 0.15, z: 18.0 },
+
+      // Sảnh & Hành lang Dãy Hành Chính (Hiệu Bộ)
+      "node_hc_sanh_truoc": { x: -31.2, y: 0.15, z: 24.5 },
+      "node_hl_hc_east": { x: -17.0, y: 0.15, z: 22.5 },
+      "node_hc_tret_td": { x: -18.5, y: 0.15, z: 22.5 },
+      "node_hc_tret_tt": { x: -22.5, y: 0.15, z: 22.5 },
+      "node_hc_tret_pht": { x: -26.5, y: 0.15, z: 22.5 },
+      "node_hc_stair_tret": { x: -31.6, y: 0.15, z: 22.5 },
+      "node_hc_tret_p2": { x: -36.0, y: 0.15, z: 22.5 },
+      "node_hc_tret_p1": { x: -40.5, y: 0.15, z: 22.5 },
+      "node_hc_tret_wc": { x: -44.0, y: 0.15, z: 22.5 },
+
+      // Cầu thang Dãy Hành Chính
+      "node_hc_stair_t2": { x: -31.6, y: 3.75, z: 22.5 },
+
+      // Tầng 2 Dãy Hành Chính
+      "node_hc_t2_cb": { x: -20.5, y: 3.75, z: 22.5 },
+      "node_hc_t2_kt": { x: -26.5, y: 3.75, z: 22.5 },
+      "node_hc_t2_vt": { x: -36.0, y: 3.75, z: 22.5 },
+      "node_hc_t2_ht": { x: -40.5, y: 3.75, z: 22.5 },
+      "node_hc_t2_wc": { x: -44.0, y: 3.75, z: 22.5 },
+
+      // Cầu nối Tây Dãy B - Dãy Hành Chính
+      "node_hl_connect_b_hc": { x: -26.1, y: 0.15, z: 12.0 },
+      "node_hl_connect_b_hc_t2": { x: -26.1, y: 3.75, z: 12.0 },
+
+      // Dãy B - Tầng Trệt (Hành lang z = 1.0)
+      "node_b_exit_west": { x: -37.5, y: 0.15, z: 1.0 },
+      "node_loi_ra_day_b": { x: -37.5, y: 0.15, z: 1.0 },
+      "node_b_tret_wc": { x: -35.0, y: 0.15, z: 1.0 },
+      "node_b_tret_12a7": { x: -31.3, y: 0.15, z: 1.0 },
+      "node_b_tret_12a8": { x: -25.7, y: 0.15, z: 1.0 },
+      "node_b_stair_tret": { x: -21.0, y: 0.15, z: 1.0 },
+      "node_b_tret_12a9": { x: -14.8, y: 0.15, z: 1.0 },
+      "node_b_tret_12a10": { x: -9.2, y: 0.15, z: 1.0 },
+      "node_b_tret_am_thanh": { x: -5.8, y: 0.15, z: 1.0 },
+
+      // Cầu thang Dãy B
+      "node_b_stair_t2": { x: -21.0, y: 3.75, z: 1.0 },
+      "node_b_stair_t3": { x: -21.0, y: 7.35, z: 1.0 },
+      "node_b_stair_t4": { x: -21.0, y: 10.95, z: 1.0 },
+
+      // Dãy B - Tầng 2
+      "node_b_t2_wc": { x: -35.0, y: 3.75, z: 1.0 },
+      "node_b_t2_12a3": { x: -31.3, y: 3.75, z: 1.0 },
+      "node_b_t2_12a4": { x: -25.7, y: 3.75, z: 1.0 },
+      "node_b_t2_12a5": { x: -14.8, y: 3.75, z: 1.0 },
+      "node_b_t2_12a6": { x: -9.2, y: 3.75, z: 1.0 },
+      "node_b_t2_thi_vu": { x: -5.8, y: 3.75, z: 1.0 },
+
+      // Dãy B - Tầng 3
+      "node_b_t3_wc": { x: -35.0, y: 7.35, z: 1.0 },
+      "node_b_t3_12a1": { x: -31.3, y: 7.35, z: 1.0 },
+      "node_b_t3_12a2": { x: -25.7, y: 7.35, z: 1.0 },
+      "node_b_t3_10a10": { x: -14.8, y: 7.35, z: 1.0 },
+      "node_b_t3_10a9": { x: -9.2, y: 7.35, z: 1.0 },
+      "node_b_t3_nghi_gv_nu": { x: -5.8, y: 7.35, z: 1.0 },
+
+      // Dãy B - Tầng 4
+      "node_b_t4_wc": { x: -35.0, y: 10.95, z: 1.0 },
+      "node_b_t4_p14": { x: -31.3, y: 10.95, z: 1.0 },
+      "node_b_t4_p15": { x: -25.7, y: 10.95, z: 1.0 },
+      "node_b_t4_p16": { x: -14.8, y: 10.95, z: 1.0 },
+      "node_b_t4_media": { x: -9.2, y: 10.95, z: 1.0 },
+      "node_b_t4_nghi_gv_nam": { x: -5.8, y: 10.95, z: 1.0 },
+
+      // Dãy Bộ Môn (Tòa 1) - Tầng Trệt (Hành lang z = 1.0)
+      "node_bm_stair_tret": { x: 10.5, y: 0.15, z: 1.0 },
+      "node_bm_tret_yte": { x: 14.0, y: 0.15, z: 1.0 },
+      "node_bm_tret_ly": { x: 21.0, y: 0.15, z: 1.0 },
+      "node_bm_tret_hoa": { x: 28.0, y: 0.15, z: 1.0 },
+      "node_bm_tret_wc": { x: 34.0, y: 0.15, z: 1.0 },
+
+      // Cầu thang Dãy Bộ Môn
+      "node_bm_stair_t2": { x: 10.5, y: 3.75, z: 1.0 },
+      "node_bm_stair_t3": { x: 10.5, y: 7.35, z: 1.0 },
+      "node_bm_stair_t4": { x: 10.5, y: 10.95, z: 1.0 },
+
+      // Dãy Bộ Môn - Tầng 2
+      "node_bm_t2_qp": { x: 14.0, y: 3.75, z: 1.0 },
+      "node_bm_t2_doan": { x: 15.5, y: 3.75, z: 1.0 },
+      "node_bm_t2_tin1": { x: 21.0, y: 3.75, z: 1.0 },
+      "node_bm_t2_tin2": { x: 28.0, y: 3.75, z: 1.0 },
+      "node_bm_t2_wc": { x: 34.0, y: 3.75, z: 1.0 },
+
+      // Dãy Bộ Môn - Tầng 3
+      "node_bm_t3_tam_ly": { x: 14.0, y: 7.35, z: 1.0 },
+      "node_bm_t3_anh_van": { x: 15.5, y: 7.35, z: 1.0 },
+      "node_bm_t3_may1": { x: 21.0, y: 7.35, z: 1.0 },
+      "node_bm_t3_may2": { x: 28.0, y: 7.35, z: 1.0 },
+      "node_bm_t3_wc": { x: 34.0, y: 7.35, z: 1.0 },
+
+      // Dãy Bộ Môn - Tầng 4
+      "node_bm_t4_luu_tru": { x: 14.0, y: 10.95, z: 1.0 },
+      "node_bm_t4_tin4": { x: 21.0, y: 10.95, z: 1.0 },
+      "node_bm_t4_av": { x: 28.0, y: 10.95, z: 1.0 },
+      "node_bm_t4_wc": { x: 34.0, y: 10.95, z: 1.0 },
+
+      // Cánh nối Dãy A - B (Tây) & Cánh nối Dãy A - BM (Đông)
+      "node_connect_a_b_tret": { x: -22.5, y: 0.15, z: -14.0 },
+      "node_connect_a_bm_tret": { x: 22.5, y: 0.15, z: -14.0 },
+
+      // Cầu thang Dãy A
+      "node_a_stair1_tret": { x: -14.0, y: 0.15, z: -26.5 },
+      "node_a_stair1_t2": { x: -14.0, y: 3.75, z: -26.5 },
+      "node_a_stair1_t3": { x: -14.0, y: 7.35, z: -26.5 },
+      "node_a_stair1_t4": { x: -14.0, y: 10.95, z: -26.5 },
+
+      "node_a_stair2_tret": { x: 14.0, y: 0.15, z: -26.5 },
+      "node_a_stair2_t2": { x: 14.0, y: 3.75, z: -26.5 },
+      "node_a_stair2_t3": { x: 14.0, y: 7.35, z: -26.5 },
+      "node_a_stair2_t4": { x: 14.0, y: 10.95, z: -26.5 },
+
+      // Nhà xe GV & Bãi xe
+      "node_nha_xe_gv": { x: -44.0, y: 0.15, z: 38.0 },
+      "node_truoc_nha_xe_gv": { x: -44.0, y: 0.15, z: 38.0 }
+    };
+
+    if (nid && exact3DMap[nid]) {
+      const p = exact3DMap[nid];
+      return new THREE.Vector3(p.x, p.y, p.z);
+    }
+
+    // 2. Fallback định vị theo tiền tố để luôn nằm trên hành lang của tòa nhà
+    if (nid) {
+      if (nid.startsWith('node_b_')) {
+        let x = -21.0;
+        if (fallbackNode) {
+          x = -37.0 + ((fallbackNode.x - 223) / (502 - 223)) * 28.0;
+        }
+        return new THREE.Vector3(x, floorY, 1.0);
+      }
+      if (nid.startsWith('node_bm_')) {
+        let x = 21.0;
+        if (fallbackNode) {
+          x = 10.5 + ((fallbackNode.x - 928) / (1245 - 928)) * 24.0;
+        }
+        return new THREE.Vector3(x, floorY, 1.0);
+      }
+      if (nid.startsWith('node_hc_')) {
+        let x = -31.2;
+        if (fallbackNode) {
+          x = -44.0 + ((fallbackNode.x - 138) / (442 - 138)) * 27.0;
+        }
+        return new THREE.Vector3(x, floorY, 22.5);
+      }
+      if (nid.startsWith('node_a_')) {
+        let x = 0;
+        if (fallbackNode) {
+          x = -32.0 + ((fallbackNode.x - 423) / (1001 - 423)) * 66.0;
+        }
+        return new THREE.Vector3(x, floorY, -26.5);
+      }
+    }
+
+    // 3. Fallback mặc định theo tỉ lệ khuôn viên
+    if (fallbackNode) {
+      const x3d = (fallbackNode.x - 740) * 0.058;
+      const z3d = (fallbackNode.y - 650) * 0.075;
+      return new THREE.Vector3(x3d, floorY, z3d);
+    }
+
+    return new THREE.Vector3(0, floorY, 0);
+  }
+
+  // Tạo nhân vật học sinh 3D Navigator với đồng phục áo trắng, quần tây, balo và hiệu ứng bước chân
+  createTourAvatar() {
+    const avatarGroup = new THREE.Group();
+    avatarGroup.name = "TourAvatar";
+
+    // Bảng màu đồng phục học sinh THPT Tam Phước:
+    // Áo sơ mi trắng tinh, quần tây xanh đen sẫm, balo học sinh xanh dương đậm
+    const shirtMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.7 });
+    const collarMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.6 });
+    const pantsMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xffedd5, roughness: 0.6 });
+    const hairMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.9 });
+    const shoeMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 });
+    const bagMat = new THREE.MeshStandardMaterial({ color: 0x0369a1, roughness: 0.6 });
+
+    // 1. Thân áo sơ mi trắng (Torso)
+    const torsoGeo = new THREE.BoxGeometry(0.42, 0.54, 0.24);
+    const torso = new THREE.Mesh(torsoGeo, shirtMat);
+    torso.position.y = 1.08;
+    torso.castShadow = true;
+    avatarGroup.add(torso);
+
+    // Cà vạt / Viền cổ áo xanh học sinh
+    const collar = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.28, 0.05), collarMat);
+    collar.position.set(0, 1.15, 0.12);
+    avatarGroup.add(collar);
+
+    // 2. Balo học sinh trên lưng
+    const bag = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.42, 0.16), bagMat);
+    bag.position.set(0, 1.06, -0.18);
+    bag.castShadow = true;
+    avatarGroup.add(bag);
+
+    // Quai balo
+    [-0.14, 0.14].forEach(bx => {
+      const strap = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.46, 0.04), collarMat);
+      strap.position.set(bx, 1.08, 0.10);
+      avatarGroup.add(strap);
     });
-    const beam = new THREE.Mesh(beamGeo, beamMat);
-    beam.position.y = 2.25;
-    pinGroup.add(beam);
 
-    // Viên ngọc phát sáng trên đỉnh cột
-    const orbGeo = new THREE.SphereGeometry(0.55, 24, 24);
-    const orbMat = new THREE.MeshStandardMaterial({
-      color: colorNum,
-      emissive: colorNum,
-      emissiveIntensity: 1.0,
-      metalness: 0.2,
-      roughness: 0.1
-    });
-    const orb = new THREE.Mesh(orbGeo, orbMat);
-    orb.position.y = 4.8;
-    pinGroup.add(orb);
+    // 3. Đầu & Tóc (Head & Hair)
+    const headGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    const head = new THREE.Mesh(headGeo, skinMat);
+    head.position.y = 1.50;
+    head.castShadow = true;
+    avatarGroup.add(head);
 
-    // Vòng sóng xung nhịp dưới mặt sàn (Pulse ring)
-    const ringGeo = new THREE.RingGeometry(0.9, 1.3, 32);
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: colorNum,
+    // Mái tóc đen gọn gàng
+    const hairGeo = new THREE.SphereGeometry(0.16, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.55);
+    const hair = new THREE.Mesh(hairGeo, hairMat);
+    hair.position.set(0, 1.52, -0.01);
+    avatarGroup.add(hair);
+
+    // 4. Hai chân có khớp xoay (Left & Right Leg pivots for walking)
+    const legGeo = new THREE.BoxGeometry(0.14, 0.60, 0.14);
+    legGeo.translate(0, -0.30, 0); // Đặt pivot tại khớp háng
+
+    const leftLegGroup = new THREE.Group();
+    leftLegGroup.position.set(-0.11, 0.82, 0);
+    const leftLeg = new THREE.Mesh(legGeo, pantsMat);
+    leftLeg.castShadow = true;
+    leftLegGroup.add(leftLeg);
+    // Giày trái
+    const leftShoe = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.09, 0.22), shoeMat);
+    leftShoe.position.set(0, -0.62, 0.04);
+    leftLegGroup.add(leftShoe);
+    avatarGroup.add(leftLegGroup);
+
+    const rightLegGroup = new THREE.Group();
+    rightLegGroup.position.set(0.11, 0.82, 0);
+    const rightLeg = new THREE.Mesh(legGeo, pantsMat);
+    rightLeg.castShadow = true;
+    rightLegGroup.add(rightLeg);
+    // Giày phải
+    const rightShoe = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.09, 0.22), shoeMat);
+    rightShoe.position.set(0, -0.62, 0.04);
+    rightLegGroup.add(rightShoe);
+    avatarGroup.add(rightLegGroup);
+
+    // 5. Hai tay có khớp xoay (Left & Right Arm pivots for walking)
+    const armGeo = new THREE.BoxGeometry(0.10, 0.48, 0.10);
+    armGeo.translate(0, -0.24, 0); // Pivot tại vai
+
+    const leftArmGroup = new THREE.Group();
+    leftArmGroup.position.set(-0.26, 1.30, 0);
+    const leftArm = new THREE.Mesh(armGeo, shirtMat);
+    leftArm.castShadow = true;
+    leftArmGroup.add(leftArm);
+    avatarGroup.add(leftArmGroup);
+
+    const rightArmGroup = new THREE.Group();
+    rightArmGroup.position.set(0.26, 1.30, 0);
+    const rightArm = new THREE.Mesh(armGeo, shirtMat);
+    rightArm.castShadow = true;
+    rightArmGroup.add(rightArm);
+    avatarGroup.add(rightArmGroup);
+
+    // 6. Vòng chỉ thị định vị phát sáng trên đầu (Navigator Beacon Halo)
+    const haloGeo = new THREE.RingGeometry(0.32, 0.45, 24);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.75
+      opacity: 0.85
     });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.rotation.x = -Math.PI / 2;
-    ring.position.y = 0.08;
-    pinGroup.add(ring);
-    this.beaconPulses.push(ring);
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    halo.rotation.x = -Math.PI / 2;
+    halo.position.y = 1.95;
+    avatarGroup.add(halo);
 
-    // Biển tên 3D Billboard
-    const labelCanvas = this.createCanvasLabel(
-      isStart ? "🟢 XUẤT PHÁT" : "🔴 ĐÍCH ĐẾN",
-      labelText,
-      isStart ? "#10b981" : "#ef4444",
-      "#ffffff",
-      "#ffffff",
-      360,
-      140
-    );
-    const labelMat = new THREE.MeshBasicMaterial({ map: labelCanvas, transparent: true });
-    const lbl = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 2.0), labelMat);
-    lbl.position.y = 6.2;
-    pinGroup.add(lbl);
-
-    this.routeGroup.add(pinGroup);
-  }
-
-  clearRoute() {
-    this.stopTour();
-    this.beaconPulses = [];
-    this.activeCurve = null;
-    this.activeRoute = null;
-
-    while (this.routeGroup.children.length > 0) {
-      const obj = this.routeGroup.children[0];
-      if (obj.geometry) obj.geometry.dispose();
-      if (obj.material) {
-        if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
-        else obj.material.dispose();
-      }
-      this.routeGroup.remove(obj);
-    }
-  }
-
-  focusRoute(points) {
-    if (!points || points.length === 0) return;
-
-    let minX = Infinity, maxX = -Infinity;
-    let minZ = Infinity, maxZ = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
-
-    points.forEach(p => {
-      minX = Math.min(minX, p.x);
-      maxX = Math.max(maxX, p.x);
-      minZ = Math.min(minZ, p.z);
-      maxZ = Math.max(maxZ, p.z);
-      minY = Math.min(minY, p.y);
-      maxY = Math.max(maxY, p.y);
-    });
-
-    const centerX = (minX + maxX) / 2;
-    const centerZ = (minZ + maxZ) / 2;
-    const centerY = (minY + maxY) / 2;
-    const target = new THREE.Vector3(centerX, centerY, centerZ);
-
-    const span = Math.max(maxX - minX, maxZ - minZ, 22);
-    const camPos = new THREE.Vector3(centerX - span * 0.95, centerY + span * 0.85, centerZ + span * 0.95);
-
-    this.tweenCamera(camPos, target, 900);
-  }
-
-  tweenCamera(endPos, endTarget, duration = 1000) {
-    const startPos = this.camera.position.clone();
-    const startTarget = this.controls.target.clone();
-    const startTime = performance.now();
-
-    const step = (now) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
-
-      this.camera.position.lerpVectors(startPos, endPos, ease);
-      this.controls.target.lerpVectors(startTarget, endTarget, ease);
-      if (this.controls.enabled) {
-        this.controls.update();
-      }
-
-      if (progress < 1) {
-        requestAnimationFrame(step);
-      }
+    // Lưu trữ tham chiếu bộ phận cho animation bước đi
+    avatarGroup.userData = {
+      leftLeg: leftLegGroup,
+      rightLeg: rightLegGroup,
+      leftArm: leftArmGroup,
+      rightArm: rightArmGroup,
+      halo: halo
     };
-    requestAnimationFrame(step);
+
+    return avatarGroup;
   }
 
   // =========================================================================
@@ -4043,9 +4240,14 @@ class Campus3DViewer {
   // =========================================================================
   startTour() {
     if (!this.activeCurve) {
-      // Tuyến mặc định mẫu
-      const r = this.draw3DRoute('cong_truong', 'b_tret_12a9');
+      // Tuyến mặc định mẫu: Cổng trường -> Phòng 12A5 (Tầng 2 Dãy B)
+      const r = this.draw3DRoute('cong_truong', 'b_t2_12a5');
       if (!this.activeCurve) return;
+    }
+
+    // Hiển thị tất cả các tầng để không bị ẩn tường hay mái che trong lúc đi tham quan
+    if (typeof this.filterFloor === 'function') {
+      this.filterFloor('all');
     }
 
     // 1. Lưu lại trạng thái camera trước khi đi thử để khôi phục khi kết thúc
@@ -4056,21 +4258,26 @@ class Campus3DViewer {
       near: this.camera.near
     };
 
-    // 2. Chuyển đổi camera sang góc nhìn người đi bộ
+    // 2. Chuyển đổi camera sang chế độ đi bộ tham quan
     this.tourActive = true;
     this.tourPaused = false;
     this.tourProgress = 0;
-    this.controls.enabled = false; // VÔ HIỆU HÓA OrbitControls để camera không bị kéo lệch giật lắc
-    this.camera.fov = this.walkFov || 72; // Góc nhìn 72 độ mở rộng bao quát toàn khung cảnh
-    this.camera.near = 0.08; // Tránh hiện tượng clipping thủng tường
+    this.controls.enabled = false; // Vô hiệu hóa OrbitControls tạm thời để camera bám tuyến mượt mà
+    this.camera.fov = this.walkFov || 72; // Góc nhìn rộng 72 độ
+    this.camera.near = 0.08; // Tránh clipping thủng tường
     this.camera.updateProjectionMatrix();
 
-    // 3. Thời lượng tour dựa theo độ dài tuyến
+    // 3. Thời lượng tour tính theo độ dài tuyến
     const dist = (this.activeRoute && this.activeRoute.totalDistanceMeters) || 60;
-    this.tourDuration = Math.max(10000, dist * 220);
+    this.tourDuration = Math.max(12000, dist * 220);
     this.lastTourTime = performance.now();
 
-    // 4. Mở thanh Walkthrough HUD
+    // 4. Kích hoạt hiển thị nhân vật Avatar nếu không phải góc nhìn thứ nhất
+    if (this.tourAvatar) {
+      this.tourAvatar.visible = (this.tourViewMode !== 'firstPerson');
+    }
+
+    // 5. Mở thanh Walkthrough HUD
     const hud = document.getElementById('tour-hud-bar');
     if (hud) hud.classList.remove('hidden');
 
@@ -4106,46 +4313,84 @@ class Campus3DViewer {
       if (locEl) locEl.textContent = `🎯 Đã đến: ${this.activeRoute?.destLoc?.name || 'Điểm đến'}`;
     }
 
-    // Tọa độ hiện tại và điểm nhìn phía trước
+    // Tọa độ vị trí hiện tại và điểm nhìn phía trước dọc theo đường cong
     const currentPoint = this.activeCurve.getPointAt(this.tourProgress);
     const forwardProgress = Math.min(this.tourProgress + 0.035, 1.0);
     const lookPoint = this.activeCurve.getPointAt(forwardProgress);
 
-    // Vector hướng di chuyển
+    // Vector hướng di chuyển theo mặt phẳng ngang
     const forwardDir = new THREE.Vector3().subVectors(lookPoint, currentPoint);
-    forwardDir.y = 0; // Giữ cân bằng trục ngang mắt nhìn
+    forwardDir.y = 0;
     if (forwardDir.lengthSq() < 0.0001) {
       forwardDir.set(0, 0, 1);
     } else {
       forwardDir.normalize();
     }
 
+    // 1. Cập nhật vị trí, hướng quay và nhịp bước chân của Avatar 3D
+    if (this.tourAvatar) {
+      this.tourAvatar.position.copy(currentPoint);
+      const heading = Math.atan2(forwardDir.x, forwardDir.z);
+      this.tourAvatar.rotation.y = heading;
+
+      // Hiệu ứng bước chân đung đưa tự nhiên khi di chuyển
+      const walkCycle = this.tourProgress * Math.PI * 40;
+      if (this.tourAvatar.userData.leftLeg) {
+        this.tourAvatar.userData.leftLeg.rotation.x = Math.sin(walkCycle) * 0.55;
+        this.tourAvatar.userData.rightLeg.rotation.x = -Math.sin(walkCycle) * 0.55;
+        this.tourAvatar.userData.leftArm.rotation.x = -Math.sin(walkCycle) * 0.45;
+        this.tourAvatar.userData.rightArm.rotation.x = Math.sin(walkCycle) * 0.45;
+      }
+    }
+
+    // 2. Điều khiển Camera theo các góc nhìn thực tế
     if (this.tourViewMode === 'firstPerson') {
       // GÓC NHÌN MẮT NGƯỜI ĐI BỘ (FIRST-PERSON):
+      if (this.tourAvatar) this.tourAvatar.visible = false;
+
       // Nhịp bước chân nhẹ nhàng mô phỏng chuyển động thực tế
-      const headBob = Math.sin(this.tourProgress * Math.PI * 50) * 0.032;
-      const eyeY = currentPoint.y + 1.65 + headBob;
+      const headBob = Math.sin(this.tourProgress * Math.PI * 48) * 0.028;
+      const eyeY = currentPoint.y + 1.55 + headBob;
       this.camera.position.set(currentPoint.x, eyeY, currentPoint.z);
 
       // Điểm nhìn hướng thẳng về phía trước theo hành lang
-      const targetDist = 6.0;
+      const targetDist = 5.5;
       const targetLook = new THREE.Vector3(
         currentPoint.x + forwardDir.x * targetDist,
         eyeY * 0.98,
         currentPoint.z + forwardDir.z * targetDist
       );
       this.camera.lookAt(targetLook);
+    } else if (this.tourViewMode === 'birdEye') {
+      // GÓC NHÌN TOÀN CẢNH TRÊN CAO (BIRD'S EYE VIEW):
+      if (this.tourAvatar) this.tourAvatar.visible = true;
+
+      const camHeight = 16.0;
+      const camPos = new THREE.Vector3(
+        currentPoint.x - 8.0,
+        currentPoint.y + camHeight,
+        currentPoint.z + 14.0
+      );
+      this.camera.position.copy(camPos);
+      this.camera.lookAt(currentPoint.x, currentPoint.y + 1.0, currentPoint.z);
     } else {
-      // GÓC NHÌN FLYCAM THEO SAU (THIRD-PERSON FOLLOW):
-      const followDist = 4.8;
-      const camHeight = 3.2;
+      // GÓC NHÌN BÁM THEO SAU LƯNG (THIRD-PERSON COMPACT FOLLOW):
+      if (this.tourAvatar) this.tourAvatar.visible = true;
+
+      // Khoảng cách theo sát 2.4m, nằm gọn bên trong lòng hành lang (không bị cấn xuyên tường phía sau)
+      const followDist = 2.4;
+      const camHeight = 1.65;
       const camPos = new THREE.Vector3(
         currentPoint.x - forwardDir.x * followDist,
         currentPoint.y + camHeight,
         currentPoint.z - forwardDir.z * followDist
       );
       this.camera.position.copy(camPos);
-      this.camera.lookAt(currentPoint.x, currentPoint.y + 1.5, currentPoint.z);
+      this.camera.lookAt(
+        currentPoint.x + forwardDir.x * 1.5,
+        currentPoint.y + 1.25,
+        currentPoint.z + forwardDir.z * 1.5
+      );
     }
 
     this.updateTourUI();
@@ -4211,6 +4456,9 @@ class Campus3DViewer {
     this.tourViewMode = mode;
     document.querySelectorAll('.tour-view-group .tour-pill-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
+    if (this.tourAvatar) {
+      this.tourAvatar.visible = (this.tourActive && mode !== 'firstPerson');
+    }
   }
 
   seekTourByClick(event, trackEl) {
@@ -4227,6 +4475,11 @@ class Campus3DViewer {
     this.tourActive = false;
     this.tourPaused = false;
     this.controls.enabled = true; // Bật lại OrbitControls
+
+    // Ẩn nhân vật Avatar khi dừng tour
+    if (this.tourAvatar) {
+      this.tourAvatar.visible = false;
+    }
 
     // Khôi phục trạng thái camera ban đầu
     if (this.savedCameraState) {
