@@ -84,8 +84,8 @@ const CAMPUS_LOCATIONS = [
   // Tầng 2
   { id: "bm_t2_qp", name: "Phòng Thể dục QP", category: "classroom", building: "Tòa 1 (Bộ Môn)", floor: "Tầng 2", x: 1033, y: 536, node: "node_bm_t2_doan", keywords: ["quốc phòng", "thể dục", "qp"] },
   { id: "vp_doan", name: "VP Đoàn Thanh Niên", category: "admin", building: "Tòa 1 (Bộ Môn)", floor: "Tầng 2", x: 1093, y: 536, node: "node_bm_t2_doan", keywords: ["đoàn", "vp đoàn"] },
-  { id: "tin_hoc_1", name: "Phòng Tin 1", category: "classroom", building: "Tòa 1 (Bộ Môn)", floor: "Tầng 2", x: 1153, y: 536, node: "node_bm_t2_tin1", keywords: ["tin 1"] },
-  { id: "tin_hoc_2", name: "Phòng Tin 2", category: "classroom", building: "Tòa 1 (Bộ Môn)", floor: "Tầng 2", x: 1223, y: 536, node: "node_bm_t2_tin2", keywords: ["tin 2"] },
+  { id: "tin_hoc_1", name: "Phòng Tin 1", category: "classroom", building: "Tòa 1 (Bộ Môn)", floor: "Tầng 2", x: 1153, y: 536, node: "node_bm_t2_tin1", keywords: ["tin 1", "tin học 1", "phòng tin 1"] },
+  { id: "tin_hoc_2", name: "Phòng Tin 2", category: "classroom", building: "Tòa 1 (Bộ Môn)", floor: "Tầng 2", x: 1223, y: 536, node: "node_bm_t2_tin2", keywords: ["tin 2", "tin học 2", "phòng tin 2"] },
   { id: "wc_bm_t2", name: "WC Tòa 1 (T2)", category: "facility", building: "Tòa 1 (Bộ Môn)", floor: "Tầng 2", x: 1290, y: 536, node: "node_bm_t2_tin2", keywords: ["wc"] },
   // Tầng trệt
   { id: "phong_y_te", name: "Phòng Y Tế", category: "facility", building: "Tòa 1 (Bộ Môn)", floor: "Tầng trệt", x: 1033, y: 574, node: "node_bm_tret_yte", keywords: ["y tế", "sơ cứu", "thuốc"] },

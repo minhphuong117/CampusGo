@@ -294,7 +294,7 @@ class Campus3DViewer {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       let title = name.toUpperCase();
-      if (!title.startsWith('PHÒNG') && !title.startsWith('LỚP') && !title.startsWith('WC')) {
+      if (!title.startsWith('PHÒNG') && !title.startsWith('LỚP') && !title.startsWith('WC') && !title.startsWith('VP') && !title.startsWith('TN') && !title.startsWith('P.')) {
         title = `LỚP ${title}`;
       }
       ctx.font = '900 25px "Segoe UI", Roboto, sans-serif';
@@ -1554,9 +1554,9 @@ class Campus3DViewer {
         label: "Tầng 2",
         rooms: [
           { isStair: true },
-          { name: "TIN HỌC 2", w: 5.8, color: 0xede9fe, stroke: '#7c3aed', textColor: '#6d28d9', subtext: "Phòng máy 2" },
+          { name: "VP ĐOÀN", w: 5.8, color: 0xe0f2fe, stroke: '#38bdf8', textColor: '#0369a1', subtext: "Đoàn thanh niên" },
           { name: "TIN HỌC 1", w: 5.8, color: 0xede9fe, stroke: '#7c3aed', textColor: '#6d28d9', subtext: "Phòng máy 1" },
-          { name: "VP ĐOÀN", w: 5.2, color: 0xe0f2fe, stroke: '#38bdf8', textColor: '#0369a1', subtext: "Đoàn thanh niên" },
+          { name: "TIN HỌC 2", w: 5.2, color: 0xede9fe, stroke: '#7c3aed', textColor: '#6d28d9', subtext: "Phòng máy 2" },
           { name: "WC", w: 3.5, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' },
           { name: "-", w: 5.2, color: 0xcbd5e1, stroke: '#94a3b8', textColor: '#94a3b8' }
         ]
