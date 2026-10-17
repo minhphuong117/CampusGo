@@ -476,12 +476,23 @@ document.addEventListener("DOMContentLoaded", () => {
   function updatePopoverPosition() {
     if (!activeClickedLoc || mapLocationPopover.style.display === "none") return;
 
-    // Trên màn hình mobile (<= 768px), popover hoạt động dạng Bottom Action Sheet ở cạnh dưới
-    if (window.innerWidth <= 768) {
-      mapLocationPopover.style.left = "";
-      mapLocationPopover.style.top = "";
-      mapLocationPopover.style.bottom = "";
-      mapLocationPopover.style.right = "";
+    // Kiểm tra chính xác xem có phải thiết bị di động (<= 768px hoặc màn hình cảm ứng điện thoại)
+    const isMobile = window.innerWidth <= 768 || 
+                     (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) ||
+                     /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      mapLocationPopover.style.position = "fixed";
+      mapLocationPopover.style.top = "auto";
+      mapLocationPopover.style.left = "12px";
+      mapLocationPopover.style.right = "12px";
+      mapLocationPopover.style.bottom = "14px";
+      mapLocationPopover.style.setProperty("bottom", "max(12px, env(safe-area-inset-bottom, 12px))");
+      mapLocationPopover.style.transform = "none";
+      mapLocationPopover.style.width = "auto";
+      mapLocationPopover.style.maxWidth = "400px";
+      mapLocationPopover.style.margin = "0 auto";
+      mapLocationPopover.style.zIndex = "250";
       mapLocationPopover.classList.remove("placement-bottom");
       return;
     }
@@ -602,6 +613,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function centerLocationOnMobileMap(loc) {
+    if (!loc) return;
+    const isMobile = window.innerWidth <= 768 || 
+                     (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) ||
+                     /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (!isMobile) return;
+
+    const viewportRect = mapViewport.getBoundingClientRect();
+    // Vùng bản đồ thoáng mắt phía trên popover card (chiếm khoảng 42% - 46% chiều cao màn hình)
+    const visibleHeight = viewportRect.height * 0.44;
+
+    // Zoom vừa tầm để nhìn rõ phòng học và bối cảnh xung quanh
+    const targetScale = Math.min(Math.max(transform.scale, 0.85), 2.2);
+    transform.scale = targetScale;
+
+    // Đặt phòng nằm chính giữa vùng nhìn thoáng phía trên popover
+    const targetScreenX = viewportRect.width / 2;
+    const targetScreenY = visibleHeight / 2 + 10;
+
+    transform.x = targetScreenX - loc.x * transform.scale;
+    transform.y = targetScreenY - loc.y * transform.scale;
+
+    updateMapTransform();
+  }
+
   function showLocationPopover(loc) {
     activeClickedLoc = loc;
     popoverTitle.textContent = loc.name;
@@ -628,9 +664,18 @@ document.addEventListener("DOMContentLoaded", () => {
     currentPopoverPhotoIdx = 0;
     renderPopoverPhotoCard();
 
-    // Trên màn hình di động, tự động thu gọn thanh chỉ đường bên dưới để hiển thị toàn bộ popover & bản đồ
-    if (window.innerWidth <= 768 && window.setBottomSheetState) {
-      setBottomSheetState("sheet-collapsed");
+    // Trên màn hình di động:
+    const isMobile = window.innerWidth <= 768 || 
+                     (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) ||
+                     /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      // 1. Tự động thu gọn thanh chỉ đường bên dưới để không che khuất popover & bản đồ
+      if (window.setBottomSheetState) {
+        setBottomSheetState("sheet-collapsed");
+      }
+      // 2. Tự động dịch chuyển tâm bản đồ đưa phòng được nhấp vào nửa trên màn hình thoáng mắt
+      centerLocationOnMobileMap(loc);
     }
 
     mapLocationPopover.style.display = "block";
@@ -723,7 +768,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (gate) startCombobox.selectLocation(gate);
 
       destCombobox.selectLocation(loc);
-      showToast(`Dẫn đường từ Cổng trường tới ${loc.name}`, "🚀");
+      showToast(`Dẫn đường từ Cổng trường tới ${loc.name}`, "📍");
       hideLocationPopover();
       handleCalculateRoute();
     });
@@ -1209,48 +1254,280 @@ document.addEventListener("DOMContentLoaded", () => {
     qrSourceBanner.classList.remove("active");
   });
 
-  // 14. BOTTOM SHEET TRÊN MOBILE (SMARTPHONE)
+  // ==========================================================================
+  // 14. BỘ ĐIỀU KHIỂN KÉO DI & THU PHÓNG SIDEBAR (DESKTOP & MOBILE)
+  // ==========================================================================
+  const sidebarResizer = document.getElementById("sidebar-resizer");
+  const btnToggleSidebarDesktop = document.getElementById("btn-toggle-sidebar-desktop");
   const sheetHandleWrapper = document.getElementById("sheet-handle-wrapper");
   const mobileToggleText = document.getElementById("mobile-toggle-text");
 
+  // Khôi phục chiều rộng đã lưu trên máy tính (nếu có)
+  const STORAGE_SIDEBAR_WIDTH = "campusgo_sidebar_width";
+  const DEFAULT_DESKTOP_WIDTH = 440;
+  const MIN_DESKTOP_WIDTH = 280;
+
+  function getSavedSidebarWidth() {
+    try {
+      const saved = localStorage.getItem(STORAGE_SIDEBAR_WIDTH);
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= MIN_DESKTOP_WIDTH && parsed <= 900) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    return DEFAULT_DESKTOP_WIDTH;
+  }
+
+  function applyDesktopSidebarWidth(widthPx) {
+    document.documentElement.style.setProperty("--sidebar-width", `${widthPx}px`);
+    sidebar.style.width = `${widthPx}px`;
+    try {
+      localStorage.setItem(STORAGE_SIDEBAR_WIDTH, widthPx);
+    } catch (e) {}
+  }
+
+  // Khởi tạo chiều rộng lúc mở app trên desktop
+  if (window.innerWidth > 768) {
+    applyDesktopSidebarWidth(getSavedSidebarWidth());
+  }
+
+  // A. KÉO DI ĐỘ RỘNG BẰNG CHUỘT / CẢM ỨNG TRÊN MÁY TÍNH (DESKTOP)
+  if (sidebarResizer) {
+    let isResizingDesktop = false;
+
+    sidebarResizer.addEventListener("pointerdown", (e) => {
+      // Chỉ kích hoạt khi click chuột trái hoặc chạm cảm ứng
+      if (e.button !== 0 && e.pointerType === "mouse") return;
+      if (window.innerWidth <= 768) return;
+      if (sidebar.classList.contains("desktop-collapsed")) return;
+
+      isResizingDesktop = true;
+      try {
+        sidebarResizer.setPointerCapture(e.pointerId);
+      } catch (err) {}
+      document.body.classList.add("is-resizing");
+      sidebar.style.transition = "none";
+      e.preventDefault();
+    });
+
+    sidebarResizer.addEventListener("pointermove", (e) => {
+      if (!isResizingDesktop) return;
+      const clientX = e.clientX;
+      const maxWidth = Math.min(850, Math.round(window.innerWidth * 0.75));
+
+      // Nếu kéo quá sát lề trái (< 170px), tự động chuyển sang trạng thái thu gọn
+      if (clientX < 170) {
+        setDesktopCollapsed(true);
+        return;
+      } else if (sidebar.classList.contains("desktop-collapsed")) {
+        setDesktopCollapsed(false);
+      }
+
+      const clampedWidth = Math.max(MIN_DESKTOP_WIDTH, Math.min(clientX, maxWidth));
+      applyDesktopSidebarWidth(clampedWidth);
+    });
+
+    const stopResizing = (e) => {
+      if (!isResizingDesktop) return;
+      isResizingDesktop = false;
+      document.body.classList.remove("is-resizing");
+      sidebar.style.transition = "";
+      try {
+        if (sidebarResizer.hasPointerCapture(e.pointerId)) {
+          sidebarResizer.releasePointerCapture(e.pointerId);
+        }
+      } catch (err) {}
+    };
+
+    sidebarResizer.addEventListener("pointerup", stopResizing);
+    sidebarResizer.addEventListener("pointercancel", stopResizing);
+
+    // Nhấp đúp vào thanh kéo để đưa về chiều rộng mặc định (440px)
+    sidebarResizer.addEventListener("dblclick", () => {
+      if (window.innerWidth > 768) {
+        if (sidebar.classList.contains("desktop-collapsed")) {
+          setDesktopCollapsed(false);
+        }
+        applyDesktopSidebarWidth(DEFAULT_DESKTOP_WIDTH);
+        showToast("Đã khôi phục chiều rộng bảng mặc định (440px)", "📐");
+      }
+    });
+  }
+
+  // B. NÚT THU GỌN / MỞ RỘNG TRÊN MÁY TÍNH
+  function setDesktopCollapsed(collapsed) {
+    if (collapsed) {
+      sidebar.classList.add("desktop-collapsed");
+      if (btnToggleSidebarDesktop) {
+        btnToggleSidebarDesktop.setAttribute("title", "Mở rộng bảng chỉ dẫn (Phím tắt: [ )");
+        btnToggleSidebarDesktop.setAttribute("aria-label", "Mở rộng thanh chỉ đường");
+      }
+    } else {
+      sidebar.classList.remove("desktop-collapsed");
+      applyDesktopSidebarWidth(getSavedSidebarWidth());
+      if (btnToggleSidebarDesktop) {
+        btnToggleSidebarDesktop.setAttribute("title", "Thu gọn bảng chỉ dẫn (Phím tắt: [ )");
+        btnToggleSidebarDesktop.setAttribute("aria-label", "Thu gọn thanh chỉ đường");
+      }
+    }
+  }
+
+  if (btnToggleSidebarDesktop) {
+    btnToggleSidebarDesktop.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isCurrentlyCollapsed = sidebar.classList.contains("desktop-collapsed");
+      setDesktopCollapsed(!isCurrentlyCollapsed);
+    });
+  }
+
+  // Phím tắt bàn phím '[' để bật/tắt nhanh sidebar trên desktop
+  document.addEventListener("keydown", (e) => {
+    // Không kích hoạt khi đang nhập chữ trong ô input / textarea
+    const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+    if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") return;
+
+    if (e.key === "[" && window.innerWidth > 768) {
+      e.preventDefault();
+      const isCollapsed = sidebar.classList.contains("desktop-collapsed");
+      setDesktopCollapsed(!isCollapsed);
+    }
+  });
+
+  // C. KÉO DI BOTTOM SHEET TRÊN MOBILE (SMARTPHONE / TOUCH & CHUỘT)
   function setBottomSheetState(state) {
     sidebar.classList.remove("sheet-collapsed", "sheet-half", "sheet-full");
     sidebar.classList.add(state);
+    sidebar.style.height = ""; // Xóa inline height để nhận CSS class
     if (mobileToggleText) {
       mobileToggleText.textContent = state === "sheet-collapsed" ? "Chỉ đường" : "Thu gọn";
     }
   }
   window.setBottomSheetState = setBottomSheetState;
 
+  // Xử lý kéo di mượt mà bằng Pointer Events (chuột hoặc cảm ứng điện thoại)
   if (sheetHandleWrapper) {
-    sheetHandleWrapper.addEventListener("click", () => {
-      if (sidebar.classList.contains("sheet-collapsed")) {
-        setBottomSheetState("sheet-half");
-      } else if (sidebar.classList.contains("sheet-half")) {
-        setBottomSheetState("sheet-full");
-      } else {
-        setBottomSheetState("sheet-half");
-      }
-    });
+    let isDraggingSheet = false;
+    let dragStartY = 0;
+    let dragStartHeight = 0;
+    let dragStartTime = 0;
+    let hasMoved = false;
 
-    let touchStartY = 0;
-    sheetHandleWrapper.addEventListener("touchstart", (e) => {
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
+    const onSheetPointerDown = (e) => {
+      if (window.innerWidth > 768) return;
+      if (e.button !== 0 && e.pointerType === "mouse") return;
 
-    sheetHandleWrapper.addEventListener("touchend", (e) => {
-      const touchEndY = e.changedTouches[0].clientY;
-      const diffY = touchEndY - touchStartY;
-      if (diffY < -30) {
-        if (sidebar.classList.contains("sheet-collapsed")) setBottomSheetState("sheet-half");
-        else setBottomSheetState("sheet-full");
-      } else if (diffY > 30) {
-        if (sidebar.classList.contains("sheet-full")) setBottomSheetState("sheet-half");
-        else setBottomSheetState("sheet-collapsed");
+      isDraggingSheet = true;
+      hasMoved = false;
+      dragStartY = e.clientY;
+      dragStartHeight = sidebar.getBoundingClientRect().height;
+      dragStartTime = performance.now();
+
+      try {
+        sheetHandleWrapper.setPointerCapture(e.pointerId);
+      } catch (err) {}
+      sidebar.classList.add("is-dragging-sheet");
+      sidebar.style.transition = "none";
+    };
+
+    const onSheetPointerMove = (e) => {
+      if (!isDraggingSheet) return;
+      const currentY = e.clientY;
+      const diffY = currentY - dragStartY; // Kéo xuống diffY > 0, kéo lên diffY < 0
+
+      if (Math.abs(diffY) > 5) {
+        hasMoved = true;
       }
-    }, { passive: true });
+
+      // Chiều cao mới = chiều cao bắt đầu - chênh lệch Y
+      const minSheetH = 76;
+      const maxSheetH = Math.round(window.innerHeight * 0.90);
+      const newHeight = Math.max(minSheetH, Math.min(dragStartHeight - diffY, maxSheetH));
+
+      sidebar.style.height = `${newHeight}px`;
+    };
+
+    const onSheetPointerUp = (e) => {
+      if (!isDraggingSheet) return;
+      isDraggingSheet = false;
+      sidebar.classList.remove("is-dragging-sheet");
+      sidebar.style.transition = "";
+
+      try {
+        if (sheetHandleWrapper.hasPointerCapture(e.pointerId)) {
+          sheetHandleWrapper.releasePointerCapture(e.pointerId);
+        }
+      } catch (err) {}
+
+      // Nếu chỉ là một cú click / tap nhẹ (chưa di chuyển nhiều), đổi trạng thái tuần tự
+      if (!hasMoved) {
+        if (sidebar.classList.contains("sheet-collapsed")) {
+          setBottomSheetState("sheet-half");
+        } else if (sidebar.classList.contains("sheet-half")) {
+          setBottomSheetState("sheet-full");
+        } else {
+          setBottomSheetState("sheet-half");
+        }
+        return;
+      }
+
+      // Xác định trạng thái dựa trên tốc độ vuốt (flick) hoặc vị trí dừng
+      const dragEndTime = performance.now();
+      const elapsed = dragEndTime - dragStartTime;
+      const currentHeight = sidebar.getBoundingClientRect().height;
+      const totalDiffY = e.clientY - dragStartY;
+      const velocity = elapsed > 0 ? (totalDiffY / elapsed) : 0;
+
+      // Vuốt mạnh xuống -> thu gọn
+      if (velocity > 0.45) {
+        if (sidebar.classList.contains("sheet-full")) {
+          setBottomSheetState("sheet-half");
+        } else {
+          setBottomSheetState("sheet-collapsed");
+        }
+      }
+      // Vuốt mạnh lên -> mở rộng
+      else if (velocity < -0.45) {
+        if (sidebar.classList.contains("sheet-collapsed")) {
+          setBottomSheetState("sheet-half");
+        } else {
+          setBottomSheetState("sheet-full");
+        }
+      }
+      // Thả tay bình thường: chọn mốc gần nhất theo tỷ lệ màn hình
+      else {
+        const vhRatio = currentHeight / window.innerHeight;
+        if (vhRatio < 0.25) {
+          setBottomSheetState("sheet-collapsed");
+        } else if (vhRatio > 0.72) {
+          setBottomSheetState("sheet-full");
+        } else {
+          setBottomSheetState("sheet-half");
+        }
+      }
+    };
+
+    sheetHandleWrapper.addEventListener("pointerdown", onSheetPointerDown);
+    sheetHandleWrapper.addEventListener("pointermove", onSheetPointerMove);
+    sheetHandleWrapper.addEventListener("pointerup", onSheetPointerUp);
+    sheetHandleWrapper.addEventListener("pointercancel", onSheetPointerUp);
+
+    // Kéo trên Header (tránh kéo khi chạm vào button hoặc input)
+    const sidebarHeader = document.querySelector(".sidebar-header");
+    if (sidebarHeader) {
+      sidebarHeader.addEventListener("pointerdown", (e) => {
+        if (window.innerWidth > 768) return;
+        if (e.target.closest("button") || e.target.closest("a") || e.target.closest("input")) return;
+        onSheetPointerDown(e);
+      });
+      sidebarHeader.addEventListener("pointermove", onSheetPointerMove);
+      sidebarHeader.addEventListener("pointerup", onSheetPointerUp);
+      sidebarHeader.addEventListener("pointercancel", onSheetPointerUp);
+    }
   }
 
+  // Nút tròn nổi trên di động
   btnToggleSidebar.addEventListener("click", () => {
     if (sidebar.classList.contains("sheet-collapsed")) {
       setBottomSheetState("sheet-half");
@@ -1259,6 +1536,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Tự động mở rộng thanh khi chạm vào ô tìm kiếm trên mobile
   startInput.addEventListener("focus", () => {
     if (window.innerWidth <= 768 && sidebar.classList.contains("sheet-collapsed")) {
       setBottomSheetState("sheet-half");
@@ -1267,6 +1545,25 @@ document.addEventListener("DOMContentLoaded", () => {
   destInput.addEventListener("focus", () => {
     if (window.innerWidth <= 768 && sidebar.classList.contains("sheet-collapsed")) {
       setBottomSheetState("sheet-half");
+    }
+  });
+
+  // Tự động dọn dẹp style inline khi xoay màn hình hoặc thay đổi kích thước cửa sổ
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 768) {
+      sidebar.style.height = "";
+      sidebar.classList.remove("sheet-collapsed", "sheet-half", "sheet-full");
+      if (!sidebar.classList.contains("desktop-collapsed")) {
+        applyDesktopSidebarWidth(getSavedSidebarWidth());
+      }
+    } else {
+      sidebar.style.width = "";
+      sidebar.classList.remove("desktop-collapsed");
+      if (!sidebar.classList.contains("sheet-collapsed") &&
+          !sidebar.classList.contains("sheet-half") &&
+          !sidebar.classList.contains("sheet-full")) {
+        setBottomSheetState("sheet-half");
+      }
     }
   });
 
@@ -1451,7 +1748,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         target: ".action-buttons-group",
         title: "3. Tìm đường & chỉ dẫn chi tiết",
-        icon: "🚀",
+        icon: "📍",
         label: "Tìm đường",
         placement: "right",
         desc: `Bấm nút <strong>Tìm đường ngay</strong> để thuật toán tự động vẽ tuyến đường tối ưu nhất.<br><br>
@@ -2020,7 +2317,7 @@ document.addEventListener("DOMContentLoaded", () => {
             destCombobox.selectLocation(currentLoc);
             handleCalculateRoute();
             closeViewer();
-            showToast(`Đang dẫn đường từ Cổng trường đến ${currentLoc.name}`, "🚀");
+            showToast(`Đang dẫn đường từ Cổng trường đến ${currentLoc.name}`, "📍");
           }
         });
       }

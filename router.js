@@ -217,6 +217,8 @@ class CampusRouter {
       startLoc,
       destLoc,
       points: svgPoints,
+      rawPoints,
+      nodePath: routeResult.path,
       totalDistanceMeters,
       estimatedMinutes,
       formattedTime,

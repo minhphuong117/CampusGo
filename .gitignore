@@ -1,3 +1,9 @@
 # OS files
 Thumbs.db
 .DS_Store
+
+# IDE configs
+.vscode/
+
+# Large video files (exceeds GitHub 100MB limit)
+*.mov

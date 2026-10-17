@@ -5,9 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
-  <title>Bản Đồ Chỉ Đường Khuôn Viên Trường Học | Smart Campus Wayfinding</title>
+  <title>Bản đồ chỉ đường khuôn viên trường THPT Tam Phước</title>
   <meta name="description"
-    content="Hệ thống chỉ đường nội bộ khuôn viên trường học thông minh, hỗ trợ quét mã QR tại chỗ, tìm kiếm phòng học, cầu thang và dẫn đường trực quan.">
+    content="Hệ thống chỉ đường nội bộ khuôn viên trường THPT Tam Phước thông minh, hỗ trợ quét mã QR tại chỗ, tìm kiếm phòng học, cầu thang và dẫn đường trực quan.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -33,7 +36,7 @@
         <div class="school-brand">
           <div class="brand-icon">🏫</div>
           <div class="brand-info">
-            <h1>Chỉ Đường Khuôn Viên</h1>
+            <h1>Bản đồ chỉ đường khuôn viên trường THPT Tam Phước</h1>
             <div class="brand-subtitle">
               <span>Hệ thống Định vị Trường Học</span>
               <span class="status-badge">
@@ -105,7 +108,7 @@
           <!-- NÚT TÌM ĐƯỜNG & LÀM MỚI -->
           <div class="action-buttons-group">
             <button type="button" id="btn-submit-route" class="btn-primary">
-              <span>🚀</span> Tìm đường ngay
+              <span>📍</span> Tìm đường ngay
             </button>
             <button type="button" id="btn-reset-all" class="btn-icon-secondary" title="Xóa lộ trình">
               🧹
@@ -184,6 +187,19 @@
       </footer>
     </aside>
 
+    <!-- THANH KÉO RESIZER CHO DESKTOP (KÉO CHUỘT / CẢM ỨNG & NÚT THU GỌN / MỞ RỘNG) -->
+    <div id="sidebar-resizer" class="sidebar-resizer" role="separator" aria-orientation="vertical" aria-label="Kéo để chỉnh kích thước thanh chỉ đường" title="Kéo để chỉnh độ rộng | Nhấn đúp để về mặc định | Bấm nút để thu/mở (Phím tắt: [ )">
+      <div class="sidebar-resizer-line"></div>
+      <div class="sidebar-resizer-grip" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <button type="button" id="btn-toggle-sidebar-desktop" class="sidebar-collapse-btn" title="Thu gọn / Mở rộng bảng chỉ dẫn (Phím tắt: [ )" aria-label="Thu gọn hoặc mở rộng thanh chỉ đường">
+        <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
     <!-- ======================================================================
          MAP VIEWPORT: KHÔNG GIAN BẢN ĐỒ SVG TƯƠNG TÁC
          ====================================================================== -->
@@ -217,7 +233,7 @@
       </div>
 
                   <div id="map-svg-wrapper">
-        <svg id="main-map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1120" width="1600" height="1120" style="background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+        <svg id="main-map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1120" width="1600" height="1120" style="background-color: #f8fafc; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
           <defs>
             <filter id="boxShadow" x="-10%" y="-10%" width="120%" height="120%">
               <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.08"/>
@@ -245,7 +261,7 @@
               <stop offset="100%" stop-color="#0284c7"/>
             </linearGradient>
             <style>
-              .center-text { text-anchor: middle; dominant-baseline: central; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+              .center-text { text-anchor: middle; dominant-baseline: central; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
               .title-main { font-size: 20px; font-weight: 800; fill: #0f172a; text-anchor: middle; dominant-baseline: central; letter-spacing: 0.5px; }
               .fl-label { font-weight: 700; fill: #334155; text-anchor: middle; dominant-baseline: central; }
               text.fl-label:not([font-size]) { font-size: 10px; }
@@ -572,8 +588,8 @@
           <!-- HỆ THỐNG HÀNH LANG TOÀN TRƯỜNG NỐI THÔNG LIỀN MẠCH 100% (KHÔNG VẾT CẮT)-->
           <!-- ===================================================================== -->
           <g id="campus-hallways-network">
-            <!-- Khối hành lang thống nhất xuyên suốt mọi dãy nhà, không hề có vách ngăn hay viền đè -->
-            <path id="unified-campus-hallways" class="hallway-band" d="M 340,360 H 1020 V 396 H 900 V 591 H 1276 V 633 H 954 V 815 H 900 V 633 H 622 V 796 H 140 V 758 H 568 V 633 H 140 V 591 H 568 V 396 H 340 Z M 622,396 H 846 V 591 H 622 Z" fill="#fef9c3" stroke="#64748b" stroke-width="1.3" stroke-linejoin="round" fill-rule="evenodd" />
+            <!-- Khối hành lang thống nhất xuyên suốt mọi dãy nhà, hành lang nối Dãy B sang Dãy Hành chính đối diện cửa 12A9 -->
+            <path id="unified-campus-hallways" class="hallway-band" d="M 340,360 H 1020 V 396 H 900 V 591 H 1276 V 633 H 954 V 815 H 900 V 633 H 470 V 796 H 80 V 758 H 414 V 633 H 140 V 591 H 568 V 396 H 340 Z M 622,396 H 846 V 591 H 622 Z" fill="#fef9c3" stroke="#64748b" stroke-width="1.3" stroke-linejoin="round" fill-rule="evenodd" />
             
             <!-- Nhãn HÀNH LANG các trục phía Bắc -->
             <text x="590" y="378" class="hallway-text">HÀNH LANG</text>
@@ -662,94 +678,95 @@
 
 
           <!-- ===================================================================== -->
-          <!-- 4. NHÃN HÀNH LANG NGANG GIỮA SÂN & HÀNH LANG XUỐNG DÃY HÀNH CHÍNH       -->
+          <!-- 4. NHÃN HÀNH LANG NGANG GIỮA SÂN & HÀNH LANG NỐI XUỐNG DÃY HÀNH CHÍNH   -->
           <!-- ===================================================================== -->
           <g id="hallway-middle-labels">
             <text x="354" y="612" class="hallway-text">HÀNH LANG</text>
             <text x="636" y="612" class="hallway-text">HÀNH LANG</text>
             <text x="873" y="612" class="hallway-text">HÀNH LANG</text>
             <text x="1100" y="612" class="hallway-text">HÀNH LANG</text>
-            <text x="595" y="714" class="hallway-text" transform="rotate(-90 595 714)">HÀNH LANG</text>
+            <!-- Hành lang nối Tòa 3 và Tòa GV: Thẳng đối diện cửa lớp 12A9 (X=442) -->
+            <text x="442" y="695" class="hallway-text" transform="rotate(-90 442 695)">HÀNH LANG NỐI</text>
           </g>
 
 
           <!-- ===================================================================== -->
-          <!-- 6. DÃY HÀNH CHÍNH (HIỆU BỘ - DƯỚI BÊN TRÁI ĐÚNG CHUẨN MASTER BLUEPRINT)-->
-          <!-- GỌN GÀNG TRONG X=140..564, KHÔNG HỀ ĐÈ VÀO HÀNH LANG DỌC (X=568..622)  -->
+          <!-- 6. DÃY HÀNH CHÍNH (HIỆU BỘ - NẰM GỌN TỪ X=80 ĐẾN X=414 CHUẨN SƠ ĐỒ)     -->
+          <!-- PHÍA ĐÔNG GIÁP HÀNH LANG NỐI (X=414..470) ĐỐI DIỆN CỬA PHÒNG 12A9        -->
           <!-- ===================================================================== -->
-          <g id="building-Admin" transform="translate(140, 675)">
+          <g id="building-Admin" transform="translate(80, 675)">
             <!-- Biển TÒA GV (HIỆU BỘ) nổi bật theo sơ đồ chỉ dẫn -->
-            <rect x="135" y="-30" width="180" height="25" rx="6" fill="#b45309" filter="url(#boxShadow)" />
-            <text x="225" y="-14" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-size="12px" font-weight="900" letter-spacing="1.2px">🏛️ TÒA GV (HIỆU BỘ)</text>
+            <rect x="80" y="-30" width="180" height="25" rx="6" fill="#b45309" filter="url(#boxShadow)" />
+            <text x="170" y="-14" text-anchor="middle" dominant-baseline="central" fill="#ffffff" font-size="12px" font-weight="900" letter-spacing="1.2px">🏛️ TÒA GV (HIỆU BỘ)</text>
 
             <!-- Nhãn Tầng bên trái -->
-            <rect x="0" y="3" width="40" height="38" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
-            <text x="20" y="22" class="fl-label" font-size="10px">Tầng 2</text>
+            <rect x="0" y="3" width="38" height="38" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="19" y="22" class="fl-label" font-size="10px">Tầng 2</text>
 
-            <rect x="0" y="45" width="40" height="38" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
-            <text x="20" y="57" class="fl-label" font-size="9px">Tầng</text>
-            <text x="20" y="71" class="fl-label" font-size="9px">trệt</text>
+            <rect x="0" y="45" width="38" height="38" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="2" />
+            <text x="19" y="57" class="fl-label" font-size="9px">Tầng</text>
+            <text x="19" y="71" class="fl-label" font-size="9px">trệt</text>
 
             <!-- TẦNG 2 HÀNH CHÍNH -->
-            <rect x="44" y="3" width="34" height="38" class="wc-box map-interactive-room" data-loc-id="wc_hc_t2" /><text x="61" y="22" class="wc-text">WC</text>
+            <rect x="42" y="3" width="32" height="38" class="wc-box map-interactive-room" data-loc-id="wc_hc_t2" /><text x="58" y="22" class="wc-text">WC</text>
 
             <!-- Phòng Hiệu trưởng -->
-            <rect x="82" y="3" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_hieu_truong" />
-            <text x="111" y="15" class="rm-text" font-size="8px">Phòng Hiệu</text>
-            <text x="111" y="29" class="rm-text" font-size="8px">trưởng</text>
+            <rect x="78" y="3" width="50" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_hieu_truong" />
+            <text x="103" y="15" class="rm-text" font-size="7.5px">Phòng Hiệu</text>
+            <text x="103" y="29" class="rm-text" font-size="7.5px">trưởng</text>
 
             <!-- Phòng Văn thư -->
-            <rect x="144" y="3" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_van_thu" />
-            <text x="173" y="15" class="rm-text" font-size="8px">Phòng Văn</text>
-            <text x="173" y="29" class="rm-text" font-size="8px">thư</text>
+            <rect x="132" y="3" width="50" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_van_thu" />
+            <text x="157" y="15" class="rm-text" font-size="7.5px">Phòng Văn</text>
+            <text x="157" y="29" class="rm-text" font-size="7.5px">thư</text>
 
             <!-- Cầu thang Hành chính -->
-            <rect x="206" y="3" width="38" height="80" class="stair-pill map-interactive-room" data-loc-id="cau_thang_hc" />
-            <text x="225" y="37" class="stair-text" font-size="9px">Cầu</text>
-            <text x="225" y="49" class="stair-text" font-size="9px">thang</text>
+            <rect x="186" y="3" width="36" height="80" class="stair-pill map-interactive-room" data-loc-id="cau_thang_hc" />
+            <text x="204" y="37" class="stair-text" font-size="9px">Cầu</text>
+            <text x="204" y="49" class="stair-text" font-size="9px">thang</text>
 
             <!-- Phòng Kế toán -->
-            <rect x="248" y="3" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_ke_toan" />
-            <text x="277" y="15" class="rm-text" font-size="8px">Phòng Kế</text>
-            <text x="277" y="29" class="rm-text" font-size="8px">toán</text>
+            <rect x="226" y="3" width="50" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_ke_toan" />
+            <text x="251" y="15" class="rm-text" font-size="7.5px">Phòng Kế</text>
+            <text x="251" y="29" class="rm-text" font-size="7.5px">toán</text>
 
-            <!-- Phòng Chi bộ (phòng họp GV): Nằm gọn x=310..424, KHÔNG ĐÈ HÀNH LANG X=568 -->
-            <rect x="310" y="3" width="114" height="38" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="1.1" class="map-interactive-room" data-loc-id="phong_chi_bo" />
-            <text x="367" y="15" class="rm-text" font-size="8.5px">Phòng Chi bộ</text>
-            <text x="367" y="28" class="rm-text" font-size="8px">(phòng họp GV)</text>
+            <!-- Phòng Chi bộ (phòng họp GV): Nằm cạnh hành lang nối x=280..334 (tuyệt đối x=360..414) -->
+            <rect x="280" y="3" width="54" height="38" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="1.1" class="map-interactive-room" data-loc-id="phong_chi_bo" />
+            <text x="307" y="15" class="rm-text" font-size="8px">Phòng Chi bộ</text>
+            <text x="307" y="28" class="rm-text" font-size="7.5px">(phòng họp GV)</text>
 
             <!-- TẦNG TRỆT HÀNH CHÍNH -->
-            <rect x="44" y="45" width="34" height="38" class="wc-box map-interactive-room" data-loc-id="wc_hc_tret" /><text x="61" y="64" class="wc-text">WC</text>
+            <rect x="42" y="45" width="32" height="38" class="wc-box map-interactive-room" data-loc-id="wc_hc_tret" /><text x="58" y="64" class="wc-text">WC</text>
 
             <!-- Phòng hồ sơ 1 -->
-            <rect x="82" y="45" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_ho_so_1" />
-            <text x="111" y="57" class="rm-text" font-size="8px">Phòng</text>
-            <text x="111" y="71" class="rm-text" font-size="8px">hồ sơ</text>
+            <rect x="78" y="45" width="50" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_ho_so_1" />
+            <text x="103" y="57" class="rm-text" font-size="7.5px">Phòng</text>
+            <text x="103" y="71" class="rm-text" font-size="7.5px">hồ sơ 1</text>
 
             <!-- Phòng hồ sơ 2 -->
-            <rect x="144" y="45" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_ho_so_2" />
-            <text x="173" y="57" class="rm-text" font-size="8px">Phòng</text>
-            <text x="173" y="71" class="rm-text" font-size="8px">hồ sơ</text>
+            <rect x="132" y="45" width="50" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_ho_so_2" />
+            <text x="157" y="57" class="rm-text" font-size="7.5px">Phòng</text>
+            <text x="157" y="71" class="rm-text" font-size="7.5px">hồ sơ 2</text>
 
             <!-- Phòng Phó HT -->
-            <rect x="248" y="45" width="58" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_pho_ht" />
-            <text x="277" y="57" class="rm-text" font-size="8px">Phòng</text>
-            <text x="277" y="71" class="rm-text" font-size="8px">Phó HT</text>
+            <rect x="226" y="45" width="50" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_pho_ht" />
+            <text x="251" y="57" class="rm-text" font-size="7.5px">Phòng</text>
+            <text x="251" y="71" class="rm-text" font-size="7.5px">Phó HT</text>
 
             <!-- Phòng Truyền thống -->
-            <rect x="310" y="45" width="56" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_truyen_thong" />
-            <text x="338" y="57" class="rm-text" font-size="8px">P. Truyền</text>
-            <text x="338" y="71" class="rm-text" font-size="8px">thống</text>
+            <rect x="280" y="45" width="26" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_truyen_thong" />
+            <text x="293" y="57" class="rm-text" font-size="6.5px">P.Truyền</text>
+            <text x="293" y="71" class="rm-text" font-size="6.5px">thống</text>
 
-            <!-- Phòng Tiếp dân: Nằm gọn x=370..424, KHÔNG ĐÈ HÀNH LANG X=568 -->
-            <rect x="370" y="45" width="54" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_tiep_dan" />
-            <text x="397" y="57" class="rm-text" font-size="8px">Phòng</text>
-            <text x="397" y="71" class="rm-text" font-size="8px">Tiếp dân</text>
+            <!-- Phòng Tiếp dân: Nằm sát cửa ra hành lang nối x=308..334 -->
+            <rect x="308" y="45" width="26" height="38" class="rm-norm map-interactive-room" data-loc-id="phong_tiep_dan" />
+            <text x="321" y="57" class="rm-text" font-size="6.5px">Phòng</text>
+            <text x="321" y="71" class="rm-text" font-size="6.5px">Tiếp dân</text>
           </g>
 
           <!-- NHÃN HÀNH LANG ĐÁY DÃY HÀNH CHÍNH -->
           <g id="hallway-under-Admin-label">
-            <text x="350" y="777" class="hallway-text">HÀNH LANG</text>
+            <text x="240" y="777" class="hallway-text">HÀNH LANG</text>
           </g>
 
           <!-- ===================================================================== -->
@@ -758,21 +775,21 @@
           <g id="entrance-admin-complex" class="map-interactive-room" data-loc-id="loi_vao_hanh_chinh" cursor="pointer">
             <title>Lối vào Sảnh Dãy Hành Chính (Mặt đất)</title>
             <!-- Khối sảnh đón nhô ra từ hành lang -->
-            <rect x="330" y="796" width="70" height="36" fill="#fef9c3" stroke="#64748b" stroke-width="1.3" rx="2" />
+            <rect x="249" y="796" width="70" height="36" fill="#fef9c3" stroke="#64748b" stroke-width="1.3" rx="2" />
             <!-- Mở thông sàn hành lang vào sảnh (xóa vách ngăn y=796) -->
-            <line x1="331" y1="796" x2="399" y2="796" stroke="#fef9c3" stroke-width="2.6" />
+            <line x1="250" y1="796" x2="318" y2="796" stroke="#fef9c3" stroke-width="2.6" />
 
             <!-- Các bậc thềm tam cấp -->
-            <line x1="336" y1="808" x2="394" y2="808" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" />
-            <line x1="336" y1="820" x2="394" y2="820" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" />
+            <line x1="255" y1="808" x2="313" y2="808" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" />
+            <line x1="255" y1="820" x2="313" y2="820" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" />
 
             <!-- Nhãn LỐI VÀO -->
-            <text x="365" y="814" font-size="9px" font-weight="900" fill="#0f172a" text-anchor="middle" dominant-baseline="central" letter-spacing="0.5px">LỐI VÀO</text>
+            <text x="284" y="814" font-size="9px" font-weight="900" fill="#0f172a" text-anchor="middle" dominant-baseline="central" letter-spacing="0.5px">LỐI VÀO</text>
 
             <!-- Lối đi bộ có vạch lát gạch từ đường nội bộ lên sảnh đón -->
-            <line x1="346" y1="832" x2="346" y2="926" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4" />
-            <line x1="384" y1="832" x2="384" y2="926" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4" />
-            <text x="365" y="880" font-size="9.5px" font-weight="bold" fill="#64748b" text-anchor="middle" dominant-baseline="central" transform="rotate(-90 365 880)">LỐI ĐI SẢNH HC</text>
+            <line x1="265" y1="832" x2="265" y2="926" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4" />
+            <line x1="303" y1="832" x2="303" y2="926" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4" />
+            <text x="284" y="880" font-size="9.5px" font-weight="bold" fill="#64748b" text-anchor="middle" dominant-baseline="central" transform="rotate(-90 284 880)">LỐI ĐI SẢNH HC</text>
           </g>
 
 
@@ -995,7 +1012,7 @@
           <!-- Các nút tiện ích phụ (chia 2 cột đều nhau, chữ gọn gàng trên 1 dòng) -->
           <div class="popover-sub-actions">
             <button type="button" class="popover-sub-btn" id="popover-btn-from-gate">
-              <span>🚀</span> Từ Cổng trường
+              <span>📍</span> Từ Cổng trường
             </button>
             <button type="button" class="popover-sub-btn" id="popover-btn-qr">
               <span>📱</span> Tạo mã QR
@@ -1143,7 +1160,7 @@
       <!-- Action buttons: Dẫn đường nhanh ngay từ cửa sổ xem ảnh -->
       <div class="rpm-actions">
         <button type="button" class="rpm-action-btn rpm-btn-gate" id="rpm-btn-gate">
-          <span>🚀</span> Dẫn từ Cổng
+          <span>📍</span> Dẫn từ Cổng
         </button>
         <button type="button" class="rpm-action-btn rpm-btn-start" id="rpm-btn-start">
           <span>🟢</span> Điểm đi

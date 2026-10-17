@@ -3,8 +3,11 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sơ Đồ 3D Không Gian Trường Học - Hệ Thống Hành Lang & Cầu Thang</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bản đồ chỉ đường 3D khuôn viên trường THPT Tam Phước</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
     body,
@@ -14,8 +17,10 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #0f172a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0b1329;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     #canvas3d-container {
@@ -27,99 +32,82 @@
       z-index: 1;
     }
 
-    /* Top Action Bar */
+    /* =========================================================================
+       1. TOP TOOLBAR - GIAO DIỆN TINH GỌN, 1 HÀNG DUY NHẤT TRÊN CẢ MOBILE & DESKTOP
+       ========================================================================= */
     .top-toolbar {
       position: fixed;
-      top: 16px;
-      left: 20px;
-      right: 20px;
-      z-index: 10;
+      top: 12px;
+      left: 14px;
+      right: 14px;
+      z-index: 40;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      padding: 10px 18px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-      color: white;
-    }
-
-    .toolbar-top-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .toolbar-presets-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .toolbar-primary-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .toolbar-title {
-      display: flex;
-      align-items: center;
       gap: 10px;
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      white-space: nowrap;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      padding: 6px 12px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+      color: white;
+      height: 48px;
+      box-sizing: border-box;
+      transition: all 0.25s ease;
     }
 
-    .toolbar-title span.badge-3d {
+    .toolbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14.5px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .toolbar-brand .badge-3d {
       background: linear-gradient(135deg, #0284c7, #38bdf8);
       color: white;
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 6px;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 5px;
       font-weight: 800;
-      white-space: nowrap;
+      letter-spacing: 0.5px;
     }
 
-    .title-short,
-    .btn-text-short,
-    .nav-title-short,
-    .floor-text-short {
-      display: none;
-    }
-
-    .title-full,
-    .btn-text-full,
-    .nav-title-full,
-    .floor-text-full {
-      display: inline;
-    }
-
-    .btn-group {
+    .toolbar-btn-group {
       display: flex;
-      gap: 8px;
       align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .toolbar-btn-group::-webkit-scrollbar {
+      display: none;
     }
 
     .tool-btn {
       background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: white;
-      padding: 7px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #e2e8f0;
+      padding: 6px 11px;
       border-radius: 8px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
+      gap: 5px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
+      flex-shrink: 0;
+      text-decoration: none;
     }
 
     .tool-btn:hover {
@@ -136,137 +124,1102 @@
       box-shadow: 0 0 12px rgba(2, 132, 199, 0.6);
     }
 
-    .tool-btn.btn-special {
-      background: linear-gradient(135deg, #d97706, #f59e0b);
-      border-color: #fde68a;
-      color: #ffffff;
+    .tool-btn.btn-360 {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 95, 70, 0.35));
+      border-color: #10b981;
+      color: #34d399;
       font-weight: 700;
-      box-shadow: 0 2px 10px rgba(217, 119, 6, 0.4);
     }
 
-    .tool-btn.btn-special:hover {
-      background: linear-gradient(135deg, #b45309, #d97706);
-      transform: translateY(-2px);
+    .tool-btn.btn-360:hover,
+    .tool-btn.btn-360.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border-color: #34d399;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.65);
     }
 
-    /* Floating Legend Overlay */
-    .legend-card {
+    .tool-btn.btn-nav-trigger {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(15, 23, 42, 0.4));
+      border-color: #38bdf8;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    .tool-btn.btn-nav-trigger:hover,
+    .tool-btn.btn-nav-trigger.active {
+      background: linear-gradient(135deg, #0284c7, #0284c7);
+      color: white;
+      box-shadow: 0 0 14px rgba(2, 132, 199, 0.7);
+    }
+
+    .btn-text-short {
+      display: none;
+    }
+
+    .title-short {
+      display: none;
+    }
+
+    .toolbar-divider {
+      width: 1px;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.2);
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .tool-btn.btn-mode {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .tool-btn.btn-mode.active {
+      background: linear-gradient(135deg, #0284c7, #0284c7);
+      border-color: #38bdf8;
+      color: white;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.65);
+    }
+
+    /* DOCK TIỆN ÍCH ĐIỀU HƯỚNG BẢN ĐỒ 3D (ZOOM, VỀ GIỮA, DI / XOAY) */
+    .map-floating-controls {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
-      z-index: 10;
-      background: rgba(15, 23, 42, 0.92);
-      backdrop-filter: blur(12px);
+      right: 16px;
+      top: 70px;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(56, 189, 248, 0.3);
       border-radius: 12px;
-      padding: 14px 18px;
-      color: #e2e8f0;
-      max-width: 380px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      font-size: 13px;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 6px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+      transition: all 0.25s ease;
     }
 
-    .legend-title {
-      font-weight: bold;
-      color: #38bdf8;
-      font-size: 14px;
-      margin-bottom: 8px;
+    .map-float-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+
+    .map-float-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: #38bdf8;
+      color: white;
+      transform: scale(1.06);
+    }
+
+    .map-float-btn:active {
+      transform: scale(0.96);
+    }
+
+    .map-float-btn.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: white;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    }
+
+    .map-float-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.16);
+      margin: 2px 2px;
+    }
+
+    /* =========================================================================
+       2. BẢNG CHỈ ĐƯỜNG 3D THÔNG MINH - HỖ TRỢ NHẬP TÌM KIẾM CÓ GỢI Ý DROPDOWN
+       ========================================================================= */
+    .nav-panel-3d {
+      position: fixed;
+      top: 68px;
+      left: 14px;
+      width: 350px;
+      max-height: calc(100vh - 90px);
+      z-index: 45;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-panel-3d.hidden {
+      display: none !important;
+    }
+
+    .sheet-handle-bar {
+      display: none;
+      width: 38px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 2px;
+      margin: 8px auto 2px;
+    }
+
+    .nav-panel-header {
+      padding: 11px 16px;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(15, 23, 42, 0.6));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .nav-panel-title {
+      font-weight: 800;
+      font-size: 13.5px;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .nav-close-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      line-height: 1;
+    }
+
+    .nav-close-btn:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .nav-panel-body {
+      padding: 13px 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Combobox Nhập Tìm Kiếm Thông Minh */
+    .combobox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+    }
+
+    .combobox-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .combobox-label.label-start {
+      color: #34d399;
+    }
+
+    .combobox-label.label-dest {
+      color: #f87171;
+    }
+
+    .combobox-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .combobox-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      padding: 0 10px;
+      height: 38px;
+      transition: all 0.2s;
+    }
+
+    .combobox-input-wrapper:focus-within {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2.5px rgba(56, 189, 248, 0.3);
+      background: rgba(30, 41, 59, 0.98);
+    }
+
+    .combobox-icon {
+      font-size: 14px;
+      margin-right: 6px;
+      user-select: none;
+    }
+
+    .combobox-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: #f8fafc;
+      width: 100%;
+    }
+
+    .combobox-input::placeholder {
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    .btn-clear-input {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 50%;
+      display: none;
+    }
+
+    .btn-clear-input:hover {
+      color: #f87171;
+    }
+
+    /* Dropdown Gợi Ý Tìm Kiếm */
+    .combobox-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      max-height: 220px;
+      overflow-y: auto;
+      background: #0f172a;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 8px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      display: none;
+      padding: 4px 0;
+    }
+
+    .combobox-dropdown.active {
+      display: block;
+    }
+
+    .dropdown-category-title {
+      padding: 6px 12px 3px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(30, 41, 59, 0.8);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .dropdown-category-title:first-child {
+      border-top: none;
+    }
+
+    .dropdown-item {
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: background 0.15s;
+      color: #f1f5f9;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item.focused {
+      background: rgba(56, 189, 248, 0.22);
+      color: #38bdf8;
+    }
+
+    .dropdown-item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .dropdown-item-name {
+      font-size: 12.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dropdown-item-desc {
+      font-size: 10.5px;
+      color: #94a3b8;
+    }
+
+    .dropdown-item-badges {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dropdown-item-badge {
+      font-size: 9.5px;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      white-space: nowrap;
+    }
+
+    .dropdown-item-photo-badge {
+      font-size: 9.5px;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      white-space: nowrap;
+    }
+
+    .dropdown-empty {
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    .btn-swap-wrapper,
+    .btn-swap-wrapper-3d {
+      position: static !important;
+      right: auto !important;
+      top: auto !important;
+      transform: none !important;
+      z-index: 1 !important;
+      display: flex;
+      justify-content: center;
+      margin: 4px 0;
+      width: 100%;
+    }
+
+    .btn-swap-3d {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-swap-3d:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: #38bdf8;
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .nav-actions-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .btn-route-action {
+      flex: 1;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: white;
+      border: none;
+      padding: 9px 14px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+      transition: all 0.2s;
+    }
+
+    .btn-route-action:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-clear-action {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #cbd5e1;
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+    }
+
+    .btn-clear-action:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #f87171;
+    }
+
+    /* Khung kết quả lộ trình */
+    .nav-result-box {
+      background: rgba(30, 41, 59, 0.65);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      animation: fadeInResult 0.25s ease-out;
+    }
+
+    @keyframes fadeInResult {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav-stats-row {
+      display: flex;
+      justify-content: space-around;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 7px;
+    }
+
+    .stat-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-val {
+      font-size: 15px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    .stat-lbl {
+      font-size: 9.5px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .nav-btn-row {
+      display: flex;
+      gap: 7px;
+    }
+
+    .btn-sub-action {
+      flex: 1;
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      transition: all 0.2s;
+    }
+
+    .btn-sub-action:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: white;
+    }
+
+    .btn-tour {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: #34d399;
+      color: white;
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-tour:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+    }
+
+    .steps-timeline {
+      max-height: 160px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding-right: 2px;
+    }
+
+    .step-node {
+      font-size: 11px;
+      line-height: 1.4;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 5px 8px;
+      border-radius: 6px;
+      border-left: 2.5px solid #38bdf8;
+    }
+
+    /* =========================================================================
+       3. PANEL 360 ĐỘ - TINH GIẢN: CHỈ GIỮ LẠI TOÀN CẢNH & FLYCAM TRÊN CAO
+       ========================================================================= */
+    .panel-360 {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      width: 310px;
+      z-index: 35;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .panel-360.hidden {
+      display: none !important;
+    }
+
+    .panel-360-header {
+      padding: 9px 13px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(15, 23, 42, 0.6));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-360-title {
+      font-weight: 800;
+      font-size: 13px;
+      color: #34d399;
+      display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .legend-close-btn {
+    .badge-360-live {
+      background: #10b981;
+      color: white;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-close-360 {
       background: transparent;
       border: none;
       color: #94a3b8;
-      font-size: 15px;
+      font-size: 14px;
       cursor: pointer;
       padding: 2px 6px;
       border-radius: 4px;
-      display: none;
-      line-height: 1;
     }
 
-    .legend-close-btn:hover {
+    .btn-close-360:hover {
       color: white;
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.1);
     }
 
-    /* Mobile Legend Floating Toggle Button */
-    .mobile-legend-btn {
-      display: none;
-      position: fixed;
-      bottom: 16px;
-      left: 12px;
-      z-index: 25;
-      background: rgba(15, 23, 42, 0.92);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      border-radius: 20px;
-      padding: 8px 14px;
-      color: #38bdf8;
+    .panel-360-body {
+      padding: 11px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .row-360-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-360-play {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 8px;
       font-size: 12px;
       font-weight: 700;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
       cursor: pointer;
+      display: flex;
       align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid #10b981;
+      background: rgba(16, 185, 129, 0.16);
+      color: #34d399;
+      transition: all 0.2s;
+    }
+
+    .btn-360-play:hover {
+      background: rgba(16, 185, 129, 0.3);
+      color: white;
+    }
+
+    .btn-360-play.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+    }
+
+    .btn-360-dir {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      transition: all 0.2s;
+    }
+
+    .btn-360-dir:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: white;
+    }
+
+    .group-360-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .lbl-360-small {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .pill-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    .pill-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .pill-btn:hover {
+      color: white;
+      border-color: #38bdf8;
+    }
+
+    .pill-btn.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: white;
+    }
+
+    /* 2 NÚT DUY NHẤT: TOÀN CẢNH & FLYCAM TRÊN CAO (THEO YÊU CẦU CỦA NGƯỜI DÙNG) */
+    .hotspots-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-top: 2px;
+    }
+
+    .hotspot-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #e2e8f0;
+      padding: 8px 10px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .hotspot-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      transform: translateY(-1px);
+    }
+
+    .hotspot-btn.active {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.65), rgba(14, 165, 233, 0.65));
+      border-color: #38bdf8;
+      color: white;
+      box-shadow: 0 0 12px rgba(2, 132, 199, 0.5);
+    }
+
+    .tip-360 {
+      font-size: 10.5px;
+      color: #94a3b8;
+      line-height: 1.35;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 6px;
+    }
+
+    /* =========================================================================
+       4. POPOVER XEM ẢNH & CHỌN ĐIỂM KHI CLICK PHÒNG HỌC 3D (GIỐNG BẢN ĐỒ 2D)
+       ========================================================================= */
+    .map-location-popover {
+      position: fixed;
+      z-index: 1000;
+      pointer-events: auto;
+      will-change: left, top, opacity;
+      transition: opacity 0.15s ease-out;
+    }
+
+    .map-location-popover.hidden {
+      display: none !important;
+    }
+
+    /* Nằm ngay trên đầu lớp học: Popover đặt trên đỉnh nóc phòng, mũi tên chĩa xuống */
+    .map-location-popover.placement-top {
+      transform: translate(-50%, -100%) translateY(-14px);
+    }
+
+    /* Nằm dưới lớp học: Khi phòng học nằm sát mép trên màn hình, popover nằm dưới và mũi tên chĩa lên */
+    .map-location-popover.placement-bottom {
+      transform: translate(-50%, 0) translateY(14px);
+    }
+
+    /* Mũi tên định vị chĩa thẳng vào nóc lớp học */
+    .popover-arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+      z-index: 1005;
+      left: calc(50% + var(--arrow-offset, 0px));
+      transform: translateX(-50%);
+    }
+
+    /* Mũi tên ở đáy chĩa xuống nóc lớp học */
+    .map-location-popover.placement-top .popover-arrow {
+      bottom: -13px;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 14px solid rgba(15, 23, 42, 0.96);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 1px #38bdf8);
+    }
+
+    /* Mũi tên ở đỉnh chĩa lên nóc lớp học */
+    .map-location-popover.placement-bottom .popover-arrow {
+      top: -13px;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 14px solid rgba(15, 23, 42, 0.96);
+      filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 1px #38bdf8);
+    }
+
+    .popover-card {
+      position: relative;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid rgba(56, 189, 248, 0.45);
+      border-radius: 14px;
+      width: 320px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(2, 132, 199, 0.25);
+      overflow: hidden;
+      color: #f8fafc;
+      animation: popoverFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes popoverFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .popover-close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      transition: all 0.2s;
+    }
+
+    .popover-close-btn:hover {
+      background: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+
+    .popover-photo-box {
+      position: relative;
+      width: 100%;
+      height: 155px;
+      background: #0f172a;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .popover-photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.35s ease;
+    }
+
+    .popover-photo-box:hover img {
+      transform: scale(1.04);
+    }
+
+    .popover-photo-shimmer {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(30, 41, 59, 0.6) 0%, rgba(51, 65, 85, 0.8) 50%, rgba(30, 41, 59, 0.6) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      display: none;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .popover-photo-building {
+      position: absolute;
+      bottom: 8px;
+      left: 10px;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #38bdf8;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .popover-photo-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .popover-content {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .popover-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .popover-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .popover-title-box {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .popover-title-box h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      color: #38bdf8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .popover-meta {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Các nút chọn điểm đang đứng hay điểm muốn tới */
+    .popover-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .popover-btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .popover-btn.btn-set-start {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35);
+    }
+
+    .popover-btn.btn-set-start:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .popover-btn.btn-set-dest {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: white;
+      box-shadow: 0 3px 10px rgba(2, 132, 199, 0.4);
+    }
+
+    .popover-btn.btn-set-dest:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .popover-sub-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .popover-sub-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #cbd5e1;
+      padding: 7px 8px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       gap: 5px;
       transition: all 0.2s;
     }
 
-    .mobile-legend-btn:hover,
-    .mobile-legend-btn.active {
-      background: #0284c7;
-      color: white;
+    .popover-sub-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
       border-color: #38bdf8;
-      box-shadow: 0 0 12px rgba(2, 132, 199, 0.6);
+      color: white;
     }
 
-    .legend-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 7px;
-      line-height: 1.4;
-    }
-
-    .legend-color {
-      width: 14px;
-      height: 14px;
-      border-radius: 4px;
-      margin-top: 2px;
-      flex-shrink: 0;
-    }
-
-    /* Floating Floor Switcher */
+    /* =========================================================================
+       5. BỘ CHỌN TẦNG (TÁCH TẦNG) & CHÚ THÍCH MÀU
+       ========================================================================= */
     .floor-switcher {
       position: fixed;
-      right: 20px;
+      right: 16px;
       top: 50%;
       transform: translateY(-50%);
-      z-index: 10;
+      z-index: 25;
       background: rgba(15, 23, 42, 0.88);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 12px;
-      padding: 8px;
+      padding: 6px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    .floor-switcher-title {
+      font-size: 9px;
+      color: #94a3b8;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+      padding: 2px 0;
     }
 
     .floor-btn {
       background: transparent;
       border: 1px solid transparent;
       color: #94a3b8;
-      padding: 9px 14px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: bold;
+      padding: 7px 11px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 700;
       cursor: pointer;
       text-align: center;
       transition: all 0.2s;
@@ -284,551 +1237,300 @@
       box-shadow: 0 0 10px rgba(2, 132, 199, 0.5);
     }
 
-    /* 3D Navigation Panel */
-    .nav-panel-3d {
-      position: fixed;
-      top: 76px;
-      left: 20px;
-      width: 340px;
-      max-height: calc(100vh - 250px);
-      z-index: 20;
-      background: rgba(15, 23, 42, 0.94);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 14px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
-      color: #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .nav-panel-3d.collapsed {
-      width: auto;
-      max-height: 48px;
-    }
-
-    .nav-panel-3d.collapsed .nav-panel-body {
-      display: none;
-    }
-
-    .nav-panel-header {
-      padding: 12px 16px;
-      background: linear-gradient(135deg, rgba(2, 132, 199, 0.25), rgba(15, 23, 42, 0.5));
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .nav-panel-title {
-      font-weight: 800;
-      font-size: 14px;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .nav-toggle-btn {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      font-size: 16px;
-      cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    .nav-toggle-btn:hover {
-      color: white;
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .nav-panel-body {
-      padding: 14px 16px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .nav-input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .nav-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #94a3b8;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .nav-select {
-      width: 100%;
-      background: #1e293b;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
-      padding: 8px 10px;
-      color: white;
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .nav-select:focus {
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-    }
-    .nav-select optgroup {
-      background: #0f172a;
-      color: #38bdf8;
-      font-weight: bold;
-    }
-    .nav-select option {
-      background: #1e293b;
-      color: #f1f5f9;
-      font-weight: normal;
-    }
-
-    .btn-swap-3d {
-      align-self: center;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #38bdf8;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s;
-    }
-    .btn-swap-3d:hover {
-      background: rgba(56, 189, 248, 0.2);
-      border-color: #38bdf8;
-      color: white;
-    }
-
-    .btn-route-action {
-      background: linear-gradient(135deg, #0284c7, #38bdf8);
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: 800;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
-      transition: all 0.2s;
-    }
-    .btn-route-action:hover {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
-    }
-
-    .nav-result-box {
-      background: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      border-radius: 10px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .nav-stats-row {
-      display: flex;
-      justify-content: space-around;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 8px;
-    }
-
-    .stat-pill {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .stat-val {
-      font-size: 16px;
-      font-weight: 800;
-      color: #38bdf8;
-    }
-    .stat-lbl {
-      font-size: 10px;
-      color: #94a3b8;
-      text-transform: uppercase;
-    }
-
-    .nav-btn-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-sub-action {
-      flex: 1;
-      padding: 7px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.06);
-      color: #e2e8f0;
-      transition: all 0.2s;
-    }
-    .btn-sub-action:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
-    }
-    .btn-tour {
-      background: linear-gradient(135deg, #10b981, #059669);
-      border-color: #34d399;
-      color: white;
-    }
-    .btn-tour:hover {
-      background: linear-gradient(135deg, #059669, #047857);
-    }
-
-    .steps-timeline {
-      max-height: 180px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding-right: 4px;
-    }
-    .step-node {
-      font-size: 11.5px;
-      line-height: 1.4;
-      color: #cbd5e1;
-      display: flex;
-      align-items: flex-start;
-      gap: 7px;
-      background: rgba(15, 23, 42, 0.5);
-      padding: 5px 8px;
-      border-radius: 6px;
-      border-left: 2.5px solid #38bdf8;
-    }
-
-    .controls-hint {
+    .legend-card {
       position: fixed;
       bottom: 20px;
-      right: 20px;
-      z-index: 10;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 8px 14px;
-      color: #94a3b8;
-      font-size: 12px;
-    }
-
-    /* 360 Degree Feature Styles */
-    .tool-btn.btn-360 {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 95, 70, 0.4));
-      border-color: #10b981;
-      color: #34d399;
-      font-weight: 700;
-    }
-    .tool-btn.btn-360:hover {
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
-    }
-    .tool-btn.btn-360.active {
-      background: linear-gradient(135deg, #10b981, #047857);
-      color: white;
-      box-shadow: 0 0 16px rgba(16, 185, 129, 0.8);
-      animation: pulse-360 2s infinite;
-    }
-    @keyframes pulse-360 {
-      0%, 100% { box-shadow: 0 0 14px rgba(16, 185, 129, 0.7); }
-      50% { box-shadow: 0 0 24px rgba(52, 211, 153, 0.95); }
-    }
-    .icon-spin {
-      display: inline-block;
-      transition: transform 0.3s;
-    }
-    .btn-360.active .icon-spin {
-      animation: spin-loop 4s linear infinite;
-    }
-    @keyframes spin-loop {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* Floating 360 Panorama Widget */
-    .panel-360 {
-      position: fixed;
-      bottom: 56px;
-      right: 20px;
-      width: 320px;
-      z-index: 25;
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(52, 211, 153, 0.4);
-      border-radius: 14px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      left: 16px;
+      z-index: 20;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
       color: #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      max-width: 360px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      font-size: 12px;
+      transition: all 0.25s ease;
     }
-    .panel-360.hidden {
-      display: none;
-    }
-    .panel-360-header {
-      padding: 10px 14px;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(15, 23, 42, 0.6));
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    .legend-title {
+      font-weight: bold;
+      color: #38bdf8;
+      font-size: 13px;
+      margin-bottom: 7px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .panel-360-title {
-      font-weight: 800;
-      font-size: 13.5px;
-      color: #34d399;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .badge-360-live {
-      background: #10b981;
-      color: white;
-      font-size: 9.5px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-    }
-    .btn-close-360 {
+
+    .legend-close-btn {
       background: transparent;
       border: none;
       color: #94a3b8;
       font-size: 14px;
       cursor: pointer;
-      padding: 3px 6px;
+      padding: 2px 5px;
       border-radius: 4px;
+      display: none;
     }
-    .btn-close-360:hover {
-      color: white;
-      background: rgba(255, 255, 255, 0.1);
+
+    .legend-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 5px;
+      line-height: 1.35;
     }
-    .panel-360-body {
-      padding: 12px 14px;
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .mobile-legend-btn {
+      display: none;
+      position: fixed;
+      bottom: 16px;
+      left: 12px;
+      z-index: 25;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 20px;
+      padding: 7px 12px;
+      color: #38bdf8;
+      font-size: 11.5px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Floating Walkthrough HUD Bar for Chế Độ Đi Thử 3D */
+    .tour-hud-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      width: calc(100% - 32px);
+      max-width: 800px;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 14px;
+      padding: 12px 18px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 0 20px rgba(2, 132, 199, 0.25);
+      color: #e2e8f0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .tour-hud-bar.hidden {
+      display: none !important;
+    }
+
+    .tour-hud-inner {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 9px;
     }
-    .row-360-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .btn-360-play {
-      flex: 1;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
+
+    .tour-info-row {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .tour-badge {
+      display: flex;
+      align-items: center;
       gap: 6px;
-      border: 1px solid #10b981;
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      transition: all 0.2s;
-    }
-    .btn-360-play:hover {
-      background: rgba(16, 185, 129, 0.3);
+      background: linear-gradient(135deg, #0284c7, #0284c7);
       color: white;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: 20px;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
     }
-    .btn-360-play.active {
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
+
+    .tour-badge-pulse {
+      width: 7px;
+      height: 7px;
+      background: #38bdf8;
+      border-radius: 50%;
+      animation: tour-pulse 1.2s infinite alternate;
     }
-    .btn-360-dir {
-      padding: 8px 12px;
+
+    @keyframes tour-pulse {
+      from { opacity: 0.4; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1.3); }
+    }
+
+    .tour-current-loc {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      text-align: center;
+    }
+
+    .tour-stat-pill {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #38bdf8;
+      white-space: nowrap;
+    }
+
+    .tour-progress-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(30, 41, 59, 0.85);
+      border-radius: 3px;
       cursor: pointer;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.08);
-      color: #cbd5e1;
-      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .btn-360-dir:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
+
+    .tour-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #0284c7, #38bdf8, #10b981);
+      border-radius: 3px;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+      transition: width 0.1s linear;
     }
-    .group-360-row {
+
+    .tour-controls-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
+      flex-wrap: wrap;
     }
-    .lbl-360-small {
-      font-size: 11px;
-      font-weight: 700;
-      color: #94a3b8;
-      text-transform: uppercase;
-    }
-    .pill-group {
+
+    .tour-btn-group {
       display: flex;
-      gap: 4px;
+      align-items: center;
+      gap: 5px;
     }
-    .pill-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #94a3b8;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .pill-btn:hover {
+
+    .tour-hud-btn {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: white;
-      border-color: #38bdf8;
-    }
-    .pill-btn.active {
-      background: #0284c7;
-      border-color: #38bdf8;
-      color: white;
-    }
-    .hotspots-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 6px;
-      margin-top: 4px;
-    }
-    .hotspot-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #e2e8f0;
-      padding: 6px 8px;
-      border-radius: 6px;
+      padding: 5px 10px;
+      border-radius: 7px;
       font-size: 11.5px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 5px;
       transition: all 0.2s;
     }
-    .hotspot-btn:hover {
-      background: rgba(56, 189, 248, 0.2);
+
+    .tour-hud-btn:hover {
+      background: rgba(51, 65, 85, 0.95);
       border-color: #38bdf8;
-      color: #38bdf8;
-      transform: translateY(-1px);
     }
-    .hotspot-btn.active {
-      background: linear-gradient(135deg, rgba(2, 132, 199, 0.6), rgba(14, 165, 233, 0.6));
-      border-color: #38bdf8;
+
+    .tour-hud-btn.btn-exit-tour {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+      margin-left: auto;
+    }
+
+    .tour-hud-btn.btn-exit-tour:hover {
+      background: #dc2626;
       color: white;
+    }
+
+    .tour-pill-btn {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10.5px;
       font-weight: 700;
-    }
-    .tip-360 {
-      font-size: 11px;
-      color: #94a3b8;
-      line-height: 1.4;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding-top: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    @media (min-width: 900px) {
-      .toolbar-top-row {
-        display: contents;
-      }
-      .toolbar-title {
-        order: 1;
-      }
-      .toolbar-presets-row {
-        order: 2;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .toolbar-primary-actions {
-        order: 3;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+    .tour-pill-btn:hover {
+      background: rgba(51, 65, 85, 0.9);
+      color: white;
     }
 
-    @keyframes mobileCardSlideUp {
-      from {
-        opacity: 0;
-        transform: translateY(24px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .tour-pill-btn.active {
+      background: #0284c7;
+      color: white;
+      border-color: #38bdf8;
     }
 
-    @keyframes fadeInModal {
-      from {
-        opacity: 0;
-        transform: scale(0.96);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+    /* Toast Thông Báo Nhanh */
+    .toast-notification {
+      position: fixed;
+      top: 66px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #38bdf8;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+      color: white;
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      pointer-events: none;
+      animation: fadeInToast 0.25s ease-out;
     }
 
+    @keyframes fadeInToast {
+      from { opacity: 0; transform: translate(-50%, -10px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    /* =========================================================================
+       6. TỐI ƯU HÓA RESPONSIVE MOBILE CHUẨN ĐẸP, KHÔNG RỐI MẮT
+       ========================================================================= */
     @media (max-width: 768px) {
-      /* Toolbar gọn gàng 2 tầng trên mobile */
       .top-toolbar {
         top: 8px;
         left: 8px;
         right: 8px;
-        padding: 8px 10px;
-        border-radius: 12px;
-        display: flex;
-        flex-direction: column;
+        height: 44px;
+        padding: 5px 8px;
+        border-radius: 10px;
         gap: 6px;
       }
 
-      .toolbar-top-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        gap: 8px;
-      }
-
-      .toolbar-title {
-        font-size: 13.5px;
-        gap: 6px;
-        white-space: nowrap;
+      .toolbar-brand {
+        font-size: 13px;
+        gap: 5px;
       }
 
       .title-full {
@@ -839,46 +1541,15 @@
         display: inline;
       }
 
-      .badge-3d {
-        font-size: 9px !important;
-        padding: 2px 5px !important;
+      .toolbar-brand .badge-3d {
+        font-size: 9px;
+        padding: 1px 4px;
       }
 
-      .toolbar-primary-actions {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-      }
-
-      .toolbar-primary-actions .tool-btn {
-        padding: 5px 8px;
-        font-size: 11.5px;
-        gap: 4px;
-        white-space: nowrap;
-      }
-
-      /* Thanh preset góc nhìn cuộn ngang cảm ứng mượt mà */
-      .toolbar-presets-row {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        width: 100%;
-        overflow-x: auto;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 2px;
-        scrollbar-width: none;
-      }
-
-      .toolbar-presets-row::-webkit-scrollbar {
-        display: none;
-      }
-
-      .toolbar-presets-row .tool-btn {
-        padding: 5px 10px;
-        font-size: 11.5px;
-        flex-shrink: 0;
-        white-space: nowrap;
+      .tool-btn {
+        padding: 4px 7px;
+        font-size: 11px;
+        gap: 3px;
       }
 
       .btn-text-full {
@@ -889,135 +1560,125 @@
         display: inline;
       }
 
-      .nav-title-full {
-        display: none;
+      .toolbar-divider {
+        height: 18px;
+        margin: 0 2px;
       }
 
-      .nav-title-short {
-        display: inline;
-      }
-
-      /* Bảng chỉ đường 3D trên Mobile */
-      .nav-panel-3d {
-        transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      /* Trạng thái thu gọn ban đầu trên mobile: Nút capsule nhỏ gọn góc trên */
-      .nav-panel-3d.collapsed {
-        position: fixed;
-        top: 86px;
-        left: 8px;
-        right: auto;
-        bottom: auto;
-        width: auto;
-        max-height: 38px;
-        border-radius: 20px;
-        background: rgba(15, 23, 42, 0.94);
-        border: 1px solid rgba(56, 189, 248, 0.45);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-        z-index: 25;
-      }
-
-      .nav-panel-3d.collapsed .nav-panel-header {
-        padding: 6px 12px;
-        border-bottom: none;
-        background: transparent;
-        gap: 8px;
-      }
-
-      .nav-panel-3d.collapsed .nav-panel-title {
-        font-size: 12px;
-      }
-
-      .nav-panel-3d.collapsed .nav-toggle-btn {
-        font-size: 12px;
-        padding: 0 2px;
-      }
-
-      /* Trạng thái mở rộng trên mobile: Bottom Action Card tiện dụng */
-      .nav-panel-3d:not(.collapsed) {
-        position: fixed;
-        top: auto;
-        bottom: 8px;
-        left: 8px;
+      .map-floating-controls {
         right: 8px;
-        width: auto;
-        max-width: 500px;
-        margin: 0 auto;
-        max-height: 76vh;
-        border-radius: 16px;
-        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
-        z-index: 40;
-        animation: mobileCardSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      .nav-panel-3d:not(.collapsed) .nav-panel-header {
-        padding: 10px 14px;
-        position: relative;
-      }
-
-      .nav-panel-3d:not(.collapsed) .nav-panel-header::before {
-        content: '';
-        position: absolute;
-        top: 4px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 36px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 2px;
-      }
-
-      .nav-panel-3d:not(.collapsed) .nav-panel-body {
-        padding: 12px 14px;
-        max-height: calc(76vh - 54px);
-        overflow-y: auto;
-      }
-
-      /* Bộ chọn tầng góc dưới phải gọn gàng */
-      .floor-switcher {
-        top: auto;
-        bottom: 16px;
-        right: 8px;
-        transform: none;
-        padding: 6px 4px;
+        top: 58px;
+        padding: 4px;
         gap: 4px;
         border-radius: 10px;
-        z-index: 25;
       }
 
-      .floor-switcher-title {
-        font-size: 9px;
-        margin-bottom: 2px;
+      .map-float-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 13.5px;
+        border-radius: 7px;
+      }
+
+      /* Bảng chỉ đường mở rộng dạng Bottom Sheet thông minh chuẩn di động */
+      .nav-panel-3d {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        max-height: 75vh;
+        border-radius: 18px 18px 0 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.75);
+        z-index: 70;
+        animation: sheetSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes sheetSlideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
+
+      .sheet-handle-bar {
+        display: block;
+      }
+
+      .nav-panel-header {
+        padding: 8px 14px 10px;
+      }
+
+      .nav-panel-body {
+        padding: 10px 14px 18px;
+        max-height: calc(75vh - 55px);
+      }
+
+      /* Popover Card khi chạm phòng học trên Mobile: Hiển thị nổi bật ở đáy màn hình */
+      .map-location-popover {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 10px !important;
+        left: 8px !important;
+        right: 8px !important;
+        transform: none !important;
+        width: auto !important;
+        max-width: none !important;
+        z-index: 1000;
+      }
+
+      .popover-card {
+        width: 100% !important;
+        max-width: 480px;
+        margin: 0 auto;
+        border-radius: 16px;
+        box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85);
+      }
+
+      .popover-card::before,
+      .popover-card::after,
+      .popover-arrow {
+        display: none !important;
+      }
+
+      .popover-photo-box {
+        height: 135px;
+      }
+
+      /* Widget 360 độ trên mobile: Gọn gàng phía đáy màn hình */
+      .panel-360 {
+        width: calc(100vw - 16px);
+        left: 8px;
+        right: 8px;
+        bottom: 10px;
+        max-height: 80vh;
+        z-index: 50;
+      }
+
+      .floor-switcher {
+        top: auto;
+        bottom: 14px;
+        right: 8px;
+        transform: none;
+        padding: 4px;
+        gap: 3px;
+        border-radius: 8px;
       }
 
       .floor-btn {
-        padding: 6px 8px;
-        font-size: 11px;
-        border-radius: 6px;
-        min-width: 44px;
+        padding: 5px 7px;
+        font-size: 10.5px;
       }
 
-      .floor-text-full {
-        display: none;
-      }
-
-      .floor-text-short {
-        display: inline;
-      }
-
-      /* Bảng chú thích màu đóng/mở trên mobile */
       .legend-card {
         display: none;
-        position: fixed;
-        bottom: 60px;
+        bottom: 56px;
         left: 8px;
         right: 8px;
         max-width: calc(100vw - 16px);
-        z-index: 35;
-        padding: 12px 14px;
-        font-size: 12px;
-        animation: fadeInModal 0.2s ease-out;
+        z-index: 40;
       }
 
       .legend-card.open {
@@ -1028,29 +1689,19 @@
         display: inline-block;
       }
 
-      .legend-title {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
       .mobile-legend-btn {
         display: flex;
-        align-items: center;
-        gap: 5px;
       }
 
-      .panel-360 {
-        width: calc(100vw - 16px);
-        left: 8px;
-        right: 8px;
+      .tour-hud-bar {
         bottom: 10px;
-        max-height: 80vh;
-        z-index: 50;
+        padding: 8px 12px;
+        width: calc(100% - 16px);
       }
 
-      .controls-hint {
-        display: none;
+      .tour-hud-btn, .tour-pill-btn {
+        padding: 4px 7px;
+        font-size: 10px;
       }
     }
   </style>
@@ -1061,109 +1712,134 @@
   <!-- 3D Canvas Container -->
   <div id="canvas3d-container"></div>
 
-  <!-- Top Toolbar -->
+  <!-- 1. TOP TOOLBAR - TINH GỌN, 1 HÀNG DUY NHẤT -->
   <header class="top-toolbar">
-    <div class="toolbar-top-row">
-      <div class="toolbar-title">
-        <span>🏫 <span class="title-full">Sơ Đồ 3D Khuôn Viên</span><span class="title-short">Sơ Đồ 3D</span></span>
-        <span class="badge-3d">3D</span>
-      </div>
-
-      <div class="toolbar-primary-actions">
-        <!-- Nút bật tắt chế độ tự động xoay 360 độ -->
-        <button class="tool-btn btn-360" id="btn-toggle-360" onclick="toggle360Mode()"
-          title="Bật / Tắt chế độ tự động xoay toàn cảnh 360 độ quanh khuôn viên trường">
-          <span class="icon-spin">🔄</span> <span id="lbl-360">Xoay 360°</span>
-        </button>
-
-        <button class="tool-btn" onclick="viewer.takeSnapshot()" title="Chụp ảnh 3D">
-          📸 <span class="btn-text-full">Chụp Ảnh</span>
-        </button>
-
-        <a href="index.html" class="tool-btn" style="text-decoration: none;" title="Chuyển về Bản đồ 2D">
-          🗺️ <span class="btn-text-full">Bản Đồ 2D</span><span class="btn-text-short">2D</span>
-        </a>
-      </div>
+    <div class="toolbar-brand">
+      <span>🏫</span>
+      <span class="title-full">THPT Tam Phước 3D</span>
+      <span class="title-short">3D</span>
+      <span class="badge-3d">3D</span>
     </div>
 
-    <!-- Quick Camera Presets & 360 Mode -->
-    <div class="toolbar-presets-row">
-      <button class="tool-btn active" id="btn-drone" onclick="setActiveCam(this, 'drone_view')"
-        title="Góc nhìn Flycam thực tế từ trên cao nhìn vào sân trường và các dãy nhà">
-        🚁 <span class="btn-text-full">Flycam Thực Tế</span><span class="btn-text-short">Flycam</span>
+    <div class="toolbar-btn-group">
+      <!-- Nút Toàn Cảnh -->
+      <button class="tool-btn btn-cam active" id="btn-isometric" onclick="setActiveCam(this, 'isometric')" title="Góc nhìn toàn cảnh khuôn viên trường">
+        📐 <span class="btn-text-full">Toàn Cảnh</span><span class="btn-text-short">Toàn Cảnh</span>
       </button>
 
-      <button class="tool-btn" id="btn-isometric" onclick="setActiveCam(this, 'isometric')">
-        📐 Toàn Cảnh
+      <!-- Nút Flycam Thực Tế -->
+      <button class="tool-btn btn-cam" id="btn-drone" onclick="setActiveCam(this, 'drone_view')" title="Góc nhìn Flycam thực tế từ trên cao nhìn vào sân trường">
+        🚁 <span class="btn-text-full">Flycam</span><span class="btn-text-short">Flycam</span>
       </button>
 
-      <button class="tool-btn" id="btn-canopy" onclick="setActiveCam(this, 'canopy_view')">
-        🔺 Mái Tam Giác
+      <div class="toolbar-divider"></div>
+
+      <!-- Chế độ Di Chuyển (Pan) - Mặc định kích hoạt để kéo mượt như map 2D -->
+      <button class="tool-btn btn-mode active" id="btn-mode-pan" onclick="setControlMode('pan')" title="Chế độ Di Chuyển: Kéo ngón tay hoặc chuột để di bản đồ sang trái, phải, trước, sau như xem ảnh bản đồ">
+        🖐️ <span class="btn-text-full">Di Chuyển</span><span class="btn-text-short">Di</span>
       </button>
 
-      <button class="tool-btn" id="btn-gate" onclick="setActiveCam(this, 'gate_view')">
-        🚪 Cổng Trường
+      <!-- Chế độ Xoay 3D (Rotate) -->
+      <button class="tool-btn btn-mode" id="btn-mode-rotate" onclick="setControlMode('rotate')" title="Chế độ Xoay 3D: Kéo để xoay 360 độ góc nhìn quanh trường">
+        🔄 <span class="btn-text-full">Xoay 3D</span><span class="btn-text-short">Xoay</span>
       </button>
 
-      <button class="tool-btn" id="btn-topdown" onclick="setActiveCam(this, 'top_down')">
-        ⬇️ Nhìn Trên
+      <!-- Nút Về Giữa Trường -->
+      <button class="tool-btn" id="btn-recenter" onclick="recenterCampusView()" title="Đưa góc nhìn về lại chính giữa trường học">
+        🎯 <span class="btn-text-full">Về Giữa</span><span class="btn-text-short">Giữa</span>
       </button>
 
-      <button class="tool-btn btn-special" onclick="viewer.setCameraPreset('bridge_west')"
-        title="Xem chi tiết hành lang nối Dãy B và Dãy Hành Chính ở cả 2 tầng">
-        🎯 Cầu Nối
+      <div class="toolbar-divider"></div>
+
+      <!-- Nút Bật/Tắt Xoay 360° -->
+      <button class="tool-btn btn-360" id="btn-toggle-360" onclick="toggle360Panel()" title="Mở bảng điều khiển góc nhìn 360 độ toàn cảnh">
+        <span class="icon-spin">🌐</span> <span class="btn-text-full" id="lbl-360">Tự Xoay 360°</span><span class="btn-text-short">360°</span>
       </button>
 
-      <button class="tool-btn" id="btn-hotspots-360" onclick="toggle360Panel()"
-        title="Mở bảng chọn điểm nhìn 360 độ toàn cảnh từ mặt đất & trên cao">
-        🌐 Điểm 360°
+      <!-- Nút Chỉ Đường 3D -->
+      <button class="tool-btn btn-nav-trigger" id="btn-toggle-nav" onclick="toggleNavPanel()" title="Tìm đường chỉ dẫn tới phòng học">
+        🧭 <span class="btn-text-full">Tìm Đường</span><span class="btn-text-short">Đường Đi</span>
       </button>
+
+      <!-- Nút chuyển về 2D -->
+      <a href="index.html" class="tool-btn" style="text-decoration: none;" title="Chuyển sang Sơ đồ 2D">
+        🗺️ <span class="btn-text-full">Bản Đồ 2D</span><span class="btn-text-short">2D</span>
+      </a>
     </div>
   </header>
 
-  <!-- 🧭 3D WAYFINDING & NAVIGATION PANEL -->
-  <div class="nav-panel-3d" id="nav-panel-3d">
-    <div class="nav-panel-header" onclick="toggleNavPanel()">
+  <!-- DOCK TIỆN ÍCH ĐIỀU HƯỚNG BẢN ĐỒ 3D (ZOOM, VỀ GIỮA, DI / XOAY) -->
+  <aside class="map-floating-controls" id="map-floating-controls" aria-label="Điều khiển bản đồ 3D">
+    <button type="button" class="map-float-btn" id="mfc-zoom-in" onclick="if(viewer) viewer.zoomIn()" title="Phóng to (+)">➕</button>
+    <button type="button" class="map-float-btn" id="mfc-zoom-out" onclick="if(viewer) viewer.zoomOut()" title="Thu nhỏ (-)">➖</button>
+    <button type="button" class="map-float-btn" id="mfc-recenter" onclick="recenterCampusView()" title="Đưa về giữa trường (R)">🎯</button>
+    <div class="map-float-divider"></div>
+    <button type="button" class="map-float-btn active" id="mfc-mode-pan" onclick="setControlMode('pan')" title="Chế độ Di Chuyển (Kéo map)">🖐️</button>
+    <button type="button" class="map-float-btn" id="mfc-mode-rotate" onclick="setControlMode('rotate')" title="Chế độ Xoay 3D">🔄</button>
+  </aside>
+
+  <!-- 2. BẢNG CHỈ ĐƯỜNG 3D THÔNG MINH (CÓ TÌM KIẾM TỰ ĐỘNG GỢI Ý DROPDOWN) -->
+  <div class="nav-panel-3d hidden" id="nav-panel-3d">
+    <div class="sheet-handle-bar"></div>
+    <div class="nav-panel-header">
       <div class="nav-panel-title">
         <span>🧭</span>
-        <span class="nav-title-full">Chỉ Đường 3D Thông Minh</span>
-        <span class="nav-title-short">Chỉ Đường 3D</span>
+        <span>Chỉ Đường 3D Thông Minh</span>
       </div>
-      <button type="button" class="nav-toggle-btn" id="nav-toggle-btn" title="Thu gọn / Mở rộng">—</button>
+      <button type="button" class="nav-close-btn" onclick="toggleNavPanel(false)" title="Đóng bảng tìm đường">✕</button>
     </div>
 
     <div class="nav-panel-body">
-      <!-- Điểm xuất phát -->
-      <div class="nav-input-group">
-        <label class="nav-label" for="select-start-3d">
-          <span>🟢</span> Điểm xuất phát
+      <!-- COMBOBOX 1: NƠI ĐANG ĐỨNG (ĐIỂM ĐI) -->
+      <div class="combobox-group">
+        <label class="combobox-label label-start" for="start-location-input-3d">
+          <span>🟢</span> Nơi đang đứng (Điểm đi)
         </label>
-        <select id="select-start-3d" class="nav-select">
-          <option value="">-- Chọn vị trí bắt đầu --</option>
-        </select>
+        <div class="combobox-container">
+          <div class="combobox-input-wrapper">
+            <span class="combobox-icon">📍</span>
+            <input type="text" id="start-location-input-3d" class="combobox-input"
+              placeholder="Gõ tìm lớp, nơi đang đứng..." autocomplete="off">
+            <button type="button" id="start-clear-btn-3d" class="btn-clear-input" title="Xóa">✕</button>
+          </div>
+          <div id="start-location-dropdown-3d" class="combobox-dropdown" role="listbox"></div>
+        </div>
       </div>
 
-      <!-- Đổi chiều -->
-      <button type="button" class="btn-swap-3d" onclick="swapNavPoints()" title="Hoán đổi điểm xuất phát và đích đến">
-        ⇅ Đổi chiều di chuyển
-      </button>
-
-      <!-- Điểm đến -->
-      <div class="nav-input-group">
-        <label class="nav-label" for="select-dest-3d">
-          <span>🔴</span> Điểm cần đến
-        </label>
-        <select id="select-dest-3d" class="nav-select">
-          <option value="">-- Chọn phòng / vị trí đích đến --</option>
-        </select>
+      <!-- NÚT HOÁN ĐỔI CHIỀU -->
+      <div class="btn-swap-wrapper btn-swap-wrapper-3d">
+        <button type="button" id="btn-swap-route-3d" class="btn-swap-3d" onclick="swapNavPoints3D()" title="Hoán đổi điểm đi và điểm đến">
+          ⇅ Đổi chiều di chuyển
+        </button>
       </div>
 
-      <!-- Nút chỉ đường -->
-      <button type="button" class="btn-route-action" onclick="executeRoute3D()">
-        <span>🚀</span> Tìm Đường Đi 3D
-      </button>
+      <!-- COMBOBOX 2: NƠI MUỐN TỚI (ĐIỂM ĐẾN) -->
+      <div class="combobox-group">
+        <label class="combobox-label label-dest" for="dest-location-input-3d">
+          <span>🔴</span> Nơi muốn tới (Điểm đến)
+        </label>
+        <div class="combobox-container">
+          <div class="combobox-input-wrapper">
+            <span class="combobox-icon">🎯</span>
+            <input type="text" id="dest-location-input-3d" class="combobox-input"
+              placeholder="Gõ tìm phòng học, nơi muốn tới..." autocomplete="off">
+            <button type="button" id="dest-clear-btn-3d" class="btn-clear-input" title="Xóa">✕</button>
+          </div>
+          <div id="dest-location-dropdown-3d" class="combobox-dropdown" role="listbox"></div>
+        </div>
+      </div>
 
-      <!-- Khung hiển thị kết quả -->
+      <!-- HÀNG NÚT TÌM ĐƯỜNG & LÀM MỚI -->
+      <div class="nav-actions-row">
+        <button type="button" class="btn-route-action" onclick="executeRoute3D()">
+          <span>📍</span> Tìm Đường Đi 3D
+        </button>
+        <button type="button" class="btn-clear-action" onclick="clearActiveRoute()" title="Xóa lộ trình">
+          🧹
+        </button>
+      </div>
+
+      <!-- KHUNG HIỂN THỊ KẾT QUẢ ĐƯỜNG ĐI -->
       <div class="nav-result-box" id="nav-result-box" style="display: none;">
         <div class="nav-stats-row">
           <div class="stat-pill">
@@ -1174,86 +1850,36 @@
             <span class="stat-val" id="stat-time">0'</span>
             <span class="stat-lbl">Thời gian</span>
           </div>
+          <div class="stat-pill">
+            <span class="stat-val" id="stat-steps">0 bước</span>
+            <span class="stat-lbl">Số bước chân</span>
+          </div>
         </div>
 
         <div class="nav-btn-row">
-          <button type="button" class="btn-sub-action btn-tour" onclick="startCameraTour()" title="Bay theo đường đi 3D ở tầm mắt người đi">
-            <span>▶️</span> Tham quan 3D
+          <button type="button" class="btn-sub-action btn-tour" onclick="startCameraTour()" title="Bắt đầu đi thử mô phỏng 3D theo góc nhìn thực tế">
+            <span>🚶</span> Đi thử 3D
           </button>
           <button type="button" class="btn-sub-action" onclick="clearActiveRoute()" title="Xóa đường vẽ">
             <span>🗑️</span> Xóa đường
           </button>
         </div>
 
-        <!-- Danh sách các bước đi -->
+        <!-- DANH SÁCH CÁC BƯỚC ĐI TỪNG BƯỚC -->
         <div class="steps-timeline" id="steps-timeline"></div>
       </div>
     </div>
   </div>
 
-  <!-- Floating Floor Selector (Tách Tầng) -->
-  <div class="floor-switcher" id="floor-switcher">
-    <span class="floor-switcher-title"
-      style="font-size: 10px; color: #64748b; font-weight: bold; text-align: center; text-transform: uppercase;">Tầng</span>
-    <button class="floor-btn active" onclick="setFloor(this, 'all')">
-      <span class="floor-text-full">Tất Cả Tầng</span><span class="floor-text-short">Tất Cả</span>
-    </button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_3')">
-      <span class="floor-text-full">Tầng 4</span><span class="floor-text-short">T4</span>
-    </button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_2')">
-      <span class="floor-text-full">Tầng 3</span><span class="floor-text-short">T3</span>
-    </button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_1')">
-      <span class="floor-text-full">Tầng 2</span><span class="floor-text-short">T2</span>
-    </button>
-    <button class="floor-btn" onclick="setFloor(this, 'fl_0')">
-      <span class="floor-text-full">Tầng Trệt</span><span class="floor-text-short">Trệt</span>
-    </button>
-  </div>
-
-  <!-- Legend Overlay -->
-  <div class="legend-card" id="legend-card">
-    <div class="legend-title">
-      <span>🏫 Chú Thích Màu Khối & Kết Nối</span>
-      <button type="button" class="legend-close-btn" onclick="toggleLegendCard()" title="Đóng chú thích" aria-label="Đóng">✕</button>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color" style="background: #fef08a; border: 2px solid #ca8a04;"></div>
-      <div><b>Khối 10:</b> Vàng tươi pastel (10A1 ➔ 10A13).</div>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color" style="background: #dbeafe; border: 2px solid #0284c7;"></div>
-      <div><b>Khối 11:</b> Xanh da trời pastel (11A1 ➔ 11A10).</div>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color" style="background: #fed7aa; border: 2px solid #ea580c;"></div>
-      <div><b>Khối 12:</b> Cam đào pastel (12A1 ➔ 12A10).</div>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color" style="background: #fef9c3; border: 2px solid #64748b;"></div>
-      <div><b>Hành lang liên dãy:</b> Vàng be nhạt liền mạch toàn trường.</div>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color" style="background: #1e40af; border: 2px solid #60a5fa;"></div>
-      <div><b>Cầu hành lang Tầng 2:</b> Cầu vượt nối <b>Dãy B (12A6)</b> sang <b>Phòng Chi bộ</b>.</div>
-    </div>
-  </div>
-
-  <!-- Mobile Legend Toggle Button -->
-  <button type="button" id="btn-toggle-legend" class="mobile-legend-btn" onclick="toggleLegendCard()" title="Xem chú thích màu">
-    <span>🎨</span> <span>Chú Thích</span>
-  </button>
-
-  <!-- 🌐 FLOATING 360° PANORAMA CONTROLS WIDGET -->
-  <div class="panel-360" id="panel-360">
+  <!-- 3. PANEL 360 ĐỘ TOÀN CẢNH - ĐÃ LOẠI BỎ CÁC ĐIỂM RỐI, CHỈ GIỮ LẠI TOÀN CẢNH & FLYCAM TRÊN CAO -->
+  <div class="panel-360 hidden" id="panel-360">
     <div class="panel-360-header">
       <div class="panel-360-title">
         <span>🌐</span>
         <span>Toàn Cảnh 360° Khuôn Viên</span>
         <span class="badge-360-live" id="badge-360-status">LIVE 360°</span>
       </div>
-      <button type="button" class="btn-close-360" onclick="toggle360Panel()" title="Thu gọn / Đóng">✕</button>
+      <button type="button" class="btn-close-360" onclick="toggle360Panel(false)" title="Đóng bảng 360°">✕</button>
     </div>
 
     <div class="panel-360-body">
@@ -1278,270 +1904,887 @@
         </div>
       </div>
 
-      <!-- Chọn điểm nhìn 360° -->
+      <!-- CHỈ GIỮ LẠI 2 ĐIỂM NHÌN: TOÀN CẢNH & FLYCAM TRÊN CAO THEO ĐÚNG YÊU CẦU -->
       <div class="group-360-col">
-        <span class="lbl-360-small" style="margin-bottom: 4px; display: block;">📍 Chọn vị trí đứng nhìn 360°:</span>
-        <div class="hotspots-grid">
-          <button class="hotspot-btn" onclick="jumpTo360('360_san_truong', this)">
-            🏛️ Sân Trường
+        <span class="lbl-360-small" style="margin-bottom: 5px; display: block;">📍 Chọn vị trí đứng nhìn 360°:</span>
+        <div class="hotspots-grid-2">
+          <button class="hotspot-btn active" id="btn-hotspot-toancanh" onclick="jumpTo360('isometric', this)">
+            📐 Toàn Cảnh
           </button>
-          <button class="hotspot-btn" onclick="jumpTo360('360_cong_truong', this)">
-            🚪 Cổng Trường
-          </button>
-          <button class="hotspot-btn" onclick="jumpTo360('360_cot_co', this)">
-            🚩 Cột Cờ
-          </button>
-          <button class="hotspot-btn" onclick="jumpTo360('360_hoi_truong', this)">
-            🎭 Hội Trường
-          </button>
-          <button class="hotspot-btn" onclick="jumpTo360('360_day_hanh_chinh', this)">
-            🏢 Hành Chính
-          </button>
-          <button class="hotspot-btn" onclick="jumpTo360('360_skybridge', this)">
-            🪜 Cầu Tầng 2
-          </button>
-          <button class="hotspot-btn active" onclick="jumpTo360('360_orbit', this)">
-            🚁 Toàn Cảnh
+          <button class="hotspot-btn" id="btn-hotspot-flycam" onclick="jumpTo360('drone_view', this)">
+            🚁 Flycam Trên Cao
           </button>
         </div>
       </div>
 
       <div class="tip-360">
-        💡 <i>Kéo chuột hoặc vuốt ngón tay trên màn hình để chủ động nhìn 360° mọi hướng bất kỳ lúc nào!</i>
+        💡 <i>Kéo chuột hoặc vuốt ngón tay trên màn hình để chủ động quan sát 360° mọi hướng bất kỳ lúc nào!</i>
       </div>
     </div>
   </div>
 
-  <div class="controls-hint">
-    🖱️ Giữ chuột trái: <b>Xoay 3D</b> | Chuột phải: <b>Kéo di chuyển</b> | Cuộn: <b>Phóng to / Thu nhỏ</b>
+  <!-- 4. POPOVER XEM ẢNH & CHỌN ĐIỂM KHI CLICK PHÒNG HỌC TRÊN BẢN ĐỒ 3D -->
+  <div id="map-location-popover" class="map-location-popover hidden placement-top">
+    <div class="popover-card">
+      <button type="button" class="popover-close-btn" onclick="hideLocationPopover3D()" title="Đóng">✕</button>
+
+      <!-- KHUNG ẢNH THỰC TẾ CỦA PHÒNG HỌC -->
+      <div class="popover-photo-box" id="popover-photo-box" onclick="openRoomPhotoLightbox()" title="Chạm để xem ảnh phóng to chi tiết">
+        <img id="popover-photo-img" src="" alt="Ảnh phòng thực tế" />
+        <div class="popover-photo-shimmer" id="popover-photo-shimmer"></div>
+        <div class="popover-photo-building" id="popover-photo-building">🏢 Dãy phòng học</div>
+        <div class="popover-photo-badge" id="popover-photo-badge">📷 Chạm xem lớn</div>
+      </div>
+
+      <!-- NỘI DUNG & THAO TÁC -->
+      <div class="popover-content">
+        <div class="popover-header">
+          <span class="popover-icon" id="popover-icon">🏫</span>
+          <div class="popover-title-box">
+            <h3 id="popover-title">Lớp Học</h3>
+            <div class="popover-meta" id="popover-meta">Tầng • Dãy phòng</div>
+          </div>
+        </div>
+
+        <!-- 2 NÚT CHỌN ĐIỂM ĐANG ĐỨNG HOẶC ĐIỂM MUỐN TỚI -->
+        <div class="popover-actions">
+          <button type="button" class="popover-btn btn-set-start" id="popover-btn-start" onclick="setPopoverLocationAs('start')">
+            <span>🟢</span> Vị trí đang đứng (Điểm đi)
+          </button>
+          <button type="button" class="popover-btn btn-set-dest" id="popover-btn-dest" onclick="setPopoverLocationAs('dest')">
+            <span>🔴</span> Nơi muốn tới (Điểm đến)
+          </button>
+        </div>
+
+        <!-- TIỆN ÍCH PHỤ: DẪN TỪ CỔNG & XEM ẢNH TOÀN MÀN HÌNH -->
+        <div class="popover-sub-actions">
+          <button type="button" class="popover-sub-btn" id="popover-btn-gate" onclick="routeFromGateToCurrent()">
+            <span>📍</span> Dẫn từ Cổng
+          </button>
+          <button type="button" class="popover-sub-btn" id="popover-btn-view" onclick="openRoomPhotoLightbox()">
+            <span>🖼️</span> Xem ảnh phòng
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- MŨI TÊN CHŨI XUỐNG NÓC LỚP HỌC -->
+    <div class="popover-arrow" id="popover-arrow"></div>
   </div>
 
-  <!-- Scripts -->
+  <!-- 5. LIGHTBOX MODAL XEM ẢNH PHÒNG PHÓNG TO CHI TIẾT (ROOM PHOTO VIEWER) -->
+  <div id="room-photo-modal" class="room-photo-modal" role="dialog" aria-modal="true" style="display:none;">
+    <div class="rpm-backdrop" onclick="closeRoomPhotoModal()"></div>
+    <div class="rpm-panel">
+      <div class="rpm-header">
+        <div class="rpm-title-group">
+          <span class="rpm-icon" id="rpm-icon">📷</span>
+          <div>
+            <div class="rpm-name" id="rpm-name">Tên phòng học</div>
+            <div class="rpm-meta" id="rpm-meta">Tầng • Tòa</div>
+          </div>
+        </div>
+        <button type="button" class="rpm-close-btn" onclick="closeRoomPhotoModal()" aria-label="Đóng">✕</button>
+      </div>
+
+      <div class="rpm-image-area">
+        <button type="button" class="rpm-nav-btn rpm-nav-prev" id="rpm-prev-btn" onclick="prevRoomPhoto()" aria-label="Ảnh trước">&#8249;</button>
+        <div class="rpm-img-wrapper">
+          <img id="rpm-main-img" src="" alt="Ảnh địa điểm" class="rpm-main-img" />
+        </div>
+        <button type="button" class="rpm-nav-btn rpm-nav-next" id="rpm-next-btn" onclick="nextRoomPhoto()" aria-label="Ảnh tiếp">&#8250;</button>
+      </div>
+
+      <div class="rpm-dots" id="rpm-dots"></div>
+      <div class="rpm-counter" id="rpm-counter">1 / 1</div>
+
+      <div class="rpm-actions">
+        <button type="button" class="rpm-action-btn rpm-btn-gate" onclick="routeFromGateToCurrent(); closeRoomPhotoModal();">
+          <span>📍</span> Dẫn từ Cổng
+        </button>
+        <button type="button" class="rpm-action-btn rpm-btn-start" onclick="setPopoverLocationAs('start'); closeRoomPhotoModal();">
+          <span>🟢</span> Điểm đi
+        </button>
+        <button type="button" class="rpm-action-btn rpm-btn-dest" onclick="setPopoverLocationAs('dest'); closeRoomPhotoModal();">
+          <span>🔴</span> Điểm đến
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. HUD ĐIỀU KHIỂN CHẾ ĐỘ ĐI THỬ 3D -->
+  <div id="tour-hud-bar" class="tour-hud-bar hidden">
+    <div class="tour-hud-inner">
+      <div class="tour-info-row">
+        <div class="tour-badge"><span class="tour-badge-pulse"></span>🚶 ĐANG ĐI THỬ 3D</div>
+        <div class="tour-current-loc" id="tour-current-loc">Đang bước vào khuôn viên...</div>
+        <div class="tour-stat-pill" id="tour-progress-text">0%</div>
+      </div>
+
+      <div class="tour-progress-track" id="tour-progress-track" onclick="if(viewer) viewer.seekTourByClick(event, this)">
+        <div class="tour-progress-fill" id="tour-progress-fill"></div>
+      </div>
+
+      <div class="tour-controls-row">
+        <div class="tour-btn-group">
+          <button type="button" class="tour-hud-btn" id="tour-btn-pause" onclick="if(viewer) viewer.toggleTourPause()">
+            <span id="tour-icon-pause">⏸️</span> <span id="tour-text-pause">Tạm dừng</span>
+          </button>
+          <button type="button" class="tour-hud-btn" id="tour-btn-restart" onclick="if(viewer) viewer.restartTour()">
+            <span>🔄</span> Đi lại từ đầu
+          </button>
+        </div>
+
+        <div class="tour-btn-group tour-speed-group">
+          <button type="button" class="tour-pill-btn active" onclick="if(viewer) viewer.setTourSpeed(1, this)">1x (Đi bộ)</button>
+          <button type="button" class="tour-pill-btn" onclick="if(viewer) viewer.setTourSpeed(1.6, this)">1.6x</button>
+          <button type="button" class="tour-pill-btn" onclick="if(viewer) viewer.setTourSpeed(2.5, this)">2.5x</button>
+        </div>
+
+        <div class="tour-btn-group tour-view-group">
+          <button type="button" class="tour-pill-btn active" id="btn-view-fp" onclick="if(viewer) viewer.setTourViewMode('firstPerson', this)">
+            🚶 Mắt người đi
+          </button>
+          <button type="button" class="tour-pill-btn" id="btn-view-tp" onclick="if(viewer) viewer.setTourViewMode('thirdPerson', this)">
+            🚁 Flycam bám theo
+          </button>
+        </div>
+
+        <button type="button" class="tour-hud-btn btn-exit-tour" onclick="if(viewer) viewer.stopTour()">
+          <span>✕</span> Thoát đi thử
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. BỘ CHỌN TẦNG (TÁCH TẦNG 3D) -->
+  <div class="floor-switcher" id="floor-switcher">
+    <span class="floor-switcher-title">TẦNG</span>
+    <button class="floor-btn active" onclick="setFloor(this, 'all')">Tất Cả</button>
+    <button class="floor-btn" onclick="setFloor(this, 'fl_3')">T4</button>
+    <button class="floor-btn" onclick="setFloor(this, 'fl_2')">T3</button>
+    <button class="floor-btn" onclick="setFloor(this, 'fl_1')">T2</button>
+    <button class="floor-btn" onclick="setFloor(this, 'fl_0')">Trệt</button>
+  </div>
+
+  <!-- 8. CHÚ THÍCH MÀU KHỐI LỚP -->
+  <div class="legend-card" id="legend-card">
+    <div class="legend-title">
+      <span>🏫 Chú Thích Màu Khối</span>
+      <button type="button" class="legend-close-btn" onclick="toggleLegendCard()" title="Đóng">✕</button>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #fef08a; border: 2px solid #ca8a04;"></div>
+      <div><b>Khối 10:</b> Vàng tươi (10A1 ➔ 10A13).</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #dbeafe; border: 2px solid #0284c7;"></div>
+      <div><b>Khối 11:</b> Xanh da trời (11A1 ➔ 11A10).</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #fed7aa; border: 2px solid #ea580c;"></div>
+      <div><b>Khối 12:</b> Cam đào (12A1 ➔ 12A10).</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #1e40af; border: 2px solid #60a5fa;"></div>
+      <div><b>Cầu nối Lầu 1:</b> Cầu vượt sang Hành Chính.</div>
+    </div>
+  </div>
+
+  <button type="button" id="btn-toggle-legend" class="mobile-legend-btn" onclick="toggleLegendCard()" title="Xem chú thích màu">
+    <span>🎨</span> <span>Chú Thích</span>
+  </button>
+
+  <!-- TOAST THÔNG BÁO NHANH -->
+  <div id="toast-notification" class="toast-notification" style="display: none;">
+    <span id="toast-icon">ℹ️</span>
+    <span id="toast-text">Thông báo</span>
+  </div>
+
+  <!-- NẠP THƯ VIỆN & TÀI NGUYÊN DỮ LIỆU -->
   <script src="data.js"></script>
   <script src="router.js"></script>
   <script src="three.min.js"></script>
   <script src="OrbitControls.js"></script>
+  <script src="room_images.js"></script>
   <script src="campus3d.js"></script>
+
+  <!-- SCRIPT LOGIC ĐIỀU KHIỂN GIAO DIỆN & TƯƠNG TÁC 3D -->
   <script>
     let viewer = null;
+    let startCombobox = null;
+    let destCombobox = null;
+    let activeClickedLoc = null;
+    let currentPopoverPhotos = [];
+    let currentPopoverPhotoIdx = 0;
+    let toastTimeout = null;
+    let is360Rotating = false;
 
-    window.addEventListener('DOMContentLoaded', () => {
-      viewer = new Campus3DViewer('canvas3d-container');
-      populateLocationSelects();
-
-      // Trên mobile: tự động thu gọn bảng chỉ đường ban đầu để khuôn viên 3D không bị che khuất
-      if (window.innerWidth <= 768) {
-        const navPanel = document.getElementById('nav-panel-3d');
-        const navToggleBtn = document.getElementById('nav-toggle-btn');
-        if (navPanel) {
-          navPanel.classList.add('collapsed');
-          if (navToggleBtn) navToggleBtn.textContent = '➕';
-        }
-      }
-    });
-
-    // Đóng / mở bảng chú thích màu trên màn hình mobile
-    function toggleLegendCard() {
-      const card = document.getElementById('legend-card');
-      const btn = document.getElementById('btn-toggle-legend');
-      if (!card) return;
-      card.classList.toggle('open');
-      if (btn) {
-        btn.classList.toggle('active', card.classList.contains('open'));
-      }
+    // 1. HÀM CHUẨN HÓA TIẾNG VIỆT (TÌM KIẾM KHÔNG DẤU HOẶC CÓ DẤU ĐỀU KHỚP)
+    function removeVietnameseTones(str) {
+      if (!str) return "";
+      str = str.toLowerCase();
+      str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+      str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+      str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+      str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+      str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+      str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+      str = str.replace(/đ/g, "d");
+      str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, "");
+      str = str.replace(/\u02C6|\u0306|\u031B/g, "");
+      return str.trim();
     }
 
-    // Đóng chú thích khi chạm ra ngoài trên mobile
-    document.addEventListener('click', (e) => {
-      if (window.innerWidth <= 768) {
-        const card = document.getElementById('legend-card');
-        const btn = document.getElementById('btn-toggle-legend');
-        if (card && card.classList.contains('open')) {
-          if (!card.contains(e.target) && (!btn || !btn.contains(e.target))) {
-            card.classList.remove('open');
-            if (btn) btn.classList.remove('active');
+    // 2. COMBOBOX THÔNG MINH CHO PHÉP NHẬP TÊN LỚP / PHÒNG CÓ TỰ ĐỘNG GỢI Ý
+    class Combobox3D {
+      constructor(inputId, dropdownId, clearBtnId, onSelect, getExcludeLocation) {
+        this.inputEl = document.getElementById(inputId);
+        this.dropdownEl = document.getElementById(dropdownId);
+        this.clearBtnEl = document.getElementById(clearBtnId);
+        this.onSelect = onSelect;
+        this.getExcludeLocation = getExcludeLocation;
+        this.selectedLocation = null;
+        this.focusedIndex = -1;
+        this.filteredItems = [];
+
+        this.initEvents();
+      }
+
+      initEvents() {
+        if (!this.inputEl || !this.dropdownEl) return;
+
+        this.inputEl.addEventListener("focus", () => {
+          this.renderDropdown(this.inputEl.value);
+          this.showDropdown();
+        });
+
+        this.inputEl.addEventListener("input", () => {
+          if (this.clearBtnEl) {
+            this.clearBtnEl.style.display = this.inputEl.value ? "block" : "none";
           }
+          this.renderDropdown(this.inputEl.value);
+          this.showDropdown();
+        });
+
+        this.inputEl.addEventListener("keydown", (e) => {
+          if (!this.dropdownEl.classList.contains("active")) return;
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            this.focusItem(this.focusedIndex + 1);
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            this.focusItem(this.focusedIndex - 1);
+          } else if (e.key === "Enter") {
+            e.preventDefault();
+            if (this.focusedIndex >= 0 && this.filteredItems[this.focusedIndex]) {
+              this.selectLocation(this.filteredItems[this.focusedIndex]);
+            }
+          } else if (e.key === "Escape") {
+            this.hideDropdown();
+          }
+        });
+
+        if (this.clearBtnEl) {
+          this.clearBtnEl.addEventListener("click", () => {
+            this.clear();
+          });
         }
+
+        document.addEventListener("click", (e) => {
+          if (!this.inputEl.contains(e.target) && !this.dropdownEl.contains(e.target)) {
+            this.hideDropdown();
+          }
+        });
+      }
+
+      renderDropdown(searchTerm = "") {
+        const normalizedSearch = removeVietnameseTones(searchTerm);
+        this.dropdownEl.innerHTML = "";
+        this.focusedIndex = -1;
+
+        const excludeLoc = this.getExcludeLocation ? this.getExcludeLocation() : null;
+        const excludeId = excludeLoc ? excludeLoc.id : null;
+
+        const locations = window.CAMPUS_LOCATIONS || [];
+        this.filteredItems = locations.filter(loc => {
+          if (excludeId && loc.id === excludeId) return false;
+          if (!normalizedSearch) return true;
+
+          const normName = removeVietnameseTones(loc.name);
+          const normDesc = removeVietnameseTones(loc.description || "");
+          const normFloor = removeVietnameseTones(loc.floor || "");
+          const normBuilding = removeVietnameseTones(loc.building || "");
+          const normKeywords = (loc.keywords || []).map(k => removeVietnameseTones(k)).join(" ");
+
+          return normName.includes(normalizedSearch) ||
+            normDesc.includes(normalizedSearch) ||
+            normFloor.includes(normalizedSearch) ||
+            normBuilding.includes(normalizedSearch) ||
+            normKeywords.includes(normalizedSearch);
+        });
+
+        if (this.filteredItems.length === 0) {
+          this.dropdownEl.innerHTML = `<div class="dropdown-empty">Không tìm thấy phòng phù hợp</div>`;
+          return;
+        }
+
+        const groups = {};
+        this.filteredItems.forEach(item => {
+          const cat = item.category || "Phòng Học & Chức Năng";
+          if (!groups[cat]) groups[cat] = [];
+          groups[cat].push(item);
+        });
+
+        let itemIndex = 0;
+        for (const cat in groups) {
+          const catTitle = document.createElement("div");
+          catTitle.className = "dropdown-category-title";
+          catTitle.textContent = this.formatCategoryTitle(cat);
+          this.dropdownEl.appendChild(catTitle);
+
+          groups[cat].forEach(loc => {
+            const itemEl = document.createElement("div");
+            itemEl.className = "dropdown-item";
+            itemEl.dataset.index = itemIndex;
+
+            const hasPhoto = window.ROOM_IMAGES && window.ROOM_IMAGES[loc.id] && window.ROOM_IMAGES[loc.id].length > 0;
+            const photoBadgeHtml = hasPhoto ? `<span class="dropdown-item-photo-badge" title="Có ảnh thực tế phòng">📷 Ảnh</span>` : "";
+
+            itemEl.innerHTML = `
+              <div class="dropdown-item-left">
+                <span class="dropdown-item-name">${loc.name}</span>
+                <span class="dropdown-item-desc">${loc.floor || ""} • ${loc.building || "Khuôn viên"}</span>
+              </div>
+              <div class="dropdown-item-badges">
+                ${photoBadgeHtml}
+                <span class="dropdown-item-badge">${loc.floor || ""}</span>
+              </div>
+            `;
+
+            itemEl.addEventListener("mousedown", (e) => {
+              e.preventDefault();
+              this.selectLocation(loc);
+            });
+
+            this.dropdownEl.appendChild(itemEl);
+            itemIndex++;
+          });
+        }
+      }
+
+      formatCategoryTitle(cat) {
+        switch (cat) {
+          case "admin": return "🏢 Khối Hành Chính & Hiệu Bộ";
+          case "classroom": return "🏫 Khối Lớp Học (10, 11, 12)";
+          case "facility": return "🔬 Phòng Chức Năng & Bộ Môn";
+          case "stair": return "🪜 Cầu Thang Bộ";
+          case "gate": return "🚪 Cổng & Khu Vực Chung";
+          default: return `📍 ${cat}`;
+        }
+      }
+
+      focusItem(index) {
+        const items = this.dropdownEl.querySelectorAll(".dropdown-item");
+        if (items.length === 0) return;
+        items.forEach(el => el.classList.remove("focused"));
+        if (index >= items.length) index = 0;
+        if (index < 0) index = items.length - 1;
+        this.focusedIndex = index;
+        const target = items[this.focusedIndex];
+        if (target) {
+          target.classList.add("focused");
+          target.scrollIntoView({ block: "nearest" });
+        }
+      }
+
+      selectLocation(loc, triggerCallback = true) {
+        this.selectedLocation = loc;
+        this.inputEl.value = loc ? loc.name : "";
+        if (this.clearBtnEl) {
+          this.clearBtnEl.style.display = loc ? "block" : "none";
+        }
+        this.hideDropdown();
+        if (triggerCallback && this.onSelect) {
+          this.onSelect(loc);
+        }
+      }
+
+      clear(triggerCallback = true) {
+        this.selectedLocation = null;
+        this.inputEl.value = "";
+        if (this.clearBtnEl) {
+          this.clearBtnEl.style.display = "none";
+        }
+        this.hideDropdown();
+        if (triggerCallback && this.onSelect) {
+          this.onSelect(null);
+        }
+      }
+
+      showDropdown() {
+        this.dropdownEl.classList.add("active");
+      }
+
+      hideDropdown() {
+        this.dropdownEl.classList.remove("active");
+        this.focusedIndex = -1;
+      }
+    }
+
+    // 3. KHỞI TẠO ỨNG DỤNG SAU KHI TẢI XONG TRANG
+    window.addEventListener("DOMContentLoaded", () => {
+      viewer = new Campus3DViewer("canvas3d-container");
+
+      // Khởi tạo 2 combobox nhập liệu tìm kiếm
+      startCombobox = new Combobox3D(
+        "start-location-input-3d",
+        "start-location-dropdown-3d",
+        "start-clear-btn-3d",
+        (loc) => {
+          if (loc && destCombobox.selectedLocation) {
+            executeRoute3D();
+          }
+        },
+        () => destCombobox ? destCombobox.selectedLocation : null
+      );
+
+      destCombobox = new Combobox3D(
+        "dest-location-input-3d",
+        "dest-location-dropdown-3d",
+        "dest-clear-btn-3d",
+        (loc) => {
+          if (loc && startCombobox.selectedLocation) {
+            executeRoute3D();
+          }
+        },
+        () => startCombobox ? startCombobox.selectedLocation : null
+      );
+
+      // Điểm mặc định tiện lợi ban đầu: Cổng trường -> Phòng 12A1
+      if (window.CAMPUS_LOCATIONS) {
+        const cong = window.CAMPUS_LOCATIONS.find(l => l.id === "cong_truong");
+        const lop12a1 = window.CAMPUS_LOCATIONS.find(l => l.id === "b_t3_12a1" || l.name.includes("12A1"));
+        if (cong) startCombobox.selectLocation(cong, false);
+        if (lop12a1) destCombobox.selectLocation(lop12a1, false);
       }
     });
 
-    function setActiveCam(btn, preset) {
-      document.querySelectorAll('.top-toolbar .tool-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      viewer.setCameraPreset(preset);
-    }
+    let activeTarget3DPos = null;
 
-    function setFloor(btn, floorKey) {
-      document.querySelectorAll('.floor-switcher .floor-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      viewer.filterFloor(floorKey);
-    }
-
-    // Đổ danh sách địa điểm phân nhóm vào 2 thẻ Select
-    function populateLocationSelects() {
-      if (!window.CAMPUS_LOCATIONS) return;
-
-      const startSel = document.getElementById('select-start-3d');
-      const destSel = document.getElementById('select-dest-3d');
-
-      const groups = {
-        campus: { label: "🏫 Sân trường & Khuôn viên", items: [] },
-        k10: { label: "🟡 Khối 10 (Dãy A & B)", items: [] },
-        k11: { label: "🔵 Khối 11 (Dãy A)", items: [] },
-        k12: { label: "🟠 Khối 12 (Dãy B)", items: [] },
-        admin: { label: "🏢 Dãy Hành Chính & Ban Giám Hiệu", items: [] },
-        dept: { label: "🔬 Dãy Bộ Môn, Tin Học & Khác", items: [] }
-      };
-
-      window.CAMPUS_LOCATIONS.forEach(loc => {
-        const id = loc.id;
-        const name = loc.name;
-        const fl = loc.floor ? ` (${loc.floor})` : '';
-
-        if (id.includes('cong_truong') || id.includes('cot_co') || id.includes('canopy') || id.includes('nha_xe') || id.includes('hoi_truong')) {
-          groups.campus.items.push({ id, text: `${name}${fl}` });
-        } else if (name.includes('10A')) {
-          groups.k10.items.push({ id, text: `${name}${fl}` });
-        } else if (name.includes('11A')) {
-          groups.k11.items.push({ id, text: `${name}${fl}` });
-        } else if (name.includes('12A')) {
-          groups.k12.items.push({ id, text: `${name}${fl}` });
-        } else if (id.includes('hc_') || id.includes('hieu_truong') || id.includes('van_thu') || id.includes('ke_toan') || id.includes('chi_bo') || id.includes('ho_so') || id.includes('pho_ht') || id.includes('truyen_thong') || id.includes('tiep_dan')) {
-          groups.admin.items.push({ id, text: `${name}${fl}` });
-        } else {
-          groups.dept.items.push({ id, text: `${name}${fl}` });
-        }
-      });
-
-      const fill = (selectEl, defaultId) => {
-        selectEl.innerHTML = '<option value="">-- Chọn vị trí --</option>';
-        for (const gKey in groups) {
-          const g = groups[gKey];
-          if (g.items.length === 0) continue;
-          const optGroup = document.createElement('optgroup');
-          optGroup.label = g.label;
-          g.items.forEach(it => {
-            const opt = document.createElement('option');
-            opt.value = it.id;
-            opt.textContent = it.text;
-            if (defaultId && it.id === defaultId) opt.selected = true;
-            optGroup.appendChild(opt);
-          });
-          selectEl.appendChild(optGroup);
-        }
-      };
-
-      fill(startSel, 'cong_truong');
-      fill(destSel, 'b_t3_12a1');
-    }
-
-    // Toggle đóng mở bảng chỉ đường
-    function toggleNavPanel() {
-      const panel = document.getElementById('nav-panel-3d');
-      const btn = document.getElementById('nav-toggle-btn');
-      panel.classList.toggle('collapsed');
-      btn.textContent = panel.classList.contains('collapsed') ? '➕' : '—';
-    }
-
-    // Hoán đổi điểm đi và điểm đến
-    function swapNavPoints() {
-      const s = document.getElementById('select-start-3d');
-      const d = document.getElementById('select-dest-3d');
-      const tmp = s.value;
-      s.value = d.value;
-      d.value = tmp;
-    }
-
-    // Thiết lập điểm từ tooltip khi click vào phòng 3D
-    window.setNavPoint = function(roomName, type) {
-      const targetLoc = viewer.findLocation(roomName);
-      if (!targetLoc) return;
-
-      const sel = type === 'start' ? document.getElementById('select-start-3d') : document.getElementById('select-dest-3d');
-      sel.value = targetLoc.id;
-
-      // Mở panel nếu đang bị thu gọn
-      const panel = document.getElementById('nav-panel-3d');
-      if (panel.classList.contains('collapsed')) {
-        toggleNavPanel();
+    // 4. BẮT SỰ KIỆN CLICK VÀO PHÒNG TRÊN BẢN ĐỒ 3D (TỪ CAMPUS3D.JS)
+    window.onCampus3DRoomClick = function(locOrData, event, room3DPos) {
+      if (!locOrData) return;
+      let loc = locOrData;
+      if (viewer && locOrData.name) {
+        const found = viewer.findLocation(locOrData.name);
+        if (found) loc = found;
       }
-
-      // Tự động tìm đường nếu đã có cả 2 điểm
-      const startVal = document.getElementById('select-start-3d').value;
-      const destVal = document.getElementById('select-dest-3d').value;
-      if (startVal && destVal && startVal !== destVal) {
-        executeRoute3D();
-      }
+      activeClickedLoc = loc;
+      activeTarget3DPos = room3DPos || (viewer ? viewer.getRoomWorldPosition(loc) : null);
+      showLocationPopover3D(loc, activeTarget3DPos);
     };
 
-    // Thực hiện tìm đường 3D
-    function executeRoute3D() {
-      const startId = document.getElementById('select-start-3d').value;
-      const destId = document.getElementById('select-dest-3d').value;
+    window.hideCampus3DPopover = function() {
+      hideLocationPopover3D();
+    };
 
-      if (!startId || !destId) {
-        alert("Vui lòng chọn cả điểm xuất phát và điểm đến!");
+    // Hàm cập nhật vị trí Popover theo tọa độ 3D thực tế của phòng học
+    window.updateCampus3DPopoverPosition = function() {
+      updateLocationPopover3DPosition();
+    };
+
+    function updateLocationPopover3DPosition() {
+      const popover = document.getElementById("map-location-popover");
+      if (!popover || popover.classList.contains("hidden") || !viewer) return;
+
+      if (!activeTarget3DPos && activeClickedLoc) {
+        activeTarget3DPos = viewer.getRoomWorldPosition(activeClickedLoc);
+      }
+      if (!activeTarget3DPos) return;
+
+      const screenCoords = viewer.projectToScreen(activeTarget3DPos);
+      if (!screenCoords || screenCoords.isBehind) {
+        popover.style.opacity = "0";
+        popover.style.pointerEvents = "none";
         return;
       }
 
-      if (startId === destId) {
-        alert("Điểm xuất phát và điểm đến trùng nhau!");
+      // Ẩn nếu nằm ngoài phạm vi hiển thị màn hình
+      if (screenCoords.x < -120 || screenCoords.x > window.innerWidth + 120 ||
+          screenCoords.y < -120 || screenCoords.y > window.innerHeight + 120) {
+        popover.style.opacity = "0";
+        popover.style.pointerEvents = "none";
         return;
       }
 
-      const res = viewer.draw3DRoute(startId, destId);
-      if (!res || !res.success) {
-        alert(res ? res.message : "Không tìm thấy tuyến đường!");
+      popover.style.opacity = "1";
+      popover.style.pointerEvents = "auto";
+
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        popover.classList.remove("placement-top", "placement-bottom");
+        popover.style.left = "";
+        popover.style.top = "";
         return;
       }
 
-      // Hiển thị kết quả
-      const resBox = document.getElementById('nav-result-box');
-      resBox.style.display = 'flex';
-      document.getElementById('stat-dist').textContent = `${Math.round(res.totalDistanceMeters)}m`;
-      document.getElementById('stat-time').textContent = `~${Math.ceil(res.estimatedMinutes)} ph`;
+      // Định vị popover ngay trên nóc phòng học, mũi tên chĩa xuống
+      const cardW = 320;
+      const halfW = cardW / 2;
+      const margin = 16;
 
-      // Render timeline các bước đi
-      const timeline = document.getElementById('steps-timeline');
-      timeline.innerHTML = '';
-      if (res.instructions && res.instructions.length > 0) {
-        res.instructions.forEach((ins, idx) => {
-          const item = document.createElement('div');
-          item.className = 'step-node';
-          item.innerHTML = `<span>${ins.icon || '🚶'}</span><div><b>${ins.text}</b>${ins.detail ? `<div style="color: #94a3b8; font-size: 10.5px;">${ins.detail}</div>` : ''}</div>`;
-          timeline.appendChild(item);
+      // Giữ cho thẻ popover không bị tràn ra ngoài 2 mép màn hình
+      let left = Math.max(halfW + margin, Math.min(window.innerWidth - halfW - margin, screenCoords.x));
+
+      // Độ lệch của mũi tên để luôn trỏ thẳng vào tâm nóc lớp học
+      let arrowOffset = screenCoords.x - left;
+      arrowOffset = Math.max(-halfW + 30, Math.min(halfW - 30, arrowOffset));
+      popover.style.setProperty("--arrow-offset", `${arrowOffset}px`);
+
+      // Chiều cao ước lượng của popover
+      const hasPhoto = currentPopoverPhotos && currentPopoverPhotos.length > 0;
+      const estCardH = hasPhoto ? 350 : 210;
+
+      // Nếu phòng học nằm quá cao (sát mép trên màn hình), đặt popover ở dưới và chĩa mũi tên lên
+      if (screenCoords.y < estCardH + 75) {
+        popover.classList.remove("placement-top");
+        popover.classList.add("placement-bottom");
+        popover.style.left = `${left}px`;
+        popover.style.top = `${screenCoords.y}px`;
+      } else {
+        // Nằm ngay trên đầu lớp học, mũi tên chĩa xuống
+        popover.classList.remove("placement-bottom");
+        popover.classList.add("placement-top");
+        popover.style.left = `${left}px`;
+        popover.style.top = `${screenCoords.y}px`;
+      }
+    }
+
+    // 5. HIỂN THỊ POPOVER CARD KHI CHỌN PHÒNG HỌC
+    function showLocationPopover3D(loc, target3DPos) {
+      const popover = document.getElementById("map-location-popover");
+      const titleEl = document.getElementById("popover-title");
+      const metaEl = document.getElementById("popover-meta");
+      const iconEl = document.getElementById("popover-icon");
+      const photoBox = document.getElementById("popover-photo-box");
+      const photoImg = document.getElementById("popover-photo-img");
+      const photoBuilding = document.getElementById("popover-photo-building");
+      const photoBadge = document.getElementById("popover-photo-badge");
+
+      if (!popover || !loc) return;
+
+      activeClickedLoc = loc;
+      if (target3DPos) {
+        activeTarget3DPos = target3DPos;
+      } else if (viewer) {
+        activeTarget3DPos = viewer.getRoomWorldPosition(loc);
+      }
+
+      titleEl.textContent = loc.name;
+      const bText = loc.building ? ` • ${loc.building}` : "";
+      metaEl.textContent = `${loc.floor || "Khuôn viên"}${bText}`;
+
+      // Icon biểu tượng
+      if (loc.name.includes("10A") || loc.name.includes("11A") || loc.name.includes("12A")) {
+        iconEl.textContent = "🏫";
+      } else if (loc.id && loc.id.includes("hc_") || loc.name.includes("Hiệu") || loc.name.includes("Kế toán")) {
+        iconEl.textContent = "🏢";
+      } else if (loc.name.includes("Hội trường")) {
+        iconEl.textContent = "🎭";
+      } else {
+        iconEl.textContent = "📍";
+      }
+
+      // Xử lý nạp ảnh thực tế từ room_images.js
+      currentPopoverPhotos = (window.ROOM_IMAGES && window.ROOM_IMAGES[loc.id]) ? window.ROOM_IMAGES[loc.id] : [];
+      currentPopoverPhotoIdx = 0;
+
+      if (currentPopoverPhotos.length > 0) {
+        photoBox.style.display = "block";
+        const rawSrc = currentPopoverPhotos[0];
+        const safeSrc = rawSrc.split("/").map(seg => encodeURIComponent(seg)).join("/");
+        photoImg.src = safeSrc;
+        photoBuilding.textContent = loc.building ? `🏢 ${loc.building}` : "🏫 Trường THPT Tam Phước";
+        photoBadge.textContent = currentPopoverPhotos.length > 1 ? `📷 ${currentPopoverPhotos.length} ảnh • Chạm xem lớn` : `📷 Chạm xem lớn`;
+      } else {
+        photoBox.style.display = "none";
+      }
+
+      // Hiển thị và cập nhật vị trí ngay lập tức
+      popover.classList.remove("hidden");
+      popover.style.display = "block";
+      updateLocationPopover3DPosition();
+    }
+
+    function hideLocationPopover3D() {
+      activeTarget3DPos = null;
+      const popover = document.getElementById("map-location-popover");
+      if (popover) {
+        popover.classList.add("hidden");
+        popover.style.display = "none";
+      }
+    }
+
+    // 6. THAO TÁC GÁN PHÒNG TỪ POPOVER
+    function setPopoverLocationAs(type) {
+      if (!activeClickedLoc) return;
+
+      if (type === "start") {
+        startCombobox.selectLocation(activeClickedLoc, true);
+        showToast3D("🟢", `Đã chọn ${activeClickedLoc.name} là Nơi đang đứng`);
+      } else {
+        destCombobox.selectLocation(activeClickedLoc, true);
+        showToast3D("🔴", `Đã chọn ${activeClickedLoc.name} là Nơi muốn tới`);
+      }
+
+      hideLocationPopover3D();
+      toggleNavPanel(true); // Tự động mở bảng chỉ đường để người dùng thấy rõ
+    }
+
+    function routeFromGateToCurrent() {
+      if (!activeClickedLoc || !window.CAMPUS_LOCATIONS) return;
+      const cong = window.CAMPUS_LOCATIONS.find(l => l.id === "cong_truong");
+      if (cong) {
+        startCombobox.selectLocation(cong, false);
+      }
+      destCombobox.selectLocation(activeClickedLoc, false);
+      hideLocationPopover3D();
+      toggleNavPanel(true);
+      executeRoute3D();
+      showToast3D("📍", `Đang dẫn đường từ Cổng trường đến ${activeClickedLoc.name}`);
+    }
+
+    // 7. LIGHTBOX XEM ẢNH PHÒNG PHÓNG TO
+    function openRoomPhotoLightbox() {
+      if (!activeClickedLoc) return;
+      const modal = document.getElementById("room-photo-modal");
+      const nameEl = document.getElementById("rpm-name");
+      const metaEl = document.getElementById("rpm-meta");
+      const mainImg = document.getElementById("rpm-main-img");
+      const prevBtn = document.getElementById("rpm-prev-btn");
+      const nextBtn = document.getElementById("rpm-next-btn");
+      const dotsEl = document.getElementById("rpm-dots");
+      const counterEl = document.getElementById("rpm-counter");
+
+      if (!modal) return;
+
+      nameEl.textContent = activeClickedLoc.name;
+      metaEl.textContent = `${activeClickedLoc.floor || ""} • ${activeClickedLoc.building || ""}`;
+
+      currentPopoverPhotos = (window.ROOM_IMAGES && window.ROOM_IMAGES[activeClickedLoc.id]) ? window.ROOM_IMAGES[activeClickedLoc.id] : [];
+      currentPopoverPhotoIdx = 0;
+
+      if (currentPopoverPhotos.length === 0) {
+        showToast3D("ℹ️", "Phòng này hiện chưa có ảnh thực tế");
+        return;
+      }
+
+      updateModalImageDisplay();
+      modal.style.display = "flex";
+    }
+
+    function updateModalImageDisplay() {
+      const mainImg = document.getElementById("rpm-main-img");
+      const prevBtn = document.getElementById("rpm-prev-btn");
+      const nextBtn = document.getElementById("rpm-next-btn");
+      const dotsEl = document.getElementById("rpm-dots");
+      const counterEl = document.getElementById("rpm-counter");
+
+      if (currentPopoverPhotos.length === 0) return;
+
+      const rawSrc = currentPopoverPhotos[currentPopoverPhotoIdx];
+      mainImg.src = rawSrc.split("/").map(seg => encodeURIComponent(seg)).join("/");
+      counterEl.textContent = `${currentPopoverPhotoIdx + 1} / ${currentPopoverPhotos.length}`;
+
+      prevBtn.style.display = currentPopoverPhotos.length > 1 ? "flex" : "none";
+      nextBtn.style.display = currentPopoverPhotos.length > 1 ? "flex" : "none";
+
+      dotsEl.innerHTML = "";
+      if (currentPopoverPhotos.length > 1) {
+        currentPopoverPhotos.forEach((_, idx) => {
+          const dot = document.createElement("span");
+          dot.className = `rpm-dot ${idx === currentPopoverPhotoIdx ? "active" : ""}`;
+          dot.onclick = () => {
+            currentPopoverPhotoIdx = idx;
+            updateModalImageDisplay();
+          };
+          dotsEl.appendChild(dot);
         });
       }
     }
 
-    // Tham quan góc nhìn người đi bộ
-    function startCameraTour() {
-      if (!viewer.activeCurve) {
-        alert("Hãy tìm đường trước khi tham quan!");
+    function nextRoomPhoto() {
+      if (currentPopoverPhotoIdx < currentPopoverPhotos.length - 1) {
+        currentPopoverPhotoIdx++;
+        updateModalImageDisplay();
+      }
+    }
+
+    function prevRoomPhoto() {
+      if (currentPopoverPhotoIdx > 0) {
+        currentPopoverPhotoIdx--;
+        updateModalImageDisplay();
+      }
+    }
+
+    function closeRoomPhotoModal() {
+      const modal = document.getElementById("room-photo-modal");
+      if (modal) modal.style.display = "none";
+    }
+
+    // 8. ĐÓNG MỞ BẢNG CHỈ ĐƯỜNG 3D
+    function toggleNavPanel(forceOpen) {
+      const panel = document.getElementById("nav-panel-3d");
+      const btn = document.getElementById("btn-toggle-nav");
+      if (!panel) return;
+
+      const shouldOpen = (forceOpen !== undefined) ? forceOpen : panel.classList.contains("hidden");
+      if (shouldOpen) {
+        panel.classList.remove("hidden");
+        if (btn) btn.classList.add("active");
+        hideLocationPopover3D();
+      } else {
+        panel.classList.add("hidden");
+        if (btn) btn.classList.remove("active");
+      }
+    }
+
+    // Hoán đổi điểm đi và điểm đến
+    function swapNavPoints3D() {
+      const startLoc = startCombobox.selectedLocation;
+      const destLoc = destCombobox.selectedLocation;
+
+      startCombobox.selectLocation(destLoc, false);
+      destCombobox.selectLocation(startLoc, false);
+
+      if (startCombobox.selectedLocation && destCombobox.selectedLocation) {
+        executeRoute3D();
+        showToast3D("⇅", "Đã đổi chiều di chuyển");
+      }
+    }
+
+    // Tìm đường đi 3D
+    function executeRoute3D() {
+      const startLoc = startCombobox.selectedLocation;
+      const destLoc = destCombobox.selectedLocation;
+
+      if (!startLoc || !destLoc) {
+        showToast3D("⚠️", "Vui lòng chọn cả điểm xuất phát và điểm đến!");
         return;
       }
-      // Trên mobile: tự động thu gọn bảng chỉ đường để người xem thấy trọn vẹn góc bay 3D
-      if (window.innerWidth <= 768) {
-        const panel = document.getElementById('nav-panel-3d');
-        const btn = document.getElementById('nav-toggle-btn');
-        if (panel && !panel.classList.contains('collapsed')) {
-          panel.classList.add('collapsed');
-          if (btn) btn.textContent = '➕';
-        }
+
+      if (startLoc.id === destLoc.id) {
+        showToast3D("⚠️", "Điểm xuất phát và điểm đến không được trùng nhau!");
+        return;
       }
+
+      if (!viewer) return;
+
+      const res = viewer.draw3DRoute(startLoc.id, destLoc.id);
+      if (!res || !res.success) {
+        showToast3D("⚠️", res ? res.message : "Không tìm thấy tuyến đường!");
+        return;
+      }
+
+      const resBox = document.getElementById("nav-result-box");
+      resBox.style.display = "flex";
+      document.getElementById("stat-dist").textContent = `${Math.round(res.totalDistanceMeters)}m`;
+      document.getElementById("stat-time").textContent = `~${Math.ceil(res.estimatedMinutes)} ph`;
+      document.getElementById("stat-steps").textContent = `~${Math.round(res.totalDistanceMeters * 1.35)} bước`;
+
+      const timeline = document.getElementById("steps-timeline");
+      timeline.innerHTML = "";
+      if (res.instructions && res.instructions.length > 0) {
+        res.instructions.forEach((ins) => {
+          const item = document.createElement("div");
+          item.className = "step-node";
+          item.innerHTML = `<span>${ins.icon || "🚶"}</span><div><b>${ins.title || ins.text || ""}</b>${ins.detail ? `<div style="color: #94a3b8; font-size: 10px;">${ins.detail}</div>` : ""}</div>`;
+          timeline.appendChild(item);
+        });
+      }
+
+      showToast3D("📍", `Đã vẽ tuyến đường (${Math.round(res.totalDistanceMeters)}m)`);
+    }
+
+    function clearActiveRoute() {
+      if (viewer) viewer.clearRoute();
+      document.getElementById("nav-result-box").style.display = "none";
+      showToast3D("🧹", "Đã xóa lộ trình");
+    }
+
+    function startCameraTour() {
+      if (!viewer.activeRoute) {
+        executeRoute3D();
+      }
+      if (!viewer.activeRoute) {
+        showToast3D("⚠️", "Vui lòng chọn điểm đi và điểm đến trước khi đi thử!");
+        return;
+      }
+      toggleNavPanel(false);
       viewer.startTour();
     }
 
-    // Xóa tuyến đường
-    function clearActiveRoute() {
-      viewer.clearRoute();
-      document.getElementById('nav-result-box').style.display = 'none';
+    // 9. ĐIỀU KHIỂN GÓC NHÌN & 360 ĐỘ TOÀN CẢNH
+    function setActiveCam(btn, preset) {
+      document.querySelectorAll(".top-toolbar .btn-cam").forEach(b => {
+        b.classList.remove("active");
+      });
+      if (btn) btn.classList.add("active");
+      if (viewer) viewer.setCameraPreset(preset);
     }
 
-    // =========================================================================
-    // 🌐 BỘ ĐIỀU KHIỂN CHẾ ĐỘ XEM 360 ĐỘ TOÀN CẢNH KHUÔN VIÊN
-    // =========================================================================
-    let is360Rotating = false;
+    // ĐIỀU KHIỂN CHẾ ĐỘ DI CHUYỂN BẢN ĐỒ (PAN) & XOAY 3D (ROTATE)
+    function setControlMode(mode) {
+      if (!viewer) return;
+      viewer.setInteractionMode(mode);
+
+      // Cập nhật trạng thái nút trên Toolbar
+      const btnPan = document.getElementById("btn-mode-pan");
+      const btnRotate = document.getElementById("btn-mode-rotate");
+      if (btnPan) btnPan.classList.toggle("active", mode === "pan");
+      if (btnRotate) btnRotate.classList.toggle("active", mode === "rotate");
+
+      // Cập nhật trạng thái nút trên Floating Dock
+      const mfcPan = document.getElementById("mfc-mode-pan");
+      const mfcRotate = document.getElementById("mfc-mode-rotate");
+      if (mfcPan) mfcPan.classList.toggle("active", mode === "pan");
+      if (mfcRotate) mfcRotate.classList.toggle("active", mode === "rotate");
+
+      if (mode === "pan") {
+        showToast3D("🖐️", "Chế độ Di Chuyển: Kéo ngón tay hoặc chuột để di bản đồ sang trái, phải, trước, sau");
+      } else {
+        showToast3D("🔄", "Chế độ Xoay 3D: Kéo ngón tay hoặc chuột để xoay 360° quanh trường");
+      }
+    }
+
+    // Đưa góc nhìn trở về lại chính giữa trường học
+    function recenterCampusView() {
+      if (!viewer) return;
+      viewer.recenterCampus();
+      showToast3D("🎯", "Đã đưa góc nhìn về trung tâm trường");
+    }
+
+    function setFloor(btn, floorKey) {
+      document.querySelectorAll(".floor-switcher .floor-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      if (viewer) viewer.filterFloor(floorKey);
+    }
+
+    function toggle360Panel(forceOpen) {
+      const panel = document.getElementById("panel-360");
+      const btn = document.getElementById("btn-toggle-360");
+      if (!panel) return;
+
+      const shouldOpen = (forceOpen !== undefined) ? forceOpen : panel.classList.contains("hidden");
+      if (shouldOpen) {
+        panel.classList.remove("hidden");
+        if (btn) btn.classList.add("active");
+        hideLocationPopover3D();
+      } else {
+        panel.classList.add("hidden");
+        if (!is360Rotating && btn) btn.classList.remove("active");
+      }
+    }
 
     function toggle360Mode() {
       if (!viewer) return;
@@ -1552,8 +2795,8 @@
     function set360Speed(speed, btn) {
       if (!viewer) return;
       viewer.set360RotateSpeed(speed);
-      document.querySelectorAll('.pill-group .pill-btn').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
+      document.querySelectorAll(".pill-group .pill-btn").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
     }
 
     function reverse360Dir() {
@@ -1561,54 +2804,88 @@
       viewer.reverse360Direction();
     }
 
+    // CHỌN 1 TRONG 2 GÓC NHÌN 360: TOÀN CẢNH HOẶC FLYCAM TRÊN CAO
     function jumpTo360(preset, btn) {
       if (!viewer) return;
       viewer.setCameraPreset(preset);
-      document.querySelectorAll('.hotspots-grid .hotspot-btn').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      // Tự động bật xoay 360 để tạo trải nghiệm toàn cảnh mượt mà
+      document.querySelectorAll(".hotspots-grid-2 .hotspot-btn").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+
+      // Tự động bật chế độ tự xoay 360 mượt mà
       if (!is360Rotating) {
         is360Rotating = viewer.toggle360AutoRotate(true);
       }
       update360UI();
     }
 
-    function toggle360Panel() {
-      const p = document.getElementById('panel-360');
-      if (p) p.classList.toggle('hidden');
-    }
-
     function update360UI() {
-      const btnMain = document.getElementById('btn-toggle-360');
-      const btnPlay = document.getElementById('btn-360-play');
-      const txtPlay = document.getElementById('text-360-play');
-      const iconPlay = document.getElementById('icon-360-play');
-      const badge = document.getElementById('badge-360-status');
-      const panel = document.getElementById('panel-360');
+      const btnMain = document.getElementById("btn-toggle-360");
+      const btnPlay = document.getElementById("btn-360-play");
+      const txtPlay = document.getElementById("text-360-play");
+      const iconPlay = document.getElementById("icon-360-play");
+      const badge = document.getElementById("badge-360-status");
 
       if (is360Rotating) {
-        if (btnMain) btnMain.classList.add('active');
-        if (btnPlay) btnPlay.classList.add('active');
-        if (txtPlay) txtPlay.textContent = 'Tạm Dừng 360°';
-        if (iconPlay) iconPlay.textContent = '⏸️';
+        if (btnMain) btnMain.classList.add("active");
+        if (btnPlay) btnPlay.classList.add("active");
+        if (txtPlay) txtPlay.textContent = "Tạm Dừng 360°";
+        if (iconPlay) iconPlay.textContent = "⏸️";
         if (badge) {
-          badge.textContent = 'ĐANG XOAY 360°';
-          badge.style.background = '#10b981';
-        }
-        if (panel && panel.classList.contains('hidden')) {
-          panel.classList.remove('hidden');
+          badge.textContent = "ĐANG XOAY 360°";
+          badge.style.background = "#10b981";
         }
       } else {
-        if (btnMain) btnMain.classList.remove('active');
-        if (btnPlay) btnPlay.classList.remove('active');
-        if (txtPlay) txtPlay.textContent = 'Bật Xoay 360°';
-        if (iconPlay) iconPlay.textContent = '▶️';
+        if (btnPlay) btnPlay.classList.remove("active");
+        if (txtPlay) txtPlay.textContent = "Bật Xoay 360°";
+        if (iconPlay) iconPlay.textContent = "▶️";
         if (badge) {
-          badge.textContent = 'TẠM DỪNG 360°';
-          badge.style.background = '#64748b';
+          badge.textContent = "TẠM DỪNG 360°";
+          badge.style.background = "#64748b";
         }
       }
     }
+
+    // 10. CHÚ THÍCH MÀU & TOAST
+    function toggleLegendCard() {
+      const card = document.getElementById("legend-card");
+      const btn = document.getElementById("btn-toggle-legend");
+      if (!card) return;
+      card.classList.toggle("open");
+      if (btn) btn.classList.toggle("active", card.classList.contains("open"));
+    }
+
+    function showToast3D(icon, text) {
+      const toast = document.getElementById("toast-notification");
+      const iconEl = document.getElementById("toast-icon");
+      const textEl = document.getElementById("toast-text");
+      if (!toast) return;
+
+      iconEl.textContent = icon || "ℹ️";
+      textEl.textContent = text || "";
+      toast.style.display = "flex";
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.style.display = "none";
+      }, 2800);
+    }
+
+    // Phím tắt bàn phím tiện lợi trên máy tính (Mũi tên để di chuyển, + - để thu phóng, R về giữa, M đổi chế độ)
+    window.addEventListener("keydown", (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+      if (!viewer) return;
+      if (e.key === 'ArrowLeft') { viewer.panByDirection('left'); }
+      else if (e.key === 'ArrowRight') { viewer.panByDirection('right'); }
+      else if (e.key === 'ArrowUp') { viewer.panByDirection('up'); }
+      else if (e.key === 'ArrowDown') { viewer.panByDirection('down'); }
+      else if (e.key === '+' || e.key === '=') { viewer.zoomIn(); }
+      else if (e.key === '-' || e.key === '_') { viewer.zoomOut(); }
+      else if (e.key === 'r' || e.key === 'R') { recenterCampusView(); }
+      else if (e.key === 'm' || e.key === 'M') {
+        const nextMode = (viewer.interactionMode === 'pan') ? 'rotate' : 'pan';
+        setControlMode(nextMode);
+      }
+    });
   </script>
 </body>
 

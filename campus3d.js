@@ -25,16 +25,25 @@ class Campus3DViewer {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
 
-    // Hệ thống Chỉ Đường 3D
+    // Hệ thống Chỉ Đường 3D & Chế độ Đi Thử (Walkthrough Simulation)
     this.routeGroup = new THREE.Group();
     this.routeGroup.name = "RouteGroup3D";
     this.beaconPulses = [];
     this.activeCurve = null;
     this.activeRoute = null;
     this.tourActive = false;
+    this.tourPaused = false;
     this.tourProgress = 0;
     this.tourStartTime = 0;
-    this.tourDuration = 12000;
+    this.tourDuration = 14000;
+    this.tourSpeed = 1.0;
+    this.tourViewMode = 'firstPerson'; // 'firstPerson' hoặc 'thirdPerson'
+    this.tourWaypoints = [];
+    this.tourLookTarget = new THREE.Vector3();
+    this.savedCameraState = null;
+    this.originalFov = 40;
+    this.walkFov = 72;
+    this.lastTime = performance.now();
     this.router = null;
 
     this.initScene();
@@ -49,39 +58,56 @@ class Campus3DViewer {
 
     // 1. Scene & Renderer
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xf1f5f9);
-    this.scene.fog = new THREE.FogExp2(0xf1f5f9, 0.0035);
+    this.scene.background = new THREE.Color(0xdbeafe); // Bầu trời xanh nhạt thoáng đãng
+    this.scene.fog = new THREE.FogExp2(0xe0f2fe, 0.0022);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.05;
     this.container.appendChild(this.renderer.domElement);
     this.scene.add(this.routeGroup);
 
-    // 2. Camera - Mặc định góc nhìn Flycam trực diện từ trên cao chuẩn ảnh flycam thực tế
-    this.camera = new THREE.PerspectiveCamera(40, width / height, 0.5, 1000);
+    // 2. Camera - Mặc định góc nhìn Flycam trực diện từ trên cao
+    this.camera = new THREE.PerspectiveCamera(this.originalFov || 40, width / height, 0.2, 1000);
     this.camera.position.set(0, 48, 70);
 
-    // 3. OrbitControls
+    // 3. OrbitControls - Hỗ trợ Di Chuyển (Pan) mượt mà phẳng theo mặt đất như bản đồ 2D
     this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.06;
     this.controls.maxPolarAngle = Math.PI / 2 - 0.03;
-    this.controls.minDistance = 15;
-    this.controls.maxDistance = 250;
+    this.controls.minDistance = 8;
+    this.controls.maxDistance = 260;
     this.controls.target.set(0, 7, 3);
 
-    // 4. Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+    // Kích hoạt tính năng Di Chuyển (Pan) mượt mà
+    this.controls.enablePan = true;
+    this.controls.panSpeed = 1.15;
+    this.controls.screenSpacePanning = false; // Di chuyển phẳng theo mặt đất trường học (X-Z) chuẩn MapControls
+
+    this.controls.addEventListener('change', () => {
+      if (window.updateCampus3DPopoverPosition) {
+        window.updateCampus3DPopoverPosition();
+      }
+    });
+
+    // Chế độ tương tác mặc định: 'pan' (Di chuyển bản đồ sang trái, phải, trước, sau)
+    this.interactionMode = 'pan';
+    this.applyInteractionMode();
+
+    // 4. Lights - Ánh nắng trường học buổi sáng rực rỡ chuẩn video thực tế
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.82);
     this.scene.add(ambientLight);
 
-    const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0xf1f5f9, 0.45);
+    const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0xfef9c3, 0.55);
     hemiLight.position.set(0, 100, 0);
     this.scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfffaed, 0.95);
+    const sunLight = new THREE.DirectionalLight(0xfff8eb, 1.15);
     sunLight.position.set(-50, 95, 65);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 2048;
@@ -93,10 +119,10 @@ class Campus3DViewer {
     sunLight.shadow.camera.right = d;
     sunLight.shadow.camera.top = d;
     sunLight.shadow.camera.bottom = -d;
-    sunLight.shadow.bias = -0.0005;
+    sunLight.shadow.bias = -0.0004;
     this.scene.add(sunLight);
 
-    const fillLight = new THREE.DirectionalLight(0xbae6fd, 0.35);
+    const fillLight = new THREE.DirectionalLight(0xbae6fd, 0.45);
     fillLight.position.set(60, 40, -50);
     this.scene.add(fillLight);
   }
@@ -104,6 +130,314 @@ class Campus3DViewer {
   // =========================================================================
   // CÁC HÀM HELPER KIẾN TRÚC MÁI TÔN XANH, CỘT ĐỎ, CÂY XANH & GHẾ ĐÁ THỰC TẾ
   // =========================================================================
+
+  // Xác định chính xác độ cao tầng (Y) cho mọi định dạng tên tầng
+  getFloorY(floorStr) {
+    if (!floorStr) return 0.1;
+    const f = String(floorStr).toLowerCase();
+    if (f.includes('4') || f.includes('lầu 3') || f.includes('fl_3') || f.includes('t4')) return 10.8;
+    if (f.includes('3') || f.includes('lầu 2') || f.includes('fl_2') || f.includes('t3')) return 7.2;
+    if (f.includes('2') || f.includes('lầu 1') || f.includes('fl_1') || f.includes('t2')) return 3.6;
+    return 0.1; // Tầng trệt / Mặt đất
+  }
+
+  // Mặt tiền lớp học hướng ra hành lang: Cửa gỗ vàng, cửa sổ chấn song, biển lớp xanh dương
+  // Tái hiện chính xác 100% hình ảnh hành lang trường học trong video
+  createClassroomCorridorFacadeTexture(name, options = {}) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // 1. Tường vôi màu kem nhạt ấm áp trường học THPT Tam Phước
+    ctx.fillStyle = '#faf7ee';
+    ctx.fillRect(0, 0, 1024, 512);
+
+    // 2. Len chân tường gạch màu nâu đỏ sẫm (Baseboard)
+    ctx.fillStyle = '#7f1d1d';
+    ctx.fillRect(0, 470, 1024, 42);
+    ctx.fillStyle = '#991b1b';
+    ctx.fillRect(0, 464, 1024, 6);
+
+    // 3. Đường chỉ phào ngang tường
+    ctx.strokeStyle = '#e2d8c3';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(0, 75);
+    ctx.lineTo(1024, 75);
+    ctx.stroke();
+
+    const isWC = name && name.toUpperCase().includes('WC');
+    const isBlank = !name || name === '-';
+
+    if (isWC) {
+      // Cửa WC
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(360, 100, 304, 370);
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = '#0f766e';
+      ctx.strokeRect(360, 100, 304, 370);
+      ctx.fillStyle = '#0f766e';
+      ctx.fillRect(432, 140, 160, 60);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 36px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText("WC", 512, 182);
+    } else if (!isBlank) {
+      // A. Cửa ra vào phòng học (Bên phải): Cánh cửa gỗ vàng đặc trưng
+      const doorX = 720;
+      const doorY = 95;
+      const doorW = 240;
+      const doorH = 375;
+
+      // Khung bao cửa màu nâu gỗ
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(doorX - 6, doorY - 6, doorW + 12, doorH + 6);
+
+      // Thân cửa gỗ sơn vàng tươi ấm
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(doorX, doorY, doorW, doorH);
+
+      // Ô kính quan sát trên cửa
+      ctx.fillStyle = '#e0f2fe';
+      ctx.fillRect(doorX + 35, doorY + 40, doorW - 70, 120);
+      ctx.strokeStyle = '#92400e';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(doorX + 35, doorY + 40, doorW - 70, 120);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.beginPath();
+      ctx.moveTo(doorX + 45, doorY + 45);
+      ctx.lineTo(doorX + 85, doorY + 45);
+      ctx.lineTo(doorX + 55, doorY + 150);
+      ctx.lineTo(doorX + 45, doorY + 150);
+      ctx.fill();
+
+      // Các pano gỗ bên dưới
+      ctx.strokeStyle = '#b45309';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(doorX + 25, doorY + 185, doorW - 50, 115);
+      ctx.strokeRect(doorX + 25, doorY + 315, doorW - 50, 45);
+
+      // Tay nắm cửa tròn inox
+      ctx.fillStyle = '#475569';
+      ctx.beginPath();
+      ctx.arc(doorX + 28, doorY + 225, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(doorX + 26, doorY + 223, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // B. Cửa sổ phòng học có chấn song sắt ngang (Bên trái)
+      const winX = 60;
+      const winY = 115;
+      const winW = 580;
+      const winH = 245;
+
+      // Khung cửa sổ gỗ màu vàng
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(winX - 6, winY - 6, winW + 12, winH + 12);
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(winX, winY, winW, winH);
+
+      // Các ô cửa sổ kính
+      const paneW = (winW - 16) / 3;
+      for (let p = 0; p < 3; p++) {
+        const px = winX + 4 + p * (paneW + 4);
+        ctx.fillStyle = '#e0f2fe';
+        ctx.fillRect(px, winY + 4, paneW, winH - 8);
+        ctx.strokeStyle = '#92400e';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(px, winY + 4, paneW, winH - 8);
+
+        // Các chấn song an toàn nằm ngang màu vàng
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 3;
+        for (let b = 1; b <= 4; b++) {
+          const by = winY + 4 + b * ((winH - 8) / 5);
+          ctx.beginPath();
+          ctx.moveTo(px, by);
+          ctx.lineTo(px + paneW, by);
+          ctx.stroke();
+        }
+
+        // Vệt phản chiếu ánh sáng trên kính
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.beginPath();
+        ctx.moveTo(px + 10, winY + 10);
+        ctx.lineTo(px + 35, winY + 10);
+        ctx.lineTo(px + 20, winY + winH - 20);
+        ctx.lineTo(px + 10, winY + winH - 20);
+        ctx.fill();
+      }
+
+      // C. Biển phòng học màu xanh dương chữ trắng đặc trưng (Bên trên cửa ra vào)
+      const plateX = doorX + 10;
+      const plateY = 20;
+      const plateW = doorW - 20;
+      const plateH = 58;
+
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(plateX, plateY, plateW, plateH);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeRect(plateX, plateY, plateW, plateH);
+
+      // Chữ biển phòng
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      let title = name.toUpperCase();
+      if (!title.startsWith('PHÒNG') && !title.startsWith('LỚP') && !title.startsWith('WC')) {
+        title = `LỚP ${title}`;
+      }
+      ctx.font = '900 25px "Segoe UI", Roboto, sans-serif';
+      if (ctx.measureText(title).width > plateW - 20) {
+        ctx.font = 'bold 19px "Segoe UI", Roboto, sans-serif';
+      }
+      ctx.fillText(title, plateX + plateW / 2, plateY + plateH / 2);
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter;
+    return tex;
+  }
+
+  // Gạch men màu kem nhạt bóng ấm lát hành lang
+  createCorridorFloorTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ede5d8';
+    ctx.fillRect(0, 0, 512, 512);
+
+    ctx.strokeStyle = '#d4c7b5';
+    ctx.lineWidth = 3;
+    const tileSize = 64;
+    for (let x = 0; x <= 512; x += tileSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 512);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= 512; y += tileSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y);
+      ctx.stroke();
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(12, 2);
+    return tex;
+  }
+
+  // Gạch bê tông con sâu lượn sóng sân trường kèm các vạch sơn trắng tập trung chào cờ
+  createCourtyardPaversTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+
+    // Nền đá xám bê tông
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(0, 0, 1024, 1024);
+
+    // Kẻ ron gạch sân trường
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 2;
+    for (let x = 0; x < 1024; x += 32) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 1024);
+      ctx.stroke();
+    }
+    for (let y = 0; y < 1024; y += 32) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(1024, y);
+      ctx.stroke();
+    }
+
+    // Các vạch sơn trắng kẻ hàng tập trung học sinh (chuẩn sân chào cờ trong video)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.lineWidth = 14;
+    for (let x = 128; x < 1024; x += 256) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 1024);
+      ctx.stroke();
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(8, 8);
+    return tex;
+  }
+
+  // Chậu cây kiểng / bonsai viền đỏ gạch xếp dọc hành lang & sân khấu
+  createPottedPlant(x, z, s = 1) {
+    const group = new THREE.Group();
+    group.position.set(x, 0, z);
+
+    // Chậu đất nung màu đỏ gạch
+    const pot = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.35 * s, 0.25 * s, 0.5 * s, 14),
+      new THREE.MeshStandardMaterial({ color: 0x9a3412, roughness: 0.75 })
+    );
+    pot.position.y = (0.5 * s) / 2;
+    pot.castShadow = true;
+    group.add(pot);
+
+    // Cây cảnh tròn xanh mướt
+    const plant = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.38 * s, 1),
+      new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.7 })
+    );
+    plant.position.y = 0.62 * s;
+    plant.castShadow = true;
+    group.add(plant);
+
+    return group;
+  }
+
+  // Dây cờ tam giác nhiều màu treo ngang sân trường (chuẩn lễ hội trường học)
+  createFestiveFlags(x1, y1, z1, x2, y2, z2, flagCount = 18) {
+    const group = new THREE.Group();
+    const colors = [0xdc2626, 0xfacc15, 0x2563eb, 0x16a34a, 0xf97316];
+    for (let i = 0; i <= flagCount; i++) {
+      const t = i / flagCount;
+      const x = x1 + (x2 - x1) * t;
+      const sag = Math.sin(t * Math.PI) * 1.2;
+      const y = y1 + (y2 - y1) * t - sag;
+      const z = z1 + (z2 - z1) * t;
+
+      const flagGeo = new THREE.BufferGeometry();
+      const hw = 0.22;
+      const h = 0.45;
+      const verts = new Float32Array([
+        -hw, 0, 0,
+        hw, 0, 0,
+        0, -h, 0
+      ]);
+      flagGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+      flagGeo.computeVertexNormals();
+
+      const flagMat = new THREE.MeshBasicMaterial({
+        color: colors[i % colors.length],
+        side: THREE.DoubleSide
+      });
+      const flagMesh = new THREE.Mesh(flagGeo, flagMat);
+      flagMesh.position.set(x, y, z);
+      group.add(flagMesh);
+    }
+    return group;
+  }
+
   createHipRoofMesh(w, d, h, oh = 0.8, color = 0x1d4ed8) {
     const geo = new THREE.BufferGeometry();
     const v0 = [-w/2 - oh, 0, -d/2 - oh];
@@ -424,7 +758,7 @@ class Campus3DViewer {
     // 5. Địa chỉ trường
     ctx.fillStyle = '#cbd5e1';
     ctx.font = '600 26px "Segoe UI", Roboto, sans-serif';
-    ctx.fillText("Ấp Long Khánh 3 - P. Tam Phước - TP. Biên Hòa - Đồng Nai", 512, 345);
+    ctx.fillText("P. Tam Phước - TP. Biên Hòa - Đồng Nai", 512, 345);
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.minFilter = THREE.LinearFilter;
@@ -612,16 +946,54 @@ class Campus3DViewer {
     return texture;
   }
 
+  // Lan can hành lang chuẩn video: tường bê tông vôi kem nửa dưới, ống thép tròn xanh dương phía trên
+  createCorridorBalustrade(length, x, y, z, rotationY = 0) {
+    const group = new THREE.Group();
+    group.position.set(x, y, z);
+    group.rotation.y = rotationY;
+
+    const parapetMat = new THREE.MeshStandardMaterial({ color: 0xfaf7ee, roughness: 0.6 });
+    const bluePipeMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, metalness: 0.5, roughness: 0.35 });
+
+    // 1. Tường bê tông kem dưới cao 0.62m
+    const wallGeo = new THREE.BoxGeometry(length, 0.62, 0.14);
+    const wall = new THREE.Mesh(wallGeo, parapetMat);
+    wall.position.y = 0.31;
+    wall.castShadow = true;
+    wall.receiveShadow = true;
+    group.add(wall);
+
+    // 2. Tay vịn ống tròn xanh dương trên cùng cao 0.88m
+    const pipeGeo = new THREE.CylinderGeometry(0.038, 0.038, length, 16);
+    const pipe = new THREE.Mesh(pipeGeo, bluePipeMat);
+    pipe.rotation.z = Math.PI / 2;
+    pipe.position.y = 0.88;
+    pipe.castShadow = true;
+    group.add(pipe);
+
+    // 3. Các chân trụ thép đứng giữ tay vịn cách đều nhau ~3m
+    const postGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.28, 12);
+    const numPosts = Math.max(2, Math.floor(length / 3));
+    for (let i = 0; i <= numPosts; i++) {
+      const px = -length / 2 + (i / numPosts) * length;
+      const post = new THREE.Mesh(postGeo, bluePipeMat);
+      post.position.set(px, 0.74, 0);
+      group.add(post);
+    }
+
+    return group;
+  }
+
   buildCampus() {
     this.buildGround();
     this.buildBackBuilding();          // 1. Dãy Lớp Sau A (Khối 10, 11 & Thư Viện - NẰM NGANG)
     this.buildLeftWingBuilding();       // 2. Cánh Trái Dãy B (Khối 12 - 4 tầng - NẰM NGANG)
-    this.buildCenterBuilding();         // 3. Khối Trung Tâm (4 tầng - NẰM NGANG)
+    // 3. Đằng sau mái chóp tam giác không có khối tòa trung tâm nào (chuẩn ảnh 1, 3, 4 thực tế)
     this.buildRightWingBuilding();      // 4. Cánh Phải Dãy Bộ Môn (4 tầng - NẰM NGANG)
     this.buildFrontLeftAdminBuilding(); // 5. Dãy Hành Chính Hiệu Bộ (2 tầng - NẰM NGANG)
     this.buildAuditoriumBuilding();     // 6. Hội Trường Mái Vòm Xanh (Phía trước bên phải)
     this.buildWestConnectingBridges();  // 7. Hệ Thống Cầu Hành Lang Liên Tòa Nhà
-    this.buildCentralCanopyAndFlag();   // 8. Mái Che Tam Giác & Cột Cờ
+    this.buildCentralCanopyAndFlag();   // 8. Mái Che Tam Giác & Cột Cờ (Chuẩn ảnh 1, 3, 4)
     this.buildCampusEnvironment();      // 9. Cổng trường, Sân bóng, Nhà xe & Cây xanh
   }
 
@@ -629,22 +1001,18 @@ class Campus3DViewer {
   buildGround() {
     const groundGroup = new THREE.Group();
 
-    // 1. Mặt sân gạch trường học (Paved Courtyard Stone)
+    // 1. Mặt sân gạch trường học (Paved Courtyard Stone) với vạch sơn trắng tập trung chào cờ chuẩn video
     const groundGeo = new THREE.PlaneGeometry(160, 160);
+    const paversTex = this.createCourtyardPaversTexture();
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0xead5c3, // Gạch lát sân màu be nhạt ấm chuẩn ảnh flycam
-      roughness: 0.85,
+      map: paversTex,
+      roughness: 0.8,
       metalness: 0.05
     });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     groundGroup.add(ground);
-
-    // Kẻ lưới gạch sân trường nhẹ
-    const grid = new THREE.GridHelper(150, 75, 0xd4c2b2, 0xd4c2b2);
-    grid.position.y = 0.02;
-    groundGroup.add(grid);
 
     // 2. Lối đi xe trải nhựa màu xám đen bên cánh trái (chạy từ cổng vào phía sau)
     const roadGeo = new THREE.PlaneGeometry(8, 100);
@@ -707,14 +1075,28 @@ class Campus3DViewer {
       groundGroup.add(bench);
     });
 
+    // 6. Các chậu cây kiểng / bonsai viền đỏ gạch đặt dọc mép hành lang (như trong video)
+    const pottedPositions = [
+      { x: -36, z: 2.4 }, { x: -30, z: 2.4 }, { x: -24, z: 2.4 }, { x: -18, z: 2.4 }, { x: -10, z: 2.4 },
+      { x: 10, z: 2.4 }, { x: 18, z: 2.4 }, { x: 26, z: 2.4 }, { x: 34, z: 2.4 },
+      { x: -2, z: 2.4 }, { x: 2, z: 2.4 }
+    ];
+    pottedPositions.forEach(pp => {
+      groundGroup.add(this.createPottedPlant(pp.x, pp.z, 0.9));
+    });
+
+    // 7. Dây cờ tam giác lễ hội rực rỡ treo ngang sân trường (từ Mái tam giác sang các dãy hành lang)
+    groundGroup.add(this.createFestiveFlags(-4.5, 5.0, -2, -18, 4.0, 2, 14));
+    groundGroup.add(this.createFestiveFlags(4.5, 5.0, -2, 18, 4.0, 2, 14));
+
     this.scene.add(groundGroup);
   }
 
-  // Helper tạo khối phòng học chuẩn 3D
+  // Helper tạo khối phòng học chuẩn 3D - Tích hợp đầy đủ mặt tiền cửa gỗ vàng, cửa sổ chấn song và biển phòng xanh dương
   createRoomBlock(name, x, y, z, w, h, d, options = {}) {
     const isHighlight = options.isHighlight || false;
-    const bgColor = options.color || (isHighlight ? 0xfef08a : 0xffffff);
-    const strokeColor = options.stroke || (isHighlight ? '#ca8a04' : '#94a3b8');
+    const bgColor = options.color || (isHighlight ? 0xfef08a : 0xfcfaf6);
+    const strokeColor = options.stroke || (isHighlight ? '#ca8a04' : '#d1d5db');
     const textColor = options.textColor || (isHighlight ? '#854d0e' : '#1e293b');
     const floorKey = options.floorKey || 'g';
 
@@ -722,11 +1104,11 @@ class Campus3DViewer {
     group.position.set(x, y, z);
     group.userData = { name, floorKey, info: options.info || '' };
 
-    // Khối tường/thân phòng
+    // Khối tường/thân phòng màu vôi kem ấm
     const boxGeo = new THREE.BoxGeometry(w, h, d);
     const boxMat = new THREE.MeshStandardMaterial({
-      color: bgColor,
-      roughness: 0.5,
+      color: 0xfcfaf6,
+      roughness: 0.6,
       metalness: 0.05
     });
     const box = new THREE.Mesh(boxGeo, boxMat);
@@ -736,17 +1118,16 @@ class Campus3DViewer {
 
     // Viền khung sắc nét
     const edges = new THREE.EdgesGeometry(boxGeo);
-    const lineMat = new THREE.LineBasicMaterial({ color: isHighlight ? 0xd97706 : 0x94a3b8, linewidth: 1.5 });
+    const lineMat = new THREE.LineBasicMaterial({ color: isHighlight ? 0xd97706 : 0xd1d5db, linewidth: 1.2 });
     const wireframe = new THREE.LineSegments(edges, lineMat);
     group.add(wireframe);
 
-    // Mặt nhãn hiển thị tên phòng trên mái/mặt trước
+    // 1. Mặt nhãn hiển thị tên phòng trên mái (cho góc nhìn Flycam bao quát toàn cảnh)
     if (name && name !== '-') {
       const labelMat = new THREE.MeshBasicMaterial({
         map: this.createCanvasLabel(name, options.subtext || '', isHighlight ? '#fef08a' : '#ffffff', textColor, strokeColor, 340, 160),
         transparent: true
       });
-      // Nhãn trên nóc phòng (tỷ lệ cân đối ~2:1, không bị kéo dãn méo mó)
       const topW = Math.min(w * 0.88, 7.2);
       const topH = Math.min(d * 0.72, topW / 1.8);
       const topLabelGeo = new THREE.PlaneGeometry(topW, topH);
@@ -754,15 +1135,20 @@ class Campus3DViewer {
       topLabel.rotation.x = -Math.PI / 2;
       topLabel.position.y = h / 2 + 0.05;
       group.add(topLabel);
-
-      // Nhãn mặt trước phòng (hướng ra hành lang, tỷ lệ chuẩn 2.1:1 khớp canvas)
-      const frontW = Math.min(w * 0.88, 7.0);
-      const frontH = Math.min(h * 0.52, frontW / 2.1);
-      const frontLabelGeo = new THREE.PlaneGeometry(frontW, frontH);
-      const frontLabel = new THREE.Mesh(frontLabelGeo, labelMat);
-      frontLabel.position.set(0, 0, d / 2 + 0.05);
-      group.add(frontLabel);
     }
+
+    // 2. Mặt trước hành lang (Facing Corridor): Cửa gỗ vàng + Cửa sổ chấn song + Biển hiệu xanh dương
+    // Tái hiện chính xác diện mạo thực tế của trường trong video
+    const facadeTex = this.createClassroomCorridorFacadeTexture(name, options);
+    const facadeMat = new THREE.MeshStandardMaterial({
+      map: facadeTex,
+      roughness: 0.5,
+      metalness: 0.05
+    });
+    const facadeGeo = new THREE.PlaneGeometry(w, h);
+    const facadeMesh = new THREE.Mesh(facadeGeo, facadeMat);
+    facadeMesh.position.set(0, 0, d / 2 + 0.04);
+    group.add(facadeMesh);
 
     this.interactiveRooms.push(group);
     return group;
@@ -914,20 +1300,17 @@ class Campus3DViewer {
       const y = fl.floor * floorH + floorH / 2;
       let startX = -32;
 
-      // Sàn hành lang phía trước phòng - Màu vàng be nhạt chuẩn 2D
+      // Sàn hành lang gạch men kem chuẩn video thực tế
       const slabGeo = new THREE.BoxGeometry(72, 0.4, roomD + 3);
-      const slabMat = new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.6 });
+      const slabMat = new THREE.MeshStandardMaterial({ map: this.createCorridorFloorTexture(), roughness: 0.55 });
       const slab = new THREE.Mesh(slabGeo, slabMat);
       slab.position.set(0, fl.floor * floorH, zPos + 1.5);
       slab.receiveShadow = true;
       building.add(slab);
 
-      // Lan can hành lang
-      const railGeo = new THREE.BoxGeometry(72, 0.9, 0.15);
-      const railMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.3 });
-      const rail = new THREE.Mesh(railGeo, railMat);
-      rail.position.set(0, fl.floor * floorH + 0.5, zPos + roomD / 2 + 3);
-      building.add(rail);
+      // Lan can hành lang: Nửa dưới bê tông vôi kem, nửa trên tay vịn thép tròn xanh dương
+      const balustrade = this.createCorridorBalustrade(72, 0, fl.floor * floorH, zPos + roomD / 2 + 3);
+      building.add(balustrade);
 
       fl.rooms.forEach(r => {
         if (r.isStair1) {
@@ -972,8 +1355,8 @@ class Campus3DViewer {
     roofA.position.set(0, 4 * floorH, zPos + 1.5);
     building.add(roofA);
 
-    // Băng rôn khẩu hiệu trên Dãy A
-    const bannerA = this.createSloganBanner("TẤT CẢ VÌ HỌC SINH THÂN YÊU", 0, 13.0, zPos + roomD / 2 + 3.3, 16, 1.4, 0);
+    // Băng rôn khẩu hiệu trên nóc Dãy A (chuẩn ảnh 3 thực tế)
+    const bannerA = this.createSloganBanner("VÌ LỢI ÍCH MƯỜI NĂM TRỒNG CÂY - VÌ LỢI ÍCH TRĂM NĂM TRỒNG NGƯỜI", 0, 13.0, zPos + roomD / 2 + 3.3, 24, 1.4, 0);
     building.add(bannerA);
 
     this.scene.add(building);
@@ -1054,20 +1437,17 @@ class Campus3DViewer {
       const y = fl.floor * floorH + floorH / 2;
       let startX = -38;
 
-      // Sàn hành lang trước mặt phòng (hướng ra sân trường +Z) - Màu vàng be nhạt chuẩn 2D
+      // Sàn hành lang gạch men kem chuẩn video thực tế
       const slabGeo = new THREE.BoxGeometry(34, 0.4, roomD + 3);
-      const slabMat = new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.6 });
+      const slabMat = new THREE.MeshStandardMaterial({ map: this.createCorridorFloorTexture(), roughness: 0.55 });
       const slab = new THREE.Mesh(slabGeo, slabMat);
       slab.position.set(-22.5, fl.floor * floorH, zPos + 1.5);
       slab.receiveShadow = true;
       building.add(slab);
 
-      // Lan can hành lang bảo vệ
-      const railGeo = new THREE.BoxGeometry(34, 0.9, 0.15);
-      const railMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.3 });
-      const rail = new THREE.Mesh(railGeo, railMat);
-      rail.position.set(-22.5, fl.floor * floorH + 0.5, zPos + roomD / 2 + 3);
-      building.add(rail);
+      // Lan can hành lang: Nửa dưới bê tông vôi kem, nửa trên tay vịn thép tròn xanh dương
+      const balustrade = this.createCorridorBalustrade(34, -22.5, fl.floor * floorH, zPos + roomD / 2 + 3);
+      building.add(balustrade);
 
       fl.rooms.forEach(r => {
         if (r.isStair) {
@@ -1083,13 +1463,13 @@ class Campus3DViewer {
           floorKey: `fl_${fl.floor}`
         });
 
-        // Điểm đánh dấu liên kết hành lang ở phòng 12A10 (trệt) và 12A6 (lầu 1)
-        if (fl.floor === 0 && r.name === '12A10') {
-          const pin = this.createConnectionMarker(startX + rw / 2, y + 1.2, zPos + roomD / 2 + 1.8, "12A10 - NỐI HÀNH LANG TẦNG TRỆT", "#ca8a04");
+        // Điểm đánh dấu liên kết hành lang ở phòng 12A9 (trệt) và 12A5 (lầu 1)
+        if (fl.floor === 0 && r.name === '12A9') {
+          const pin = this.createConnectionMarker(startX + rw / 2, y + 1.2, zPos + roomD / 2 + 1.8, "12A9 - NỐI HÀNH LANG TẦNG TRỆT", "#ca8a04");
           building.add(pin);
         }
-        if (fl.floor === 1 && r.name === '12A6') {
-          const pin = this.createConnectionMarker(startX + rw / 2, y + 1.2, zPos + roomD / 2 + 1.8, "12A6 - NỐI CẦU HÀNH LANG TẦNG 2", "#2563eb");
+        if (fl.floor === 1 && r.name === '12A5') {
+          const pin = this.createConnectionMarker(startX + rw / 2, y + 1.2, zPos + roomD / 2 + 1.8, "12A5 - NỐI CẦU HÀNH LANG TẦNG 2", "#2563eb");
           building.add(pin);
         }
 
@@ -1134,68 +1514,9 @@ class Campus3DViewer {
     this.buildingGroups.push(building);
   }
 
-  // 3. KHỐI TRUNG TÂM (Sảnh Nghi Lễ & Kết Nối - 4 Tầng - NẰM NGANG)
+  // 3. KHỐI TRUNG TÂM (ĐÃ GỠ BỎ: Thực tế đằng sau mái chóp tam giác không có dãy tòa nào, chỉ có dầm hành lang, cột đỏ, mái vòm sắt, cây xanh và bầu trời thoáng đãng - chuẩn ảnh 1, 3, 4)
   buildCenterBuilding() {
-    const building = new THREE.Group();
-    building.name = "Khối Trung Tâm (Nằm Ngang)";
-    const floorH = 3.6;
-    const zPos = -8; // Thụt nhẹ vào trong so với 2 cánh tạo thế chữ U rộng mở ra sân
-    const blockW = 16;
-    const blockD = 6.4;
-
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.6 });
-    const redTrimMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.7 });
-
-    // 4 tầng thân nhà trung tâm
-    for (let f = 0; f < 4; f++) {
-      const y = f * floorH + floorH / 2;
-      const floorBox = new THREE.Mesh(new THREE.BoxGeometry(blockW, floorH * 0.92, blockD), wallMat);
-      floorBox.position.set(0, y, zPos);
-      floorBox.castShadow = true;
-      floorBox.receiveShadow = true;
-      building.add(floorBox);
-
-      // Sàn ban công hành lang trước
-      const balcony = new THREE.Mesh(new THREE.BoxGeometry(blockW + 0.4, 0.35, 2.8), new THREE.MeshStandardMaterial({ color: 0xfef9c3 }));
-      balcony.position.set(0, f * floorH, zPos + blockD / 2 + 1.4);
-      building.add(balcony);
-
-      // Cửa sổ / ô kính trung tâm
-      const winGeo = new THREE.PlaneGeometry(10, 1.8);
-      const winMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.2, metalness: 0.5 });
-      const win = new THREE.Mesh(winGeo, winMat);
-      win.position.set(0, y + 0.2, zPos + blockD / 2 + 0.05);
-      building.add(win);
-    }
-
-    // 2 lồng tháp cầu thang trung tâm hai bên có ô thông gió vuông
-    [-6.5, 6.5].forEach(tx => {
-      const tower = new THREE.Mesh(new THREE.BoxGeometry(3.6, 4 * floorH + 0.8, blockD + 1), wallMat);
-      tower.position.set(tx, (4 * floorH) / 2, zPos);
-      tower.castShadow = true;
-      building.add(tower);
-
-      // Lưới ô vuông thông gió mặt trước tháp thang
-      const ventTex = this.createVentilationTexture(2, 5);
-      const ventMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(2.4, 4 * floorH * 0.75),
-        new THREE.MeshStandardMaterial({ map: ventTex })
-      );
-      ventMesh.position.set(tx, (4 * floorH) / 2, zPos + blockD / 2 + 0.55);
-      building.add(ventMesh);
-    });
-
-    // Mái dốc tôn xanh lam khối trung tâm
-    const centerRoof = this.createHipRoofMesh(blockW + 2, blockD + 3.8, 3.2, 0.8, 0x1d4ed8);
-    centerRoof.position.set(0, 4 * floorH, zPos + 1.2);
-    building.add(centerRoof);
-
-    // Dầm đỡ đỏ trên nóc với biển tên trường lớn màu đỏ chữ vàng (chuẩn ảnh thực tế)
-    const schoolBanner = this.createSloganBanner("TRƯỜNG TRUNG HỌC PHỔ THÔNG", 0, 4 * floorH + 0.8, zPos + blockD / 2 + 1.8, 14, 1.2, 0);
-    building.add(schoolBanner);
-
-    this.scene.add(building);
-    this.buildingGroups.push(building);
+    // Không dựng khối nhà trung tâm để phản ánh chính xác 100% hình ảnh thực tế (Hình 1, 3, 4)
   }
 
   // 4. CÁNH PHẢI - DÃY BỘ MÔN & CHỨC NĂNG (4 Tầng - NẰM NGANG ĐỐI XỨNG CÁNH TRÁI)
@@ -1266,20 +1587,17 @@ class Campus3DViewer {
       const y = fl.floor * floorH + floorH / 2;
       let startX = 8;
 
-      // Sàn hành lang trước mặt phòng (hướng ra sân trường +Z)
+      // Sàn hành lang gạch men kem chuẩn video thực tế
       const slabGeo = new THREE.BoxGeometry(34, 0.4, roomD + 3);
-      const slabMat = new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.6 });
+      const slabMat = new THREE.MeshStandardMaterial({ map: this.createCorridorFloorTexture(), roughness: 0.55 });
       const slab = new THREE.Mesh(slabGeo, slabMat);
       slab.position.set(22.5, fl.floor * floorH, zPos + 1.5);
       slab.receiveShadow = true;
       building.add(slab);
 
-      // Lan can hành lang bảo vệ
-      const railGeo = new THREE.BoxGeometry(34, 0.9, 0.15);
-      const railMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.3 });
-      const rail = new THREE.Mesh(railGeo, railMat);
-      rail.position.set(22.5, fl.floor * floorH + 0.5, zPos + roomD / 2 + 3);
-      building.add(rail);
+      // Lan can hành lang: Nửa dưới bê tông vôi kem, nửa trên tay vịn thép tròn xanh dương
+      const balustrade = this.createCorridorBalustrade(34, 22.5, fl.floor * floorH, zPos + roomD / 2 + 3);
+      building.add(balustrade);
 
       fl.rooms.forEach(r => {
         if (r.isStair) {
@@ -1377,14 +1695,20 @@ class Campus3DViewer {
       const y = fl.floor * floorH + floorH / 2;
       let curX = -45.4;
 
-      // Sàn hành lang trước màu vàng be nhạt chạy xuyên suốt toàn bộ dãy
+      // Sàn hành lang trước gạch men kem chuẩn video thực tế
       const slab = new THREE.Mesh(
         new THREE.BoxGeometry(29.0, 0.4, roomD + 2.8),
-        new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.6 })
+        new THREE.MeshStandardMaterial({ map: this.createCorridorFloorTexture(), roughness: 0.55 })
       );
       slab.position.set(-31.2, fl.floor * floorH, zPos + 1.4);
       slab.receiveShadow = true;
       building.add(slab);
+
+      // Lan can hành lang tầng 2: Tường bê tông kem + tay vịn xanh dương
+      if (fl.floor === 1) {
+        const balustrade = this.createCorridorBalustrade(29.0, -31.2, fl.floor * floorH, zPos + roomD / 2 + 2.8);
+        building.add(balustrade);
+      }
 
       fl.rooms.forEach(r => {
         if (r.isStair) {
@@ -1511,17 +1835,10 @@ class Campus3DViewer {
     );
     const hallSignMat = new THREE.MeshBasicMaterial({ map: hallLabelTex, transparent: true });
 
-    // Biển mặt tiền phía Nam (đặt nhô hẳn ra ngoài mái vòm, tuyệt đối không bị che khuất)
+    // Biển mặt tiền duy nhất phía Nam (trang trọng, sắc nét, không bị tách đôi)
     const hallFrontSign = new THREE.Mesh(new THREE.PlaneGeometry(10.4, 2.4), hallSignMat);
     hallFrontSign.position.set(hallX, 3.4, hallZ + hallD / 2 + 0.7);
     building.add(hallFrontSign);
-
-    // Biển phụ trên nóc sảnh hướng nhìn từ trên cao xuống (Top-down view)
-    const topSignMat = new THREE.MeshBasicMaterial({ map: hallLabelTex, transparent: true });
-    const hallTopSign = new THREE.Mesh(new THREE.PlaneGeometry(10.4, 2.4), topSignMat);
-    hallTopSign.rotation.x = -Math.PI / 4; // Nghiêng 45 độ đón góc nhìn Flycam / từ trên cao
-    hallTopSign.position.set(hallX, 4.8, hallZ + hallD / 2 + 0.6);
-    building.add(hallTopSign);
 
     // Cửa chính kính màu xanh sẫm dưới biển hiệu
     const doorMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.2, metalness: 0.5 });
@@ -1550,11 +1867,9 @@ class Campus3DViewer {
       info: "Hội trường lớn mái vòm xanh - Nơi diễn ra các buổi đại hội, lễ mít tinh & hoạt động chung của trường"
     };
     hallFrontSign.userData = hallUserData;
-    hallTopSign.userData = hallUserData;
     hallSideSign.userData = hallUserData;
     body.userData = hallUserData;
     this.interactiveRooms.push(hallFrontSign);
-    this.interactiveRooms.push(hallTopSign);
     this.interactiveRooms.push(hallSideSign);
     this.interactiveRooms.push(body);
 
@@ -1582,38 +1897,56 @@ class Campus3DViewer {
     this.buildingGroups.push(building);
   }
 
-  // 7. CÁC HÀNH LANG KẾT NỐI TOÀN TRƯỜNG (SÀN VÀNG BE NHẠT #fef9c3)
+  // 7. CÁC HÀNH LANG KẾT NỐI TOÀN TRƯỜNG
   buildWestConnectingBridges() {
     const westBridgeGroup = new THREE.Group();
     westBridgeGroup.name = "Hệ Thống Hành Lang Nối Toàn Trường";
     const floorH = 3.6;
+    const corridorFloorTex = this.createCorridorFloorTexture();
 
     // -------------------------------------------------------------
-    // A. CẦU HÀNH LANG TẦNG TRỆT NỐI DÃY B SANG DÃY HÀNH CHÍNH
+    // A. CẦU HÀNH LANG TẦNG TRỆT NỐI DÃY B SANG DÃY HÀNH CHÍNH (ĐỐI DIỆN CỬA 12A9)
     // -------------------------------------------------------------
     const groundWalkway = new THREE.Group();
+    // Sàn gạch men kem
     const gFloor = new THREE.Mesh(
       new THREE.BoxGeometry(3.8, 0.25, 15),
-      new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.6 })
+      new THREE.MeshStandardMaterial({ map: corridorFloorTex, roughness: 0.6 })
     );
-    gFloor.position.set(-20.5, 0.12, 7);
+    gFloor.position.set(-26.1, 0.12, 7);
     gFloor.receiveShadow = true;
     groundWalkway.add(gFloor);
 
-    // Mái che canopy chống mưa nắng ở tầng trệt
+    // Lan can hành lang: Nửa dưới bê tông vôi kem, nửa trên tay vịn thép tròn màu xanh dương (chuẩn video thực tế)
+    const parapetMat = new THREE.MeshStandardMaterial({ color: 0xfaf7ee, roughness: 0.6 });
+    const bluePipeMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, metalness: 0.6, roughness: 0.35 });
+    [-1.85, 1.85].forEach(sideX => {
+      // Tường lan can bê tông kem cao 0.65m
+      const wall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.65, 15), parapetMat);
+      wall.position.set(-26.1 + sideX, 0.45, 7);
+      groundWalkway.add(wall);
+
+      // Ống thép tròn xanh tay vịn trên cùng cao 0.95m
+      const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 15, 16), bluePipeMat);
+      pipe.rotation.x = Math.PI / 2;
+      pipe.position.set(-26.1 + sideX, 0.85, 7);
+      groundWalkway.add(pipe);
+    });
+
+    // Mái che tôn vòm màu xanh dương chống mưa nắng
     const canopy = new THREE.Mesh(
       new THREE.BoxGeometry(4.4, 0.2, 15),
       new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.35 })
     );
-    canopy.position.set(-20.5, 2.6, 7);
+    canopy.position.set(-26.1, 2.7, 7);
     groundWalkway.add(canopy);
 
-    // Cột trụ chống hai bên
-    const pillarMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.3 });
-    [-1.7, 1.7].forEach(px => {
+    // Cột trụ vuông màu đỏ gạch đặc trưng trường học THPT Tam Phước
+    const redColMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.65 });
+    [-1.75, 1.75].forEach(px => {
       [1, 7, 13].forEach(pz => {
-        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 2.6, 16), pillarMat);
-        pillar.position.set(-20.5 + px, 1.3, pz);
+        const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.35, 2.7, 0.35), redColMat);
+        pillar.position.set(-26.1 + px, 1.35, pz);
         pillar.castShadow = true;
         groundWalkway.add(pillar);
       });
@@ -1621,63 +1954,69 @@ class Campus3DViewer {
 
     // Biển định danh 3D cho hành lang trệt
     const gLabelMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("HÀNH LANG TẦNG TRỆT", "12A10 (Dãy B) ➔ Tiếp dân (Hành chính)", "#ffffff", "#0284c7", "#38bdf8", 420, 150),
+      map: this.createCanvasLabel("HÀNH LANG TẦNG TRỆT", "12A9 (Tòa 3) ➔ Tiếp dân (Hành chính)", "#ffffff", "#0284c7", "#38bdf8", 420, 150),
       transparent: true
     });
     const gLabel = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 2.0), gLabelMat);
-    gLabel.position.set(-20.5, 1.5, 7);
+    gLabel.position.set(-26.1, 1.5, 7);
     gLabel.rotation.y = -Math.PI / 2;
     groundWalkway.add(gLabel);
 
     westBridgeGroup.add(groundWalkway);
 
     // -------------------------------------------------------------
-    // B. CẦU HÀNH LANG TẦNG 2 NỐI DÃY B SANG DÃY HÀNH CHÍNH
+    // B. CẦU HÀNH LANG TẦNG 2 NỐI DÃY B SANG DÃY HÀNH CHÍNH (ĐỐI DIỆN CỬA 12A5)
     // -------------------------------------------------------------
     const skybridge = new THREE.Group();
     const bridgeY = floorH;
 
-    // Mặt sàn cầu tầng 2
+    // Mặt sàn cầu tầng 2 lát gạch men kem
     const bFloor = new THREE.Mesh(
       new THREE.BoxGeometry(3.8, 0.3, 15),
-      new THREE.MeshStandardMaterial({ color: 0xfef9c3, roughness: 0.5 })
+      new THREE.MeshStandardMaterial({ map: corridorFloorTex, roughness: 0.5 })
     );
-    bFloor.position.set(-20.5, bridgeY, 7);
+    bFloor.position.set(-26.1, bridgeY, 7);
     bFloor.castShadow = true;
     bFloor.receiveShadow = true;
     skybridge.add(bFloor);
 
-    // Lan can kính hiện đại 2 bên cầu
-    const glassMat = new THREE.MeshPhysicalMaterial({
-      color: 0x7dd3fc,
-      transparent: true,
-      opacity: 0.65,
-      roughness: 0.1,
-      transmission: 0.8,
-      thickness: 0.6
+    // Lan can cầu vượt tầng 2: Tường bê tông kem + tay vịn ống thép xanh dương (chuẩn video)
+    [-1.85, 1.85].forEach(sideX => {
+      const wall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.75, 15), parapetMat);
+      wall.position.set(-26.1 + sideX, bridgeY + 0.52, 7);
+      skybridge.add(wall);
+
+      const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 15, 16), bluePipeMat);
+      pipe.rotation.x = Math.PI / 2;
+      pipe.position.set(-26.1 + sideX, bridgeY + 0.98, 7);
+      skybridge.add(pipe);
     });
-    const glassL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.2, 15), glassMat);
-    glassL.position.set(-20.5 - 1.8, bridgeY + 0.65, 7);
-    const glassR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.2, 15), glassMat);
-    glassR.position.set(-20.5 + 1.8, bridgeY + 0.65, 7);
-    skybridge.add(glassL);
-    skybridge.add(glassR);
+
+    // Cột trụ đỏ đỡ mái cầu trên cao
+    [-1.75, 1.75].forEach(px => {
+      [1, 7, 13].forEach(pz => {
+        const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.35, 2.8, 0.35), redColMat);
+        pillar.position.set(-26.1 + px, bridgeY + 1.4, pz);
+        pillar.castShadow = true;
+        skybridge.add(pillar);
+      });
+    });
 
     // Mái che cầu trên cao
     const bridgeRoof = new THREE.Mesh(
       new THREE.BoxGeometry(4.2, 0.25, 15),
       new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.4 })
     );
-    bridgeRoof.position.set(-20.5, bridgeY + 2.8, 7);
+    bridgeRoof.position.set(-26.1, bridgeY + 2.8, 7);
     skybridge.add(bridgeRoof);
 
     // Biển CẦU HÀNH LANG TẦNG 2
     const skyLabelMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("🪜 CẦU HÀNH LANG TẦNG 2", "12A6 (Dãy B) ➔ Phòng Chi bộ", "#1e40af", "#ffffff", "#60a5fa", 420, 150),
+      map: this.createCanvasLabel("🪜 CẦU HÀNH LANG TẦNG 2", "12A5 (Tòa 3) ➔ Phòng Chi bộ", "#1e40af", "#ffffff", "#60a5fa", 420, 150),
       transparent: true
     });
     const skyLabel = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 2.0), skyLabelMat);
-    skyLabel.position.set(-20.5, bridgeY + 1.4, 7);
+    skyLabel.position.set(-26.1, bridgeY + 1.4, 7);
     skyLabel.rotation.y = -Math.PI / 2;
     skybridge.add(skyLabel);
 
@@ -1685,14 +2024,10 @@ class Campus3DViewer {
 
     // -------------------------------------------------------------
     // C. CÁNH TÒA NHÀ 4 TẦNG KẾT NỐI LIỀN MẠCH GIỮA DÃY A VÀ DÃY B / BỘ MÔN
-    // (Thiết kế chuẩn 100% theo ảnh Flycam thực tế: 4 tầng sàn hành lang,
-    // cột đỏ, lan can, tường cửa sổ và mái tôn xanh dốc che kín liên hoàn)
     // -------------------------------------------------------------
-    // 1. Cánh kết nối phía Tây (Nối Dãy Sau A ➔ Cánh Trái Dãy B)
     const westConnectWing = this.createConnectingWingBlock(-22.5, -28.0, -8.0, true);
     westBridgeGroup.add(westConnectWing);
 
-    // 2. Cánh kết nối phía Đông (Nối Dãy Sau A ➔ Cánh Phải Dãy Bộ Môn)
     const eastConnectWing = this.createConnectingWingBlock(22.5, -28.0, -8.0, false);
     westBridgeGroup.add(eastConnectWing);
 
@@ -1788,121 +2123,300 @@ class Campus3DViewer {
     return wing;
   }
 
-  // 6. MÁI CHE KÍNH TAM GIÁC TRUNG TÂM & CỘT CỜ SÂN TRƯỜNG (CHUẨN ẢNH THỰC TẾ)
+  // 6. MÁI CHE KIM TỰ THÁP XANH & LỄ ĐÀI CHÀO CỜ SÂN TRƯỜNG (CHUẨN ẢNH 1, 3, 4 THỰC TẾ)
   buildCentralCanopyAndFlag() {
     const landmarkGroup = new THREE.Group();
     landmarkGroup.name = "Mái Che Tam Giác & Cột Cờ";
 
     // -------------------------------------------------------------
-    // A. MÁI CHE KÍNH HÌNH TAM GIÁC (LỐI VÀO SẢNH HÀNH LANG TRUNG TÂM)
-    // Nằm ở giữa khoảng sân nối 2 dãy nhà (Z ≈ -2)
-    // Đồ họa chuẩn theo ảnh thực tế: Bục tam cấp bán nguyệt, trụ gạch đỏ, mái kính tam giác
+    // A. MÁI CHE KIM TỰ THÁP XANH & LỄ ĐÀI CHÀO CỜ SÂN TRƯỜNG
     // -------------------------------------------------------------
     const canopyGroup = new THREE.Group();
     canopyGroup.position.set(0, 0, -2);
 
-    // 1. Thềm bậc tam cấp bán nguyệt ở chân mái tam giác (chuẩn thực tế)
-    const terraceBase1 = new THREE.Mesh(
-      new THREE.CylinderGeometry(5.8, 6.4, 0.35, 32, 1, false, 0, Math.PI),
-      new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8 })
+    // 1. SÂN KHẤU LỄ ĐÀI BẬC TAM CẤP BÁN NGUYỆT LÁT ĐÁ VÀ THẢM ĐỎ (CHUẨN ẢNH 1, 3, 4)
+    // Bậc 1 (dưới cùng): Bán nguyệt bán kính 7.2m
+    const stageBase1 = new THREE.Mesh(
+      new THREE.CylinderGeometry(6.6, 7.2, 0.28, 36, 1, false, 0, Math.PI),
+      new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.75 }) // Đá đỏ gạch viền
     );
-    terraceBase1.position.set(0, 0.17, 0);
-    terraceBase1.rotation.y = Math.PI;
-    canopyGroup.add(terraceBase1);
+    stageBase1.position.set(0, 0.14, 0);
+    stageBase1.rotation.y = Math.PI;
+    stageBase1.receiveShadow = true;
+    canopyGroup.add(stageBase1);
 
-    const terraceBase2 = new THREE.Mesh(
-      new THREE.CylinderGeometry(4.4, 5.0, 0.35, 32, 1, false, 0, Math.PI),
-      new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.8 })
+    // Bậc 2: Bán kính 5.6m
+    const stageBase2 = new THREE.Mesh(
+      new THREE.CylinderGeometry(5.2, 5.6, 0.28, 36, 1, false, 0, Math.PI),
+      new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.6 }) // Đá hoa cương sáng
     );
-    terraceBase2.position.set(0, 0.52, 0);
-    terraceBase2.rotation.y = Math.PI;
-    canopyGroup.add(terraceBase2);
+    stageBase2.position.set(0, 0.42, 0);
+    stageBase2.rotation.y = Math.PI;
+    stageBase2.receiveShadow = true;
+    canopyGroup.add(stageBase2);
 
-    // 2. Các cột trụ gạch đỏ / nâu sẫm đỡ mái tam giác (chuẩn ảnh thực tế)
-    const redColMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.7 });
-    [-4.5, 4.5].forEach(cx => {
-      [-2.5, 2.5].forEach(cz => {
-        const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.7, 5.0, 0.7), redColMat);
-        pillar.position.set(cx, 2.5, cz);
+    // Bậc 3 (Sàn chính lễ đài): Bán kính 4.4m trải thảm đỏ lễ tân
+    const stageBase3 = new THREE.Mesh(
+      new THREE.CylinderGeometry(4.0, 4.4, 0.28, 36, 1, false, 0, Math.PI),
+      new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.65 }) // Thảm đỏ lễ đài
+    );
+    stageBase3.position.set(0, 0.70, 0);
+    stageBase3.rotation.y = Math.PI;
+    stageBase3.receiveShadow = true;
+    canopyGroup.add(stageBase3);
+
+    // Bờ gạch thẻ viền bồn hoa bên hông sân khấu (Chuẩn ảnh 1)
+    const brickBorderMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.8 });
+    const brickCurvedBorder = new THREE.Mesh(
+      new THREE.BoxGeometry(0.35, 0.4, 6.2),
+      brickBorderMat
+    );
+    brickCurvedBorder.position.set(5.5, 0.2, -1.0);
+    brickCurvedBorder.rotation.y = 0.25;
+    canopyGroup.add(brickCurvedBorder);
+
+    // Chậu cây kiểng và chậu hoa dáng thế đặt viền quanh chân sân khấu (Chuẩn ảnh 1, 3, 4)
+    [-5.6, -4.2, -2.8, 2.8, 4.2, 5.6].forEach(px => {
+      canopyGroup.add(this.createPottedPlant(px, 1.4, 0.95));
+    });
+
+    // 2. VÁCH PHÔNG LỄ ĐÀI CHÀO CỜ (MẶT TRƯỚC VẢI ĐỎ BÚA LIỀM, MẶT SAU KHUNG SẮT ĐEN - CHUẨN ẢNH 1, 3, 4)
+    const backdropGroup = new THREE.Group();
+    backdropGroup.position.set(0, 0.7, -1.6);
+
+    // Tấm phông vách sân khấu
+    const backdropGeo = new THREE.BoxGeometry(8.2, 3.8, 0.16);
+    // Vật liệu mặt trước (vải đỏ lễ tân cờ búa liềm sao vàng - chuẩn ảnh 3)
+    const backdropFrontTex = this.createStageBackdropTexture();
+    const backdropFrontMat = new THREE.MeshStandardMaterial({ map: backdropFrontTex, roughness: 0.65 });
+    // Vật liệu mặt sau (khung kim loại sơn đen/xám sẫm chịu lực - chuẩn ảnh 1 & 4)
+    const backdropBackMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5, metalness: 0.4 });
+    const backdropSidesMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 });
+
+    const backdropMaterials = [
+      backdropSidesMat, // phải
+      backdropSidesMat, // trái
+      backdropSidesMat, // trên
+      backdropSidesMat, // dưới
+      backdropFrontMat, // trước (+Z)
+      backdropBackMat   // sau (-Z - chuẩn ảnh 1 và 4)
+    ];
+    const backdropMesh = new THREE.Mesh(backdropGeo, backdropMaterials);
+    backdropMesh.position.y = 1.9;
+    backdropMesh.castShadow = true;
+    backdropGroup.add(backdropMesh);
+
+    // Khung xương thép hộp đen gia cố mặt sau vách phông (chuẩn ảnh 1 và 4)
+    const darkSteelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.7, roughness: 0.35 });
+    [-3.8, -1.9, 0, 1.9, 3.8].forEach(sx => {
+      const rib = new THREE.Mesh(new THREE.BoxGeometry(0.12, 3.8, 0.12), darkSteelMat);
+      rib.position.set(sx, 1.9, -0.12);
+      backdropGroup.add(rib);
+    });
+
+    // Ghế đá trường học đặt cạnh vách phông lễ đài (chuẩn ảnh 1 và 4)
+    const bench = this.createStoneBenchMesh(-2.6, 0.35, -0.8, -0.15);
+    backdropGroup.add(bench);
+
+    canopyGroup.add(backdropGroup);
+
+    // 3. CÁC CỘT TRÒN ĐỎ GẠCH NÂNG ĐỠ MÁI CHÓP (CHUẨN ẢNH 1, 3, 4)
+    const redColMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.65 });
+    [-4.2, 4.2].forEach(cx => {
+      [-2.4, 2.4].forEach(cz => {
+        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.45, 5.2, 18), redColMat);
+        pillar.position.set(cx, 2.6, cz);
         pillar.castShadow = true;
         canopyGroup.add(pillar);
       });
     });
 
-    // 3. Khối chóp mái tôn xanh tam giác dốc (chuẩn ảnh flycam thực tế)
-    const glassPyramidGeo = new THREE.ConeGeometry(8, 8, 4); // 4 mặt tam giác đều
+    // 4. CHÓP MÁI KIM TỰ THÁP XANH COBAN TRONG SUỐT (CHUẨN ẢNH 1, 3, 4)
+    const pyramidW = 8.6;
+    const pyramidH = 5.2;
+    const glassPyramidGeo = new THREE.ConeGeometry(pyramidW * 0.72, pyramidH, 4);
     const glassPyramidMat = new THREE.MeshStandardMaterial({
       color: 0x1d4ed8,
-      roughness: 0.35,
-      metalness: 0.2
+      roughness: 0.28,
+      metalness: 0.25,
+      transparent: true,
+      opacity: 0.92
     });
     const glassPyramid = new THREE.Mesh(glassPyramidGeo, glassPyramidMat);
     glassPyramid.rotation.y = Math.PI / 4;
-    glassPyramid.position.y = 5.2;
+    glassPyramid.position.y = 5.8;
     glassPyramid.castShadow = true;
     canopyGroup.add(glassPyramid);
 
-    // Viền khung chữ A màu xanh thép
+    // Khung nẹp viền sống mái kim loại xanh
     const beamGeo = new THREE.EdgesGeometry(glassPyramidGeo);
-    const beamMat = new THREE.LineBasicMaterial({ color: 0x0284c7, linewidth: 3 });
+    const beamMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, linewidth: 3 });
     const beamFrame = new THREE.LineSegments(beamGeo, beamMat);
     beamFrame.rotation.y = Math.PI / 4;
-    beamFrame.position.y = 5.2;
+    beamFrame.position.y = 5.8;
     canopyGroup.add(beamFrame);
 
-    // Hai cánh hành lang mái tôn xanh vươn ra nối liền mạch với các dãy nhà (chuẩn ảnh thực tế)
-    const bridgeRoofMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.35 });
-    const wingL = new THREE.Mesh(new THREE.BoxGeometry(13, 0.3, 3.6), bridgeRoofMat);
-    wingL.position.set(-10, 4.0, 0);
-    wingL.castShadow = true;
-    canopyGroup.add(wingL);
+    // Băng rôn đỏ chữ vàng mặt tiền lễ đài: "ĐẢNG CỘNG SẢN VIỆT NAM QUANG VINH MUÔN NĂM" (chuẩn ảnh 3)
+    const bannerSlogan = this.createSloganBanner("ĐẢNG CỘNG SẢN VIỆT NAM QUANG VINH MUÔN NĂM", 0, 4.6, 2.6, 9.8, 1.15, 0);
+    canopyGroup.add(bannerSlogan);
 
-    const wingR = new THREE.Mesh(new THREE.BoxGeometry(13, 0.3, 3.6), bridgeRoofMat);
-    wingR.position.set(10, 4.0, 0);
-    wingR.castShadow = true;
-    canopyGroup.add(wingR);
+    // Dây cờ tam giác trang trí đỏ và vàng giăng từ đỉnh mái chóp xuống sân (chuẩn ảnh 3)
+    const buntingGroup = this.createFlagBuntingMesh(0, 8.4, 0);
+    canopyGroup.add(buntingGroup);
 
-    // Chân dầm A-frame vươn 2 bên
-    const legMat = new THREE.MeshStandardMaterial({ color: 0x0369a1, metalness: 0.4 });
-    const legL = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 9), legMat);
-    legL.position.set(-5.5, 0.2, 0);
-    legL.rotation.z = 0.35;
-    const legR = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 9), legMat);
-    legR.position.set(5.5, 0.2, 0);
-    legR.rotation.z = -0.35;
-    canopyGroup.add(legL);
-    canopyGroup.add(legR);
+    // 5. HAI CÁNH MÁI DỐC XIÊN XANH CHẠY DÀI XUỐNG MẶT ĐẤT (CỰC KỲ ĐẶC TRƯNG CHUẨN ẢNH 1, 3, 4)
+    const rampMat = new THREE.MeshStandardMaterial({
+      color: 0x0284c7,
+      roughness: 0.3,
+      metalness: 0.2,
+      transparent: true,
+      opacity: 0.92
+    });
+    const rampFrameMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, metalness: 0.7, roughness: 0.3 });
+    const concretePadMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8 });
 
-    // Biển MÁI TAM GIÁC
+    [-1, 1].forEach(side => {
+      const rampGroup = new THREE.Group();
+      // Độ dài cánh dốc xiên ~ 10.5m, nghiêng góc ~38 độ
+      const rampLen = 10.2;
+      const rampW = 2.4;
+      const rampThick = 0.12;
+
+      // Tấm polycarbonate xanh dốc
+      const rampMesh = new THREE.Mesh(new THREE.BoxGeometry(rampLen, rampThick, rampW), rampMat);
+      rampMesh.castShadow = true;
+      rampGroup.add(rampMesh);
+
+      // Khung sắt viền 2 mép máng dốc
+      [-rampW / 2, rampW / 2].forEach(rz => {
+        const edgeRail = new THREE.Mesh(new THREE.BoxGeometry(rampLen, 0.18, 0.1), rampFrameMat);
+        edgeRail.position.z = rz;
+        rampGroup.add(edgeRail);
+      });
+
+      // Các thanh giằng ngang chịu lực
+      for (let rx = -rampLen / 2 + 1.2; rx <= rampLen / 2 - 1.2; rx += 2.0) {
+        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, rampW), rampFrameMat);
+        strut.position.x = rx;
+        rampGroup.add(strut);
+      }
+
+      // Xoay nghiêng góc 38 độ chạy xuống mặt đất
+      const angle = -0.66 * side; // ~38 độ
+      rampGroup.rotation.z = angle;
+      const midX = side * 8.6;
+      const midY = 2.4;
+      rampGroup.position.set(midX, midY, 0);
+      canopyGroup.add(rampGroup);
+
+      // Đế móng bê tông giữ chân máng dốc sát mặt sân gạch (chuẩn ảnh 1)
+      const pad = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.45, rampW + 0.4), concretePadMat);
+      pad.position.set(side * 12.8, 0.22, 0);
+      pad.castShadow = true;
+      canopyGroup.add(pad);
+    });
+
+    // 6. DẦM HÀNH LANG KẾT NỐI VÀ CÁC CỘT TRỤ ĐỎ GẠCH NẰM NGAY SAU LỄ ĐÀI (CHUẨN ẢNH 1 & 4)
+    // Dầm đỡ bê tông nằm ngang chạy dài ở độ cao 4.2m kết nối giữa Cánh Trái (Dãy B) và Cánh Phải (Dãy Bộ Môn)
+    const rearBeamGroup = new THREE.Group();
+    rearBeamGroup.position.set(0, 0, -3.8);
+
+    // Sàn dầm hành lang trên cao rộng 3.0m
+    const beamFloor = new THREE.Mesh(
+      new THREE.BoxGeometry(48, 0.4, 3.2),
+      new THREE.MeshStandardMaterial({ map: this.createCorridorFloorTexture(), roughness: 0.55 })
+    );
+    beamFloor.position.set(0, 4.2, 0);
+    beamFloor.castShadow = true;
+    beamFloor.receiveShadow = true;
+    rearBeamGroup.add(beamFloor);
+
+    // Lan can dầm hành lang trên cao: Tường bê tông kem + tay vịn thép tròn xanh dương (chuẩn ảnh 1 & 4)
+    const parapetBeamL = this.createCorridorBalustrade(48, 0, 4.2, 1.55);
+    const parapetBeamR = this.createCorridorBalustrade(48, 0, 4.2, -1.55);
+    rearBeamGroup.add(parapetBeamL);
+    rearBeamGroup.add(parapetBeamR);
+
+    // Hàng cột trụ đỏ gạch chịu lực đều đặn nâng đỡ dầm hành lang (chuẩn ảnh 1 và 4)
+    const redColBeamMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.65 });
+    const whiteRingMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 });
+    [-21, -15, -9, 9, 15, 21].forEach(colX => {
+      // Cột đỏ gạch
+      const colMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.45, 4.2, 18), redColBeamMat);
+      colMesh.position.set(colX, 2.1, 0);
+      colMesh.castShadow = true;
+      rearBeamGroup.add(colMesh);
+
+      // Vòng chỉ trắng trang trí đỉnh cột (chuẩn ảnh 1 và 4)
+      const ringMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.18, 18), whiteRingMat);
+      ringMesh.position.set(colX, 3.8, 0);
+      rearBeamGroup.add(ringMesh);
+    });
+
+    canopyGroup.add(rearBeamGroup);
+
+    // 7. KHU VỰC PHÍA SAU LỄ ĐÀI: SÂN SAU, CÂY XANH & HÀNG RÀO (CHUẨN ẢNH 1 & 4)
+    const rearAwningGroup = new THREE.Group();
+    rearAwningGroup.position.set(0, 0, -8.5);
+
+    // B. Cây xanh bóng mát và đường nội bộ phía sau (chuẩn ảnh 1 & 4)
+    [-18, -12, 12, 18].forEach(tx => {
+      rearAwningGroup.add(this.createPoincianaTree(tx, -4.5, 0.85));
+    });
+
+    // C. Hàng rào ranh giới và cây cảnh xanh phía sau (chuẩn ảnh 4)
+    const rearFenceGeo = new THREE.BoxGeometry(42, 1.6, 0.25);
+    const rearFenceMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.8 });
+    const rearFence = new THREE.Mesh(rearFenceGeo, rearFenceMat);
+    rearFence.position.set(0, 0.8, -9.5);
+    rearAwningGroup.add(rearFence);
+
+    canopyGroup.add(rearAwningGroup);
+
+    // 8. BIỂN ĐỊNH DANH 3D CHO MÁI TAM GIÁC
     const canopyLblMat = new THREE.MeshBasicMaterial({
-      map: this.createCanvasLabel("MÁI CHE TRUNG TÂM", "Sảnh hành lang & Lối vào", "#ffffff", "#0284c7", "#38bdf8", 380, 140),
+      map: this.createCanvasLabel("MÁI TAM GIÁC (LỄ ĐÀI)", "Lễ đài trung tâm sân trường", "#ffffff", "#0284c7", "#38bdf8", 380, 140),
       transparent: true
     });
-    const canopyLbl = new THREE.Mesh(new THREE.PlaneGeometry(5.5, 2.0), canopyLblMat);
-    canopyLbl.position.set(0, 2.2, 5.5);
+    const canopyLbl = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 1.9), canopyLblMat);
+    canopyLbl.position.set(0, 1.8, 4.8);
     canopyGroup.add(canopyLbl);
 
     landmarkGroup.add(canopyGroup);
 
     // -------------------------------------------------------------
-    // B. CỘT CỜ TRUNG TÂM SÂN TRƯỜNG (Z = 11, TÁCH BIỆT HOÀN TOÀN MỌI DÃY NHÀ)
+    // B. CỘT CỜ TRUNG TÂM SÂN TRƯỜNG CÓ BỒN HOA TRÒN (Z = 11)
     // -------------------------------------------------------------
     const flagGroup = new THREE.Group();
     flagGroup.position.set(0, 0, 11);
 
-    // Bục tròn tam cấp
-    const base1 = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.8, 0.4, 32), new THREE.MeshStandardMaterial({ color: 0xe2e8f0 }));
-    base1.position.y = 0.2;
+    // Bồn hoa tròn viền đá bao quanh chân cột cờ (chuẩn video thực tế)
+    const flowerPlanter = new THREE.Mesh(
+      new THREE.CylinderGeometry(4.2, 4.6, 0.45, 32),
+      new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.7 })
+    );
+    flowerPlanter.position.y = 0.22;
+    flowerPlanter.receiveShadow = true;
+    flagGroup.add(flowerPlanter);
+
+    // Vành cây cảnh & hoa nở quanh chân cột cờ
+    const shrubRing = new THREE.Mesh(
+      new THREE.TorusGeometry(3.0, 0.55, 12, 32),
+      new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.8 })
+    );
+    shrubRing.rotation.x = Math.PI / 2;
+    shrubRing.position.y = 0.5;
+    flagGroup.add(shrubRing);
+
+    // Bục đá tam cấp chân cột
+    const base1 = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.3, 0.4, 32), new THREE.MeshStandardMaterial({ color: 0xcbd5e1 }));
+    base1.position.y = 0.7;
     base1.receiveShadow = true;
-    const base2 = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.7, 0.4, 32), new THREE.MeshStandardMaterial({ color: 0xcbd5e1 }));
-    base2.position.y = 0.6;
+    const base2 = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.4, 0.4, 32), new THREE.MeshStandardMaterial({ color: 0x94a3b8 }));
+    base2.position.y = 1.1;
     base2.receiveShadow = true;
-    const base3 = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 0.4, 32), new THREE.MeshStandardMaterial({ color: 0x94a3b8 }));
-    base3.position.y = 1.0;
-    base3.receiveShadow = true;
     flagGroup.add(base1);
     flagGroup.add(base2);
-    flagGroup.add(base3);
 
     // Thân cột cờ inox vươn cao
     const poleGeo = new THREE.CylinderGeometry(0.12, 0.16, 16, 16);
@@ -1919,7 +2433,6 @@ class Campus3DViewer {
 
     // Lá cờ đỏ sao vàng tung bay
     const flagGeo = new THREE.PlaneGeometry(3.6, 2.4, 16, 16);
-    // Làm gợn sóng lá cờ
     const pos = flagGeo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       const u = pos.getX(i);
@@ -1927,16 +2440,15 @@ class Campus3DViewer {
     }
     flagGeo.computeVertexNormals();
 
-    const flagTexture = this.createFlagTexture();
     const flagMat = new THREE.MeshStandardMaterial({
-      map: flagTexture,
-      side: THREE.DoubleSide,
-      roughness: 0.5
+      map: this.createFlagTexture(),
+      roughness: 0.4,
+      side: THREE.DoubleSide
     });
-    const flag = new THREE.Mesh(flagGeo, flagMat);
-    flag.position.set(1.8, 15.6, 0);
-    flag.castShadow = true;
-    flagGroup.add(flag);
+    const flagMesh = new THREE.Mesh(flagGeo, flagMat);
+    flagMesh.position.set(1.9, 15.5, 0);
+    flagMesh.castShadow = true;
+    flagGroup.add(flagMesh);
 
     // Biển CỘT CỜ
     const flagLblMat = new THREE.MeshBasicMaterial({
@@ -1950,7 +2462,6 @@ class Campus3DViewer {
     landmarkGroup.add(flagGroup);
 
     this.scene.add(landmarkGroup);
-    this.corridorObjects.push(landmarkGroup);
   }
 
   createFlagTexture() {
@@ -1985,6 +2496,151 @@ class Campus3DViewer {
     ctx.fill();
 
     return new THREE.CanvasTexture(canvas);
+  }
+
+  // Helper tạo hoa văn phông lễ đài chào cờ (Mặt trước: Cờ đỏ búa liềm & Băng rôn - chuẩn ảnh 3)
+  createStageBackdropTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // Nền xanh nhạt / trắng xám hiện đại của sân khấu
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, 1024, 512);
+
+    // Mảng cờ đỏ lượn sóng lễ tân bên trái
+    const grad = ctx.createLinearGradient(0, 0, 480, 512);
+    grad.addColorStop(0, '#dc2626');
+    grad.addColorStop(1, '#991b1b');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(440, 0);
+    ctx.bezierCurveTo(460, 200, 320, 360, 260, 512);
+    ctx.lineTo(0, 512);
+    ctx.closePath();
+    ctx.fill();
+
+    // Biểu tượng Búa Liềm vàng & Ngôi sao vàng năm cánh
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 72px "Segoe UI", sans-serif';
+    ctx.fillText('☭', 90, 160);
+    ctx.fillText('★', 210, 160);
+
+    // Khung áp phích sự kiện ở giữa (Chuẩn ảnh 3)
+    ctx.fillStyle = '#fef08a';
+    ctx.strokeStyle = '#ca8a04';
+    ctx.lineWidth = 4;
+    ctx.fillRect(480, 80, 500, 350);
+    ctx.strokeRect(480, 80, 500, 350);
+
+    ctx.fillStyle = '#b45309';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 28px "Segoe UI", Arial, sans-serif';
+    ctx.fillText('TRƯỜNG THPT TAM PHƯỚC', 730, 150);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 36px "Segoe UI", Arial, sans-serif';
+    ctx.fillText('LỄ KHAI GIẢNG NĂM HỌC', 730, 220);
+
+    ctx.fillStyle = '#dc2626';
+    ctx.font = '800 24px "Segoe UI", Arial, sans-serif';
+    ctx.fillText('THI ĐUA DẠY TỐT - HỌC TỐT', 730, 290);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'italic 20px "Segoe UI", Arial, sans-serif';
+    ctx.fillText('Nhiệt liệt chào mừng năm học mới!', 730, 360);
+
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  // Helper tạo ghế đá trường học (Chuẩn ảnh 1 và 4)
+  createStoneBenchMesh(x, y, z, rotY = 0) {
+    const benchGroup = new THREE.Group();
+    const benchMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.85 });
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.9 });
+
+    // Mặt ngồi ghế đá
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.12, 0.65), benchMat);
+    seat.position.y = 0.45;
+    seat.castShadow = true;
+    seat.receiveShadow = true;
+    benchGroup.add(seat);
+
+    // Tựa lưng ghế đá
+    const back = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.55, 0.1), benchMat);
+    back.position.set(0, 0.75, -0.28);
+    back.rotation.x = -0.12;
+    back.castShadow = true;
+    benchGroup.add(back);
+
+    // 2 chân trụ ghế đá
+    [-0.7, 0.7].forEach(lx => {
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.45, 0.55), legMat);
+      leg.position.set(lx, 0.225, 0);
+      leg.castShadow = true;
+      benchGroup.add(leg);
+    });
+
+    benchGroup.position.set(x, y, z);
+    benchGroup.rotation.y = rotY;
+    return benchGroup;
+  }
+
+  // Helper tạo dây cờ đuôi nheo tam giác đỏ vàng trang trí lễ đài (Chuẩn ảnh 3)
+  createFlagBuntingMesh(apexX, apexY, apexZ) {
+    const buntingGroup = new THREE.Group();
+    const targets = [
+      { x: -12, y: 3.2, z: 8 },
+      { x: -6, y: 3.0, z: 10 },
+      { x: 0, y: 2.8, z: 11 },
+      { x: 6, y: 3.0, z: 10 },
+      { x: 12, y: 3.2, z: 8 }
+    ];
+
+    const redMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, side: THREE.DoubleSide });
+    const yellowMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, side: THREE.DoubleSide });
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.6 });
+
+    targets.forEach((t, lineIdx) => {
+      const p1 = new THREE.Vector3(apexX, apexY - 0.4, apexZ);
+      const p2 = new THREE.Vector3(t.x, t.y, t.z);
+      const points = [];
+      const numSegments = 10;
+
+      for (let i = 0; i <= numSegments; i++) {
+        const alpha = i / numSegments;
+        const pt = new THREE.Vector3().lerpVectors(p1, p2, alpha);
+        // Độ võng tự nhiên của dây cờ
+        pt.y -= Math.sin(alpha * Math.PI) * 0.45;
+        points.push(pt);
+
+        // Treo các lá cờ tam giác nhỏ xen kẽ đỏ vàng
+        if (i > 1 && i < numSegments) {
+          const triGeo = new THREE.BufferGeometry();
+          const flw = 0.22;
+          const flh = 0.35;
+          const vertices = new Float32Array([
+            pt.x - flw / 2, pt.y, pt.z,
+            pt.x + flw / 2, pt.y, pt.z,
+            pt.x, pt.y - flh, pt.z
+          ]);
+          triGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+          triGeo.computeVertexNormals();
+
+          const flagMesh = new THREE.Mesh(triGeo, ((i + lineIdx) % 2 === 0) ? redMat : yellowMat);
+          buntingGroup.add(flagMesh);
+        }
+      }
+
+      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+      const lineMesh = new THREE.Line(lineGeo, lineMat);
+      buntingGroup.add(lineMesh);
+    });
+
+    return buntingGroup;
   }
 
   // Helper tạo hoa văn bia đá hoa cương cổng trường THPT Tam Phước chuẩn ảnh thật
@@ -2042,7 +2698,7 @@ class Campus3DViewer {
     // Dòng 4: Địa chỉ
     ctx.fillStyle = '#fef9c3';
     ctx.font = 'italic 25px "Segoe UI", Arial, sans-serif';
-    ctx.fillText('Ấp Long Khánh 3 - P. Tam Phước - TP. Biên Hòa - Đồng Nai', 512, 420);
+    ctx.fillText('P. Tam Phước - TP. Biên Hòa - Đồng Nai', 512, 420);
 
     return new THREE.CanvasTexture(canvas);
   }
@@ -2168,7 +2824,7 @@ class Campus3DViewer {
     const gateUserData = {
       name: "Cổng Trường",
       floorKey: 'fl_0',
-      info: "Cổng chính THPT Tam Phước - Ấp Long Khánh 3, Phường Tam Phước, TP. Biên Hòa, Tỉnh Đồng Nai",
+      info: "Cổng chính THPT Tam Phước - Phường Tam Phước, TP. Biên Hòa, Tỉnh Đồng Nai",
       img: "cong_truong.png"
     };
 
@@ -2345,80 +3001,7 @@ class Campus3DViewer {
     this.interactiveRooms.push(guardGroup);
     gateGroup.add(guardGroup);
 
-    // ==========================================
-    // 7. BẢNG TRƯNG BÀY ẢNH THỰC TẾ CỔNG TRƯỜNG 3D
-    // ==========================================
-    const photoGroup = new THREE.Group();
-    photoGroup.position.set(16.5, 0, 53.5);
-
-    // Đế bê tông trụ bảng ảnh
-    const photoBase = new THREE.Mesh(
-      new THREE.BoxGeometry(9.6, 0.4, 2.2),
-      new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 })
-    );
-    photoBase.position.y = 0.2;
-    photoGroup.add(photoBase);
-
-    // 2 cột trụ inox nâng đỡ
-    const poleMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.85, roughness: 0.2 });
-    const pole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 16), poleMat);
-    pole1.position.set(-3.6, 1.8, 0);
-    const pole2 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3.2, 16), poleMat);
-    pole2.position.set(3.6, 1.8, 0);
-    photoGroup.add(pole1);
-    photoGroup.add(pole2);
-
-    // Khung bảng ảnh
-    const photoFrame = new THREE.Mesh(
-      new THREE.BoxGeometry(9.2, 4.3, 0.25),
-      new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4 })
-    );
-    photoFrame.position.y = 4.2;
-    photoGroup.add(photoFrame);
-
-    // Tấm ảnh thực tế mặt trước (Tỉ lệ 2.2:1 chuẩn theo ảnh thật 485x220)
-    const textureLoader = new THREE.TextureLoader();
-    const realGateTex = textureLoader.load('cong_truong.png');
-    realGateTex.generateMipmaps = true;
-    realGateTex.minFilter = THREE.LinearMipmapLinearFilter;
-
-    const realPhotoMat = new THREE.MeshBasicMaterial({
-      map: realGateTex,
-      side: THREE.FrontSide
-    });
-    const photoFront = new THREE.Mesh(new THREE.PlaneGeometry(8.9, 4.05), realPhotoMat);
-    photoFront.position.set(0, 4.2, 0.14);
-    photoGroup.add(photoFront);
-
-    // Tấm ảnh thực tế mặt sau (nhìn từ trong trường ra cũng thấy rõ)
-    const photoBackMat = new THREE.MeshBasicMaterial({
-      map: realGateTex,
-      side: THREE.FrontSide
-    });
-    const photoBack = new THREE.Mesh(new THREE.PlaneGeometry(8.9, 4.05), photoBackMat);
-    photoBack.rotation.y = Math.PI;
-    photoBack.position.set(0, 4.2, -0.14);
-    photoGroup.add(photoBack);
-
-    // Biển tiêu đề trang trọng phía trên bảng ảnh
-    const titleTex = this.createCanvasLabel(
-      "📸 ẢNH THỰC TẾ CỔNG TRƯỜNG",
-      "TRƯỜNG THPT TAM PHƯỚC",
-      "#0f172a",
-      "#38bdf8",
-      "#0284c7",
-      540,
-      170
-    );
-    const titleMat = new THREE.MeshBasicMaterial({ map: titleTex, transparent: true, side: THREE.DoubleSide });
-    const titleMesh = new THREE.Mesh(new THREE.PlaneGeometry(8.2, 2.0), titleMat);
-    titleMesh.position.set(0, 6.7, 0.05);
-    photoGroup.add(titleMesh);
-
-    // Gán dữ liệu tương tác khi click
-    photoGroup.userData = gateUserData;
-    this.interactiveRooms.push(photoGroup);
-    envGroup.add(photoGroup);
+    // (Đã xóa bỏ bảng ảnh thực tế cổng trường cạnh phòng bảo vệ theo yêu cầu)
 
     envGroup.add(gateGroup);
 
@@ -2652,6 +3235,120 @@ class Campus3DViewer {
     requestAnimationFrame(updateCam);
   }
 
+  // =========================================================================
+  // BỘ ĐIỀU KHIỂN CHẾ ĐỘ DI CHUYỂN BẢN ĐỒ (PAN) & XOAY 3D (ROTATE)
+  // =========================================================================
+
+  setInteractionMode(mode) {
+    this.interactionMode = (mode === 'rotate') ? 'rotate' : 'pan';
+    this.applyInteractionMode();
+    return this.interactionMode;
+  }
+
+  applyInteractionMode() {
+    if (!this.controls) return;
+    this.controls.enablePan = true;
+    this.controls.screenSpacePanning = false; // Luôn di chuyển phẳng song song mặt đất trường học (X-Z)
+
+    if (this.interactionMode === 'rotate') {
+      // Chế độ Xoay 3D:
+      // - Chuột trái / 1 ngón tay chạm: Xoay góc nhìn 360 độ
+      // - Chuột phải / 2 ngón tay: Di chuyển bản đồ (Pan)
+      this.controls.mouseButtons = {
+        LEFT: THREE.MOUSE.ROTATE,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.PAN
+      };
+      this.controls.touches = {
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN
+      };
+      if (this.renderer && this.renderer.domElement) {
+        this.renderer.domElement.style.cursor = 'all-scroll';
+      }
+    } else {
+      // Chế độ Di Chuyển (Pan) - MẶC ĐỊNH:
+      // - Chuột trái / 1 ngón tay chạm: Di chuyển phẳng toàn bộ bản đồ sang trái, phải, trước, sau như xem ảnh bản đồ!
+      // - Chuột phải / 2 ngón tay: Xoay góc nhìn 3D quanh tâm
+      this.controls.mouseButtons = {
+        LEFT: THREE.MOUSE.PAN,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.ROTATE
+      };
+      this.controls.touches = {
+        ONE: THREE.TOUCH.PAN,
+        TWO: THREE.TOUCH.DOLLY_ROTATE
+      };
+      if (this.renderer && this.renderer.domElement) {
+        this.renderer.domElement.style.cursor = 'grab';
+      }
+    }
+  }
+
+  // Đưa góc nhìn trở về lại ngay chính giữa khuôn viên trường THPT Tam Phước
+  recenterCampus(duration = 650) {
+    if (!this.controls) return;
+    const centerTarget = new THREE.Vector3(0, 7, 3);
+    const offset = this.camera.position.clone().sub(this.controls.target);
+    const endPos = centerTarget.clone().add(offset);
+    this.tweenCamera(endPos, centerTarget, duration);
+  }
+
+  // Phóng to bản đồ
+  zoomIn(factor = 0.8) {
+    if (!this.controls) return;
+    const offset = this.camera.position.clone().sub(this.controls.target);
+    offset.multiplyScalar(factor);
+    if (offset.length() < this.controls.minDistance) {
+      offset.setLength(this.controls.minDistance);
+    }
+    const endPos = this.controls.target.clone().add(offset);
+    this.tweenCamera(endPos, this.controls.target.clone(), 350);
+  }
+
+  // Thu nhỏ bản đồ
+  zoomOut(factor = 1.25) {
+    if (!this.controls) return;
+    const offset = this.camera.position.clone().sub(this.controls.target);
+    offset.multiplyScalar(factor);
+    if (offset.length() > this.controls.maxDistance) {
+      offset.setLength(this.controls.maxDistance);
+    }
+    const endPos = this.controls.target.clone().add(offset);
+    this.tweenCamera(endPos, this.controls.target.clone(), 350);
+  }
+
+  // Di chuyển từng bước theo hướng (hỗ trợ phím mũi tên bàn phím hoặc nút điều hướng)
+  panByDirection(dir, distance = 8) {
+    if (!this.controls || !this.controls.enabled) return;
+    const v = new THREE.Vector3();
+    const objectMatrix = this.camera.matrix;
+
+    switch (dir) {
+      case 'left':
+        v.setFromMatrixColumn(objectMatrix, 0).multiplyScalar(-distance);
+        break;
+      case 'right':
+        v.setFromMatrixColumn(objectMatrix, 0).multiplyScalar(distance);
+        break;
+      case 'up':
+        v.setFromMatrixColumn(objectMatrix, 0);
+        v.crossVectors(this.camera.up, v).multiplyScalar(distance);
+        break;
+      case 'down':
+        v.setFromMatrixColumn(objectMatrix, 0);
+        v.crossVectors(this.camera.up, v).multiplyScalar(-distance);
+        break;
+    }
+
+    const startPos = this.camera.position.clone();
+    const startTarget = this.controls.target.clone();
+    const endPos = startPos.clone().add(v);
+    const endTarget = startTarget.clone().add(v);
+
+    this.tweenCamera(endPos, endTarget, 280);
+  }
+
   setupEvents() {
     window.addEventListener('resize', () => {
       if (!this.container) return;
@@ -2662,8 +3359,35 @@ class Campus3DViewer {
       this.renderer.setSize(w, h);
     });
 
-    // Bắt sự kiện click vào phòng để xem thông tin
-    this.renderer.domElement.addEventListener('click', (e) => {
+    // Bắt sự kiện chạm / click vào phòng để xem ảnh và thông tin chi tiết
+    let pointerDownPos = { x: 0, y: 0 };
+    let isDraggingCanvas = false;
+
+    this.renderer.domElement.addEventListener('pointerdown', (e) => {
+      pointerDownPos = { x: e.clientX, y: e.clientY };
+      isDraggingCanvas = false;
+      if (this.interactionMode === 'pan') {
+        this.renderer.domElement.style.cursor = 'grabbing';
+      }
+    });
+
+    this.renderer.domElement.addEventListener('pointermove', (e) => {
+      if (Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y) > 6) {
+        isDraggingCanvas = true;
+      }
+    });
+
+    const resetCursor = () => {
+      if (this.renderer && this.renderer.domElement) {
+        this.renderer.domElement.style.cursor = (this.interactionMode === 'pan') ? 'grab' : 'all-scroll';
+      }
+    };
+
+    this.renderer.domElement.addEventListener('pointerup', (e) => {
+      resetCursor();
+      if (isDraggingCanvas) return; // Nếu đang kéo xoay camera hoặc di chuyển map thì không coi là click
+      if (this.tourActive) return; // Đang đi thử không bật popover để đảm bảo tầm nhìn
+
       const rect = this.renderer.domElement.getBoundingClientRect();
       this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -2671,17 +3395,51 @@ class Campus3DViewer {
       this.raycaster.setFromCamera(this.mouse, this.camera);
       const intersects = this.raycaster.intersectObjects(this.scene.children, true);
 
+      let foundData = null;
+      let matchedObj = null;
+      let hitPoint = null;
       for (let hit of intersects) {
         let curr = hit.object;
         while (curr && curr.parent && curr.parent !== this.scene) {
-          if (curr.userData && curr.userData.name) {
-            this.showRoomTooltip(curr.userData, e.clientX, e.clientY);
-            return;
+          if (curr.userData && curr.userData.name && curr.userData.name !== '-') {
+            foundData = curr.userData;
+            matchedObj = curr;
+            hitPoint = hit.point;
+            break;
           }
           curr = curr.parent;
         }
+        if (foundData) break;
+      }
+
+      if (foundData) {
+        const loc = this.findLocation(foundData.name);
+        let room3DPos = null;
+        if (matchedObj) {
+          const box = new THREE.Box3().setFromObject(matchedObj);
+          room3DPos = new THREE.Vector3(
+            (box.min.x + box.max.x) / 2,
+            box.max.y + 0.35,
+            (box.min.z + box.max.z) / 2
+          );
+        } else if (hitPoint) {
+          room3DPos = hitPoint.clone();
+        }
+
+        if (window.onCampus3DRoomClick) {
+          window.onCampus3DRoomClick(loc || foundData, e, room3DPos);
+        } else {
+          this.showRoomTooltip(foundData, e.clientX, e.clientY);
+        }
+      } else {
+        if (window.hideCampus3DPopover) {
+          window.hideCampus3DPopover();
+        }
       }
     });
+
+    this.renderer.domElement.addEventListener('pointerleave', resetCursor);
+    this.renderer.domElement.addEventListener('pointercancel', resetCursor);
   }
 
   showRoomTooltip(userData, clientX, clientY) {
@@ -2741,7 +3499,11 @@ class Campus3DViewer {
 
   animate() {
     requestAnimationFrame(() => this.animate());
-    if (this.controls) {
+    if (this.controls && this.controls.enabled) {
+      // Giới hạn phạm vi tâm nhìn (target) trong ranh giới khuôn viên trường học để không bị trôi quá xa
+      this.controls.target.x = THREE.MathUtils.clamp(this.controls.target.x, -85, 85);
+      this.controls.target.z = THREE.MathUtils.clamp(this.controls.target.z, -50, 90);
+      this.controls.target.y = THREE.MathUtils.clamp(this.controls.target.y, 0, 20);
       this.controls.update();
     }
 
@@ -2758,7 +3520,70 @@ class Campus3DViewer {
       this.updateTourStep();
     }
 
+    if (this.onFrame) {
+      this.onFrame();
+    }
+
+    if (window.updateCampus3DPopoverPosition) {
+      window.updateCampus3DPopoverPosition();
+    }
+
     this.renderer.render(this.scene, this.camera);
+  }
+
+  // Chuyển đổi tọa độ 3D Vector3 thành tọa độ pixel 2D trên màn hình
+  projectToScreen(vec3) {
+    if (!vec3 || !this.camera) return null;
+    const v = vec3.clone();
+    v.project(this.camera);
+
+    const isBehind = (v.z > 1.0);
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const x = (v.x * 0.5 + 0.5) * rect.width + rect.left;
+    const y = (-(v.y * 0.5) + 0.5) * rect.height + rect.top;
+
+    return {
+      x,
+      y,
+      isBehind
+    };
+  }
+
+  // Tìm vị trí 3D thế giới chính xác ngay trên nóc của phòng học hoặc địa điểm
+  getRoomWorldPosition(locOrName) {
+    if (!locOrName) return null;
+    const targetName = (locOrName.name || locOrName.id || locOrName).toString().trim().toLowerCase();
+    let foundObj = null;
+
+    this.scene.traverse((obj) => {
+      if (foundObj) return;
+      if (obj.userData && obj.userData.name && obj.userData.name !== '-') {
+        const n = obj.userData.name.toString().trim().toLowerCase();
+        if (n === targetName || n.includes(targetName) || targetName.includes(n)) {
+          foundObj = obj;
+        }
+      }
+    });
+
+    if (foundObj) {
+      const box = new THREE.Box3().setFromObject(foundObj);
+      return new THREE.Vector3(
+        (box.min.x + box.max.x) / 2,
+        box.max.y + 0.35,
+        (box.min.z + box.max.z) / 2
+      );
+    }
+
+    // Fallback nếu vị trí có x, y trong CampusLocation
+    const loc = (typeof locOrName === 'object' && locOrName.x !== undefined) ? locOrName : this.findLocation(locOrName);
+    if (loc && loc.x !== undefined && loc.y !== undefined) {
+      const x3d = (loc.x - 740) * 0.062;
+      const z3d = (loc.y - 650) * 0.088;
+      const y3d = this.getFloorHeight(loc.floor) + 3.2;
+      return new THREE.Vector3(x3d, y3d, z3d);
+    }
+
+    return null;
   }
 
   // =========================================================================
@@ -2823,77 +3648,93 @@ class Campus3DViewer {
     this.clearRoute();
     this.activeRoute = navRes;
 
-    // Chuyển đổi các điểm sang tọa độ 3D
-    const points3D = [];
-
-    // Tìm mesh 3D của phòng học nếu có
-    const findRoomMesh = (name) => {
-      if (!name) return null;
-      const clean = name.toLowerCase().replace(/^(lớp|phòng)\s*/, '').trim();
-      return this.interactiveRooms.find(r => {
-        const rName = (r.userData.name || '').toLowerCase().replace(/^(lớp|phòng)\s*/, '').trim();
-        return rName === clean;
-      });
+    // Hàm chuyển đổi tầng tiếng Việt sang cao độ Y trong không gian 3D
+    const getFloorY = (floorStr) => {
+      if (!floorStr) return 0.12;
+      const f = floorStr.toString().toLowerCase();
+      if (f.includes('4') || f.includes('lau_3') || f.includes('lầu 3')) return 10.88;
+      if (f.includes('3') || f.includes('lau_2') || f.includes('lầu 2')) return 7.28;
+      if (f.includes('2') || f.includes('lau_1') || f.includes('lầu 1')) return 3.68;
+      return 0.12; // Mặt đất / Tầng trệt
     };
 
-    // Hàm chuyển đổi 1 điểm nút 2D thành Vector3
+    // Hàm chuyển đổi 1 điểm 2D sang Vector3
     const nodeTo3D = (p, floorStr) => {
       const x3d = (p.x - 740) * 0.062;
       const z3d = (p.y - 650) * 0.088;
-      let y3d = 0.5;
-      if (floorStr === 't4' || floorStr === 'lau_3') y3d = 11.1;
-      else if (floorStr === 't3' || floorStr === 'lau_2') y3d = 7.5;
-      else if (floorStr === 't2' || floorStr === 'lau_1') y3d = 3.9;
+      const y3d = getFloorY(floorStr);
       return new THREE.Vector3(x3d, y3d, z3d);
     };
 
-    // Điểm đầu
-    const startMesh = findRoomMesh(startLoc.name);
-    let startPos3D;
-    if (startMesh) {
-      startPos3D = new THREE.Vector3();
-      startMesh.getWorldPosition(startPos3D);
-      startPos3D.y += 0.4;
-    } else {
-      startPos3D = nodeTo3D(startLoc, startLoc.floor);
-    }
-    points3D.push(startPos3D);
+    const rawPoints3D = [];
 
-    // Các điểm trung gian
-    if (navRes.points && navRes.points.length > 2) {
-      for (let i = 1; i < navRes.points.length - 1; i++) {
-        const pt = navRes.points[i];
+    // Ưu tiên sử dụng chuỗi nodePath chính xác từ CampusRouter
+    if (navRes.nodePath && navRes.nodePath.length > 0) {
+      navRes.nodePath.forEach(nid => {
+        const nd = window.CAMPUS_GRAPH_NODES && window.CAMPUS_GRAPH_NODES[nid];
+        if (nd) {
+          rawPoints3D.push(nodeTo3D(nd, nd.floor));
+        }
+      });
+    } else if (navRes.points && navRes.points.length > 0) {
+      navRes.points.forEach(pt => {
         let nodeFloor = 'tret';
         if (window.CAMPUS_GRAPH_NODES) {
           for (const k in window.CAMPUS_GRAPH_NODES) {
             const nd = window.CAMPUS_GRAPH_NODES[k];
-            if (Math.hypot(nd.x - pt.x, nd.y - pt.y) < 1.0) {
+            if (Math.hypot(nd.x - pt.x, nd.y - pt.y) < 2.0) {
               nodeFloor = nd.floor;
               break;
             }
           }
         }
-        points3D.push(nodeTo3D(pt, nodeFloor));
+        rawPoints3D.push(nodeTo3D(pt, nodeFloor));
+      });
+    }
+
+    // Đảm bảo điểm bắt đầu và kết thúc trùng với vị trí xuất phát / đích đến
+    if (rawPoints3D.length > 0) {
+      const pStart = nodeTo3D(startLoc, startLoc.floor);
+      if (rawPoints3D[0].distanceTo(pStart) > 0.8) {
+        rawPoints3D.unshift(pStart);
+      }
+      const pDest = nodeTo3D(destLoc, destLoc.floor);
+      if (rawPoints3D[rawPoints3D.length - 1].distanceTo(pDest) > 0.8) {
+        rawPoints3D.push(pDest);
       }
     }
 
-    // Điểm cuối
-    const destMesh = findRoomMesh(destLoc.name);
-    let destPos3D;
-    if (destMesh) {
-      destPos3D = new THREE.Vector3();
-      destMesh.getWorldPosition(destPos3D);
-      destPos3D.y += 0.4;
-    } else {
-      destPos3D = nodeTo3D(destLoc, destLoc.floor);
-    }
-    points3D.push(destPos3D);
+    // Làm mượt đoạn chuyển tiếp cầu thang (tránh giật phương thẳng đứng)
+    const pointsWithStairs = [];
+    for (let i = 0; i < rawPoints3D.length; i++) {
+      const pCurr = rawPoints3D[i];
+      pointsWithStairs.push(pCurr);
 
-    // Lọc các điểm trùng lặp quá gần (< 0.6 đơn vị)
-    const filteredPoints = [points3D[0]];
-    for (let i = 1; i < points3D.length; i++) {
-      if (filteredPoints[filteredPoints.length - 1].distanceTo(points3D[i]) > 0.6) {
-        filteredPoints.push(points3D[i]);
+      if (i < rawPoints3D.length - 1) {
+        const pNext = rawPoints3D[i + 1];
+        const dy = pNext.y - pCurr.y;
+        if (Math.abs(dy) > 1.5) {
+          // Leo hoặc xuống cầu thang: chèn 2 điểm trung gian tạo quỹ đạo bậc thang xoắn tự nhiên
+          const mid1 = new THREE.Vector3(
+            pCurr.x + (pNext.x - pCurr.x) * 0.35,
+            pCurr.y + dy * 0.35,
+            pCurr.z + (pNext.z - pCurr.z) * 0.35
+          );
+          const mid2 = new THREE.Vector3(
+            pCurr.x + (pNext.x - pCurr.x) * 0.70,
+            pCurr.y + dy * 0.75,
+            pCurr.z + (pNext.z - pCurr.z) * 0.70
+          );
+          pointsWithStairs.push(mid1, mid2);
+        }
+      }
+    }
+
+    // Lọc các điểm quá sát nhau (< 0.4 đơn vị)
+    const filteredPoints = [pointsWithStairs[0]];
+    for (let i = 1; i < pointsWithStairs.length; i++) {
+      if (filteredPoints[filteredPoints.length - 1].distanceTo(pointsWithStairs[i]) > 0.35) {
+        filteredPoints.push(pointsWithStairs[i]);
       }
     }
 
@@ -2902,42 +3743,95 @@ class Campus3DViewer {
       curve.curveType = 'centripetal';
       this.activeCurve = curve;
 
-      // 1. Ống dẫn đường 3D phát sáng
-      const tubeSegments = Math.max(50, filteredPoints.length * 16);
-      const tubeGeo = new THREE.TubeGeometry(curve, tubeSegments, 0.38, 12, false);
+      // 1. Dây chỉ dẫn mặt sàn thanh mảnh (Slim Glowing Floor Ribbon) - R = 0.075m, không che tầm nhìn
+      const tubeSegments = Math.max(60, filteredPoints.length * 20);
+      const tubeGeo = new THREE.TubeGeometry(curve, tubeSegments, 0.075, 10, false);
       const tubeMat = new THREE.MeshStandardMaterial({
-        color: 0x06b6d4,
+        color: 0x00d2ff,
         emissive: 0x0284c7,
-        emissiveIntensity: 0.85,
+        emissiveIntensity: 1.2,
         roughness: 0.2,
-        metalness: 0.2
+        metalness: 0.1
       });
       const tubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
-      tubeMesh.castShadow = true;
+      tubeMesh.castShadow = false;
       this.routeGroup.add(tubeMesh);
 
-      // 2. Viền dây neon phát sáng bên ngoài
-      const wireGeo = new THREE.TubeGeometry(curve, tubeSegments, 0.44, 6, false);
-      const wireMat = new THREE.MeshBasicMaterial({
+      // 2. Viền hào quang mềm mỏng
+      const glowGeo = new THREE.TubeGeometry(curve, tubeSegments, 0.14, 6, false);
+      const glowMat = new THREE.MeshBasicMaterial({
         color: 0x38bdf8,
         wireframe: true,
         transparent: true,
-        opacity: 0.6
+        opacity: 0.45
       });
-      const wireMesh = new THREE.Mesh(wireGeo, wireMat);
-      this.routeGroup.add(wireMesh);
+      const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+      this.routeGroup.add(glowMesh);
 
-      // 3. Các điểm ghim 3D Bắt đầu & Kết thúc
+      // 3. Mũi tên chỉ hướng phát sáng dọc tuyến đường (Directional Floor Chevrons)
+      const numChevrons = Math.max(4, Math.floor(filteredPoints.length * 2.2));
+      const chevronTex = this.createChevronTexture();
+      const chevronMat = new THREE.MeshBasicMaterial({
+        map: chevronTex,
+        transparent: true,
+        opacity: 0.9,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      for (let i = 1; i < numChevrons; i++) {
+        const t = i / numChevrons;
+        const pt = curve.getPointAt(t);
+        const tangent = curve.getTangentAt(t).normalize();
+        const chMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), chevronMat);
+        chMesh.rotation.x = -Math.PI / 2;
+        const angle = Math.atan2(tangent.x, tangent.z);
+        chMesh.rotation.z = -angle;
+        chMesh.position.set(pt.x, pt.y + 0.05, pt.z);
+        this.routeGroup.add(chMesh);
+      }
+
+      // 4. Các điểm ghim 3D Bắt đầu & Kết thúc
       this.createRoutePin(filteredPoints[0], "#10b981", `BẮT ĐẦU: ${startLoc.name}`, true);
       this.createRoutePin(filteredPoints[filteredPoints.length - 1], "#ef4444", `ĐẾN: ${destLoc.name}`, false);
 
       // Tự động xoay camera để bao quát toàn tuyến
       this.focusRoute(filteredPoints);
-    } else {
+    } else if (filteredPoints.length === 1) {
       this.createRoutePin(filteredPoints[0], "#10b981", `VỊ TRÍ: ${startLoc.name}`, true);
     }
 
     return navRes;
+  }
+
+  createChevronTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 128, 128);
+
+    // Mũi tên kép neon cyan phát sáng
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 14;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.beginPath();
+    ctx.moveTo(24, 76);
+    ctx.lineTo(64, 36);
+    ctx.lineTo(104, 76);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#0284c7';
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.moveTo(28, 102);
+    ctx.lineTo(64, 66);
+    ctx.lineTo(100, 102);
+    ctx.stroke();
+
+    const tex = new THREE.CanvasTexture(canvas);
+    return tex;
   }
 
   createRoutePin(pos, hexColor, labelText, isStart = true) {
@@ -2947,20 +3841,20 @@ class Campus3DViewer {
     const colorNum = typeof hexColor === 'string' ? parseInt(hexColor.replace('#', '0x'), 16) : hexColor;
 
     // Cột trụ năng lượng
-    const beamGeo = new THREE.CylinderGeometry(0.18, 0.18, 5, 16);
+    const beamGeo = new THREE.CylinderGeometry(0.12, 0.12, 4.5, 16);
     const beamMat = new THREE.MeshStandardMaterial({
       color: colorNum,
       emissive: colorNum,
       emissiveIntensity: 0.9,
       transparent: true,
-      opacity: 0.85
+      opacity: 0.75
     });
     const beam = new THREE.Mesh(beamGeo, beamMat);
-    beam.position.y = 2.5;
+    beam.position.y = 2.25;
     pinGroup.add(beam);
 
     // Viên ngọc phát sáng trên đỉnh cột
-    const orbGeo = new THREE.SphereGeometry(0.65, 24, 24);
+    const orbGeo = new THREE.SphereGeometry(0.55, 24, 24);
     const orbMat = new THREE.MeshStandardMaterial({
       color: colorNum,
       emissive: colorNum,
@@ -2969,11 +3863,11 @@ class Campus3DViewer {
       roughness: 0.1
     });
     const orb = new THREE.Mesh(orbGeo, orbMat);
-    orb.position.y = 5.3;
+    orb.position.y = 4.8;
     pinGroup.add(orb);
 
     // Vòng sóng xung nhịp dưới mặt sàn (Pulse ring)
-    const ringGeo = new THREE.RingGeometry(1.0, 1.4, 32);
+    const ringGeo = new THREE.RingGeometry(0.9, 1.3, 32);
     const ringMat = new THREE.MeshBasicMaterial({
       color: colorNum,
       side: THREE.DoubleSide,
@@ -2997,8 +3891,8 @@ class Campus3DViewer {
       140
     );
     const labelMat = new THREE.MeshBasicMaterial({ map: labelCanvas, transparent: true });
-    const lbl = new THREE.Mesh(new THREE.PlaneGeometry(5.4, 2.1), labelMat);
-    lbl.position.y = 6.8;
+    const lbl = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 2.0), labelMat);
+    lbl.position.y = 6.2;
     pinGroup.add(lbl);
 
     this.routeGroup.add(pinGroup);
@@ -3060,7 +3954,9 @@ class Campus3DViewer {
 
       this.camera.position.lerpVectors(startPos, endPos, ease);
       this.controls.target.lerpVectors(startTarget, endTarget, ease);
-      this.controls.update();
+      if (this.controls.enabled) {
+        this.controls.update();
+      }
 
       if (progress < 1) {
         requestAnimationFrame(step);
@@ -3069,36 +3965,208 @@ class Campus3DViewer {
     requestAnimationFrame(step);
   }
 
+  // =========================================================================
+  // 🚶 BỘ ĐIỀU KHIỂN CHẾ ĐỘ ĐI THỬ 3D CHÂN THỰC (WALKTHROUGH SIMULATOR)
+  // =========================================================================
   startTour() {
-    if (!this.activeCurve) return;
+    if (!this.activeCurve) {
+      // Tuyến mặc định mẫu
+      const r = this.draw3DRoute('cong_truong', 'b_tret_12a9');
+      if (!this.activeCurve) return;
+    }
+
+    // 1. Lưu lại trạng thái camera trước khi đi thử để khôi phục khi kết thúc
+    this.savedCameraState = {
+      position: this.camera.position.clone(),
+      target: this.controls.target.clone(),
+      fov: this.camera.fov,
+      near: this.camera.near
+    };
+
+    // 2. Chuyển đổi camera sang góc nhìn người đi bộ
     this.tourActive = true;
+    this.tourPaused = false;
     this.tourProgress = 0;
-    this.tourStartTime = performance.now();
+    this.controls.enabled = false; // VÔ HIỆU HÓA OrbitControls để camera không bị kéo lệch giật lắc
+    this.camera.fov = this.walkFov || 72; // Góc nhìn 72 độ mở rộng bao quát toàn khung cảnh
+    this.camera.near = 0.08; // Tránh hiện tượng clipping thủng tường
+    this.camera.updateProjectionMatrix();
+
+    // 3. Thời lượng tour dựa theo độ dài tuyến
     const dist = (this.activeRoute && this.activeRoute.totalDistanceMeters) || 60;
-    this.tourDuration = Math.max(9000, dist * 160);
+    this.tourDuration = Math.max(10000, dist * 220);
+    this.lastTourTime = performance.now();
+
+    // 4. Mở thanh Walkthrough HUD
+    const hud = document.getElementById('tour-hud-bar');
+    if (hud) hud.classList.remove('hidden');
+
+    const pauseIcon = document.getElementById('tour-icon-pause');
+    const pauseText = document.getElementById('tour-text-pause');
+    if (pauseIcon) pauseIcon.textContent = '⏸️';
+    if (pauseText) pauseText.textContent = 'Tạm dừng';
+
+    this.updateTourUI();
   }
 
   updateTourStep() {
+    if (!this.tourActive || !this.activeCurve) return;
+    if (this.tourPaused) {
+      this.lastTourTime = performance.now();
+      return;
+    }
+
     const now = performance.now();
-    const elapsed = now - this.tourStartTime;
-    this.tourProgress = Math.min(elapsed / this.tourDuration, 1);
+    const dt = (now - this.lastTourTime) * (this.tourSpeed || 1.0);
+    this.lastTourTime = now;
 
-    const pos = this.activeCurve.getPointAt(this.tourProgress);
-    const forwardProgress = Math.min(this.tourProgress + 0.05, 1);
-    const lookTarget = this.activeCurve.getPointAt(forwardProgress);
-
-    // Tầm mắt người đi bộ (+1.7m)
-    this.camera.position.set(pos.x, pos.y + 1.7, pos.z);
-    this.controls.target.set(lookTarget.x, lookTarget.y + 1.5, lookTarget.z);
-    this.controls.update();
+    this.tourProgress += dt / this.tourDuration;
 
     if (this.tourProgress >= 1) {
-      this.tourActive = false;
+      this.tourProgress = 1;
+      this.tourPaused = true;
+      const pauseIcon = document.getElementById('tour-icon-pause');
+      const pauseText = document.getElementById('tour-text-pause');
+      if (pauseIcon) pauseIcon.textContent = '🔄';
+      if (pauseText) pauseText.textContent = 'Đi lại';
+      const locEl = document.getElementById('tour-current-loc');
+      if (locEl) locEl.textContent = `🎯 Đã đến: ${this.activeRoute?.destLoc?.name || 'Điểm đến'}`;
     }
+
+    // Tọa độ hiện tại và điểm nhìn phía trước
+    const currentPoint = this.activeCurve.getPointAt(this.tourProgress);
+    const forwardProgress = Math.min(this.tourProgress + 0.035, 1.0);
+    const lookPoint = this.activeCurve.getPointAt(forwardProgress);
+
+    // Vector hướng di chuyển
+    const forwardDir = new THREE.Vector3().subVectors(lookPoint, currentPoint);
+    forwardDir.y = 0; // Giữ cân bằng trục ngang mắt nhìn
+    if (forwardDir.lengthSq() < 0.0001) {
+      forwardDir.set(0, 0, 1);
+    } else {
+      forwardDir.normalize();
+    }
+
+    if (this.tourViewMode === 'firstPerson') {
+      // GÓC NHÌN MẮT NGƯỜI ĐI BỘ (FIRST-PERSON):
+      // Nhịp bước chân nhẹ nhàng mô phỏng chuyển động thực tế
+      const headBob = Math.sin(this.tourProgress * Math.PI * 50) * 0.032;
+      const eyeY = currentPoint.y + 1.65 + headBob;
+      this.camera.position.set(currentPoint.x, eyeY, currentPoint.z);
+
+      // Điểm nhìn hướng thẳng về phía trước theo hành lang
+      const targetDist = 6.0;
+      const targetLook = new THREE.Vector3(
+        currentPoint.x + forwardDir.x * targetDist,
+        eyeY * 0.98,
+        currentPoint.z + forwardDir.z * targetDist
+      );
+      this.camera.lookAt(targetLook);
+    } else {
+      // GÓC NHÌN FLYCAM THEO SAU (THIRD-PERSON FOLLOW):
+      const followDist = 4.8;
+      const camHeight = 3.2;
+      const camPos = new THREE.Vector3(
+        currentPoint.x - forwardDir.x * followDist,
+        currentPoint.y + camHeight,
+        currentPoint.z - forwardDir.z * followDist
+      );
+      this.camera.position.copy(camPos);
+      this.camera.lookAt(currentPoint.x, currentPoint.y + 1.5, currentPoint.z);
+    }
+
+    this.updateTourUI();
+  }
+
+  updateTourUI() {
+    const pct = Math.min(100, Math.max(0, Math.round(this.tourProgress * 100)));
+    const fillEl = document.getElementById('tour-progress-fill');
+    const textEl = document.getElementById('tour-progress-text');
+    if (fillEl) fillEl.style.width = `${pct}%`;
+    if (textEl) textEl.textContent = `${pct}%`;
+
+    // Cập nhật vị trí thời gian thực trên thanh HUD
+    const locEl = document.getElementById('tour-current-loc');
+    if (locEl && this.activeRoute) {
+      if (pct <= 4) {
+        locEl.textContent = `🟢 Bắt đầu: ${this.activeRoute.startLoc?.name || 'Điểm xuất phát'}`;
+      } else if (pct >= 98) {
+        locEl.textContent = `🎯 Đã tới: ${this.activeRoute.destLoc?.name || 'Đích đến'}`;
+      } else {
+        const steps = this.activeRoute.instructions;
+        if (steps && steps.length > 0) {
+          const stepIdx = Math.min(steps.length - 1, Math.floor(this.tourProgress * steps.length));
+          const step = steps[stepIdx];
+          locEl.textContent = `${step.icon || '🚶'} ${step.title || step.badge || 'Đang di chuyển'}`;
+        }
+      }
+    }
+  }
+
+  toggleTourPause() {
+    if (!this.tourActive) return;
+    if (this.tourProgress >= 1) {
+      this.restartTour();
+      return;
+    }
+    this.tourPaused = !this.tourPaused;
+    const pauseIcon = document.getElementById('tour-icon-pause');
+    const pauseText = document.getElementById('tour-text-pause');
+    if (pauseIcon) pauseIcon.textContent = this.tourPaused ? '▶️' : '⏸️';
+    if (pauseText) pauseText.textContent = this.tourPaused ? 'Tiếp tục' : 'Tạm dừng';
+    this.lastTourTime = performance.now();
+  }
+
+  restartTour() {
+    this.tourProgress = 0;
+    this.tourPaused = false;
+    this.lastTourTime = performance.now();
+    const pauseIcon = document.getElementById('tour-icon-pause');
+    const pauseText = document.getElementById('tour-text-pause');
+    if (pauseIcon) pauseIcon.textContent = '⏸️';
+    if (pauseText) pauseText.textContent = 'Tạm dừng';
+    this.updateTourUI();
+  }
+
+  setTourSpeed(speed, btn) {
+    this.tourSpeed = Number(speed) || 1.0;
+    document.querySelectorAll('.tour-speed-group .tour-pill-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+
+  setTourViewMode(mode, btn) {
+    this.tourViewMode = mode;
+    document.querySelectorAll('.tour-view-group .tour-pill-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+
+  seekTourByClick(event, trackEl) {
+    if (!trackEl || !this.activeCurve) return;
+    const rect = trackEl.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+    this.tourProgress = ratio;
+    this.lastTourTime = performance.now();
+    this.updateTourUI();
   }
 
   stopTour() {
     this.tourActive = false;
+    this.tourPaused = false;
+    this.controls.enabled = true; // Bật lại OrbitControls
+
+    // Khôi phục trạng thái camera ban đầu
+    if (this.savedCameraState) {
+      this.camera.fov = this.savedCameraState.fov;
+      this.camera.near = this.savedCameraState.near;
+      this.camera.updateProjectionMatrix();
+      this.tweenCamera(this.savedCameraState.position, this.savedCameraState.target, 800);
+      this.savedCameraState = null;
+    }
+
+    // Ẩn thanh HUD
+    const hud = document.getElementById('tour-hud-bar');
+    if (hud) hud.classList.add('hidden');
   }
 
   // Xuất ảnh PNG 3D sắc nét

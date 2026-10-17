@@ -22,21 +22,21 @@ const CAMPUS_LOCATIONS = [
 
   // --- DÃY HÀNH CHÍNH (HIỆU BỘ) ---
   // Tầng 2
-  { id: "phong_hieu_truong", name: "Phòng Hiệu trưởng", category: "admin", building: "Dãy Hành Chính", floor: "Tầng 2", x: 251, y: 697, node: "node_hc_t2_ht", keywords: ["hiệu trưởng", "ht", "thầy hiệu trưởng"], description: "Phòng làm việc Hiệu trưởng (Tầng 2 Dãy Hành Chính)" },
-  { id: "phong_van_thu", name: "Phòng Văn thư", category: "admin", building: "Dãy Hành Chính", floor: "Tầng 2", x: 313, y: 697, node: "node_hc_t2_vt", keywords: ["văn thư", "công văn", "dấu"], description: "Phòng Văn thư tiếp nhận công văn (Tầng 2 Dãy Hành Chính)" },
-  { id: "phong_ke_toan", name: "Phòng Kế toán", category: "admin", building: "Dãy Hành Chính", floor: "Tầng 2", x: 417, y: 697, node: "node_hc_t2_kt", keywords: ["kế toán", "học phí", "tài chính"], description: "Phòng Tài vụ & Kế toán (Tầng 2 Dãy Hành Chính)" },
-  { id: "phong_chi_bo", name: "Phòng Chi bộ (họp GV)", category: "admin", building: "Dãy Hành Chính", floor: "Tầng 2", x: 507, y: 697, node: "node_hc_t2_cb", keywords: ["chi bộ", "họp gv", "hội trường nhỏ", "phòng giáo viên"], description: "Phòng họp Chi bộ và Hội đồng Giáo viên (Tầng 2 Dãy Hành Chính)" },
-  { id: "wc_hc_t2", name: "WC Dãy Hành Chính (T2)", category: "facility", building: "Dãy Hành Chính", floor: "Tầng 2", x: 201, y: 697, node: "node_hc_t2_wc", keywords: ["wc", "nhà vệ sinh"], description: "Nhà vệ sinh Tầng 2 Dãy Hành Chính" },
+  { id: "phong_hieu_truong", name: "Phòng Hiệu trưởng", category: "admin", building: "Dãy Hành Chính", floor: "Tầng 2", x: 183, y: 697, node: "node_hc_t2_ht", keywords: ["hiệu trưởng", "ht", "thầy hiệu trưởng"], description: "Phòng làm việc Hiệu trưởng (Tầng 2 Dãy Hành Chính)" },
+  { id: "phong_van_thu", name: "Phòng Văn thư", category: "admin", building: "Dãy Hành Chính", floor: "Tầng 2", x: 237, y: 697, node: "node_hc_t2_vt", keywords: ["văn thư", "công văn", "dấu"], description: "Phòng Văn thư tiếp nhận công văn (Tầng 2 Dãy Hành Chính)" },
+  { id: "phong_ke_toan", name: "Phòng Kế toán", category: "admin", building: "Dãy Hành Chính", floor: "Tầng 2", x: 331, y: 697, node: "node_hc_t2_kt", keywords: ["kế toán", "học phí", "tài chính"], description: "Phòng Tài vụ & Kế toán (Tầng 2 Dãy Hành Chính)" },
+  { id: "phong_chi_bo", name: "Phòng Chi bộ (họp GV)", category: "admin", building: "Dãy Hành Chính", floor: "Tầng 2", x: 387, y: 697, node: "node_hc_t2_cb", keywords: ["chi bộ", "họp gv", "hội trường nhỏ", "phòng giáo viên"], description: "Phòng họp Chi bộ và Hội đồng Giáo viên (Tầng 2 Dãy Hành Chính)" },
+  { id: "wc_hc_t2", name: "WC Dãy Hành Chính (T2)", category: "facility", building: "Dãy Hành Chính", floor: "Tầng 2", x: 138, y: 697, node: "node_hc_t2_wc", keywords: ["wc", "nhà vệ sinh"], description: "Nhà vệ sinh Tầng 2 Dãy Hành Chính" },
 
   // Tầng trệt
-  { id: "phong_ho_so_1", name: "Phòng hồ sơ 1", category: "admin", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 251, y: 739, node: "node_hc_tret_p1", keywords: ["hồ sơ", "học bạ", "hồ sơ 1"], description: "Phòng lưu trữ hồ sơ học sinh 1 (Tầng trệt Dãy Hành Chính)" },
-  { id: "phong_ho_so_2", name: "Phòng hồ sơ 2", category: "admin", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 313, y: 739, node: "node_hc_tret_p2", keywords: ["hồ sơ", "hồ sơ 2"], description: "Phòng lưu trữ hồ sơ học sinh 2 (Tầng trệt Dãy Hành Chính)" },
-  { id: "phong_pho_ht", name: "Phòng Phó HT", category: "admin", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 417, y: 739, node: "node_hc_tret_pht", keywords: ["phó hiệu trưởng", "phó ht", "thầy phó"], description: "Phòng Phó Hiệu Trưởng (Tầng trệt Dãy Hành Chính)" },
-  { id: "phong_truyen_thong", name: "Phòng Truyền thống", category: "admin", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 478, y: 739, node: "node_hc_tret_tt", keywords: ["truyền thống", "lịch sử"], description: "Phòng truyền thống trường học (Tầng trệt Dãy Hành Chính)" },
-  { id: "phong_tiep_dan", name: "Phòng Tiếp dân", category: "admin", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 537, y: 739, node: "node_hc_tret_td", keywords: ["tiếp dân", "phụ huynh"], description: "Phòng tiếp đón phụ huynh và khách (Tầng trệt Dãy Hành Chính)" },
-  { id: "wc_hc_tret", name: "WC Dãy Hành Chính (Trệt)", category: "facility", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 201, y: 739, node: "node_hc_tret_wc", keywords: ["wc", "nhà vệ sinh"], description: "Nhà vệ sinh Tầng trệt Dãy Hành Chính" },
-  { id: "cau_thang_hc", name: "Cầu thang Hành chính", category: "stair", building: "Dãy Hành Chính", floor: "Cầu thang", x: 365, y: 718, node: "node_hc_stair_tret", keywords: ["cầu thang hành chính", "thang bộ"], description: "Cầu thang bộ kết nối Trệt và Tầng 2 Dãy Hành Chính" },
-  { id: "loi_vao_hanh_chinh", name: "Lối vào Dãy Hành Chính", category: "gate", building: "Dãy Hành Chính", floor: "Mặt đất", x: 365, y: 814, node: "node_hc_sanh_truoc", keywords: ["lối vào hành chính", "sảnh hành chính", "cửa hành chính", "sảnh hiệu bộ", "hiệu bộ", "lối vào"], description: "Sảnh đón và lối vào chính của Dãy Hành Chính (Hiệu Bộ)" },
+  { id: "phong_ho_so_1", name: "Phòng hồ sơ 1", category: "admin", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 183, y: 739, node: "node_hc_tret_p1", keywords: ["hồ sơ", "học bạ", "hồ sơ 1"], description: "Phòng lưu trữ hồ sơ học sinh 1 (Tầng trệt Dãy Hành Chính)" },
+  { id: "phong_ho_so_2", name: "Phòng hồ sơ 2", category: "admin", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 237, y: 739, node: "node_hc_tret_p2", keywords: ["hồ sơ", "hồ sơ 2"], description: "Phòng lưu trữ hồ sơ học sinh 2 (Tầng trệt Dãy Hành Chính)" },
+  { id: "phong_pho_ht", name: "Phòng Phó HT", category: "admin", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 331, y: 739, node: "node_hc_tret_pht", keywords: ["phó hiệu trưởng", "phó ht", "thầy phó"], description: "Phòng Phó Hiệu Trưởng (Tầng trệt Dãy Hành Chính)" },
+  { id: "phong_truyen_thong", name: "Phòng Truyền thống", category: "admin", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 373, y: 739, node: "node_hc_tret_tt", keywords: ["truyền thống", "lịch sử"], description: "Phòng truyền thống trường học (Tầng trệt Dãy Hành Chính)" },
+  { id: "phong_tiep_dan", name: "Phòng Tiếp dân", category: "admin", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 401, y: 739, node: "node_hc_tret_td", keywords: ["tiếp dân", "phụ huynh"], description: "Phòng tiếp đón phụ huynh và khách (Tầng trệt Dãy Hành Chính)" },
+  { id: "wc_hc_tret", name: "WC Dãy Hành Chính (Trệt)", category: "facility", building: "Dãy Hành Chính", floor: "Tầng trệt", x: 138, y: 739, node: "node_hc_tret_wc", keywords: ["wc", "nhà vệ sinh"], description: "Nhà vệ sinh Tầng trệt Dãy Hành Chính" },
+  { id: "cau_thang_hc", name: "Cầu thang Hành chính", category: "stair", building: "Dãy Hành Chính", floor: "Cầu thang", x: 284, y: 718, node: "node_hc_stair_tret", keywords: ["cầu thang hành chính", "thang bộ"], description: "Cầu thang bộ kết nối Trệt và Tầng 2 Dãy Hành Chính" },
+  { id: "loi_vao_hanh_chinh", name: "Lối vào Dãy Hành Chính", category: "gate", building: "Dãy Hành Chính", floor: "Mặt đất", x: 284, y: 814, node: "node_hc_sanh_truoc", keywords: ["lối vào hành chính", "sảnh hành chính", "cửa hành chính", "sảnh hiệu bộ", "hiệu bộ", "lối vào"], description: "Sảnh đón và lối vào chính của Dãy Hành Chính (Hiệu Bộ)" },
 
   // --- TÒA 3 (DÃY B: KHỐI 12 - GIỮA BÊN TRÁI: 4 TẦNG) ---
   // Tầng 4
@@ -316,28 +316,33 @@ const CAMPUS_GRAPH_NODES = {
 
   // === DÃY HÀNH CHÍNH (HIỆU BỘ - DƯỚI BÊN TRÁI) ===
   // Tầng trệt (Y = 777 là hành lang)
-  "node_hc_tret_wc": { x: 201, y: 777, name: "WC Hành chính Trệt", floor: "Tầng trệt" },
-  "node_hc_tret_p1": { x: 251, y: 777, name: "Phòng hồ sơ 1", floor: "Tầng trệt" },
-  "node_hc_tret_p2": { x: 313, y: 777, name: "Phòng hồ sơ 2", floor: "Tầng trệt" },
-  "node_hc_stair_tret": { x: 365, y: 777, name: "Chân Cầu thang HC", floor: "Tầng trệt" },
-  "node_hc_tret_pht": { x: 417, y: 777, name: "Phòng Phó HT", floor: "Tầng trệt" },
-  "node_hc_tret_tt": { x: 478, y: 777, name: "Phòng Truyền thống", floor: "Tầng trệt" },
-  "node_hc_tret_td": { x: 537, y: 777, name: "Phòng Tiếp dân", floor: "Tầng trệt" },
+  "node_hc_tret_wc": { x: 138, y: 777, name: "WC Hành chính Trệt", floor: "Tầng trệt" },
+  "node_hc_tret_p1": { x: 183, y: 777, name: "Phòng hồ sơ 1", floor: "Tầng trệt" },
+  "node_hc_tret_p2": { x: 237, y: 777, name: "Phòng hồ sơ 2", floor: "Tầng trệt" },
+  "node_hc_stair_tret": { x: 284, y: 777, name: "Chân Cầu thang HC", floor: "Tầng trệt" },
+  "node_hc_tret_pht": { x: 331, y: 777, name: "Phòng Phó HT", floor: "Tầng trệt" },
+  "node_hc_tret_tt": { x: 373, y: 777, name: "Phòng Truyền thống", floor: "Tầng trệt" },
+  "node_hc_tret_td": { x: 401, y: 777, name: "Phòng Tiếp dân", floor: "Tầng trệt" },
+  "node_hl_hc_east": { x: 442, y: 777, name: "Hành lang Dãy Hành chính (Phía Đông)", floor: "Tầng trệt" },
 
-  // Lối vào sảnh Hành chính & Kết nối sân trước (X = 365)
-  "node_hc_sanh_truoc": { x: 365, y: 835, name: "Lối vào Sảnh Dãy Hành Chính", floor: "Mặt đất" },
-  "node_duong_xe_hc": { x: 365, y: 938, name: "Đường nội bộ trước Dãy Hành Chính", floor: "Mặt đất" },
+  // Hành lang nối giữa Tòa 3 và Tòa GV (thẳng đối diện cửa lớp 12A9)
+  "node_hl_connect_b_hc": { x: 442, y: 695, name: "Hành lang nối Tòa 3 - Tòa GV", floor: "Tầng trệt" },
+  "node_hl_connect_b_hc_t2": { x: 442, y: 616, name: "Cầu hành lang nối Tầng 2 (Tòa 3 - Tòa GV)", floor: "Tầng 2" },
+
+  // Lối vào sảnh Hành chính & Kết nối sân trước
+  "node_hc_sanh_truoc": { x: 284, y: 835, name: "Lối vào Sảnh Dãy Hành Chính", floor: "Mặt đất" },
+  "node_duong_xe_hc": { x: 284, y: 938, name: "Đường nội bộ trước Dãy Hành Chính", floor: "Mặt đất" },
   "node_san_truoc_hc": { x: 684, y: 835, name: "Sân trước Cổng", floor: "Mặt đất" },
 
-  // Cầu thang Hành chính (X = 365)
-  "node_hc_stair_t2": { x: 365, y: 697, name: "Đỉnh Cầu thang HC (T2)", floor: "Tầng 2" },
+  // Cầu thang Hành chính
+  "node_hc_stair_t2": { x: 284, y: 697, name: "Đỉnh Cầu thang HC (T2)", floor: "Tầng 2" },
 
   // Tầng 2 Hành chính (Y = 697)
-  "node_hc_t2_wc": { x: 201, y: 697, name: "WC Hành chính T2", floor: "Tầng 2" },
-  "node_hc_t2_ht": { x: 251, y: 697, name: "Phòng Hiệu trưởng", floor: "Tầng 2" },
-  "node_hc_t2_vt": { x: 313, y: 697, name: "Phòng Văn thư", floor: "Tầng 2" },
-  "node_hc_t2_kt": { x: 417, y: 697, name: "Phòng Kế toán", floor: "Tầng 2" },
-  "node_hc_t2_cb": { x: 507, y: 697, name: "Phòng Chi bộ", floor: "Tầng 2" },
+  "node_hc_t2_wc": { x: 138, y: 697, name: "WC Hành chính T2", floor: "Tầng 2" },
+  "node_hc_t2_ht": { x: 183, y: 697, name: "Phòng Hiệu trưởng", floor: "Tầng 2" },
+  "node_hc_t2_vt": { x: 237, y: 697, name: "Phòng Văn thư", floor: "Tầng 2" },
+  "node_hc_t2_kt": { x: 331, y: 697, name: "Phòng Kế toán", floor: "Tầng 2" },
+  "node_hc_t2_cb": { x: 387, y: 697, name: "Phòng Chi bộ", floor: "Tầng 2" },
 
   // === NHÀ XE & ĐƯỜNG NGOẠI VI (RING ROADS) ===
   // Nhà xe GV (góc Tây Nam)
@@ -412,23 +417,29 @@ const CAMPUS_GRAPH_EDGES = [
   { from: "node_truc_cong_bac", to: "node_cot_co_entry", desc: "Đi thẳng vào khu vực Cột Cờ trung tâm" },
   { from: "node_cot_co_entry", to: "node_cot_co", desc: "Đến chân Cột Cờ" },
 
-  // --- TRỤC HÀNH LANG NAM (Y = 777) ---
-  { from: "node_truc_cong_bac", to: "node_hl_west_south", desc: "Rẽ trái đi theo hành lang về phía Dãy Hành Chính" },
+  // --- TRỤC HÀNH LANG NAM (Y = 777) & KẾT NỐI SÂN TRƯỜNG ---
+  { from: "node_truc_cong_bac", to: "node_hl_hc_east", desc: "Rẽ trái đi ngang qua sân về phía hành lang Dãy Hành Chính" },
+  { from: "node_san_truoc_hc", to: "node_hl_hc_east", desc: "Đi ngang qua sân trước về phía hành lang Dãy Hành Chính" },
   { from: "node_cot_co_entry", to: "node_hl_ht_south", desc: "Rẽ phải đi theo hành lang về phía Hội Trường" },
 
-  // --- TRỤC HÀNH LANG DỌC TÂY (X = 595: THÔNG SUỐT TỪ DÃY A XUỐNG DÃY HC) ---
-  { from: "node_hl_west_south", to: "node_hl_west_mid", desc: "Đi dọc theo Hành lang Tây lên Dãy B" },
-  { from: "node_hl_west_mid", to: "node_hl_a_west", desc: "Đi tiếp dọc theo Hành lang Tây lên Dãy A" },
+  // --- TRỤC HÀNH LANG DỌC TÂY (X = 595: TỪ DÃY A XUỐNG DÃY B & SÂN TRƯỚC) ---
+  { from: "node_hl_west_mid", to: "node_hl_a_west", desc: "Đi dọc theo Hành lang Tây lên Dãy A" },
+  { from: "node_hl_west_mid", to: "node_hl_west_south", desc: "Đi dọc theo Hành lang Tây xuống phía Nam" },
+  { from: "node_hl_west_south", to: "node_truc_cong_bac", desc: "Từ Hành lang Tây rẽ ra trục sân trước Cột Cờ" },
+  { from: "node_hl_west_south", to: "node_san_truoc_hc", desc: "Đi từ Hành lang Tây ra sân trước Dãy Hành Chính" },
 
   // --- TRỤC HÀNH LANG DỌC ĐÔNG (X = 873: TỪ DÃY A XUỐNG DÃY BỘ MÔN) ---
   { from: "node_hl_a_east", to: "node_hl_east_mid", desc: "Đi dọc theo Hành lang Đông từ Dãy A xuống Dãy Bộ Môn" },
 
   // --- TRỤC HÀNH LANG NGANG TRUNG TÂM (Y = 612: NỐI TÂY - MÁI TAM GIÁC - ĐÔNG) ---
+  { from: "node_b_tret_12a10", to: "node_hl_west_mid", desc: "Đi tiếp qua sảnh Mái Tam Giác" },
   { from: "node_hl_west_mid", to: "node_mai_tam_giac", desc: "Đi thẳng theo hành lang ra sảnh Mái Tam Giác" },
   { from: "node_mai_tam_giac", to: "node_hl_east_mid", desc: "Đi tiếp qua sảnh Mái Tam Giác sang Hành lang Đông" },
 
-  // --- DÃY HÀNH CHÍNH (TẦNG TRỆT: Y = 777) ---
-  { from: "node_hl_west_south", to: "node_hc_tret_td", desc: "Đi theo hành lang Dãy Hành chính đến Phòng Tiếp dân" },
+  // --- HÀNH LANG NỐI TÒA 3 (ĐỐI DIỆN CỬA 12A9) SANG TÒA GIÁO VIÊN ---
+  { from: "node_b_tret_12a9", to: "node_hl_connect_b_hc", desc: "Từ trước Phòng 12A9 rẽ vào Hành lang nối sang Tòa GV" },
+  { from: "node_hl_connect_b_hc", to: "node_hl_hc_east", desc: "Đi thẳng theo Hành lang nối sang Dãy Hành chính" },
+  { from: "node_hl_hc_east", to: "node_hc_tret_td", desc: "Vào hành lang Dãy Hành chính đến Phòng Tiếp dân" },
   { from: "node_hc_tret_td", to: "node_hc_tret_tt", desc: "Đi tiếp qua Phòng Truyền thống" },
   { from: "node_hc_tret_tt", to: "node_hc_tret_pht", desc: "Đi qua Phòng Phó Hiệu Trưởng" },
   { from: "node_hc_tret_pht", to: "node_hc_stair_tret", desc: "Đến Cầu thang Dãy Hành Chính (Trệt)" },
@@ -466,8 +477,10 @@ const CAMPUS_GRAPH_EDGES = [
   { from: "node_b_stair_t2", to: "node_b_stair_t3", desc: "Leo tiếp cầu thang lên Tầng 3 Dãy B" },
   { from: "node_b_stair_t3", to: "node_b_stair_t4", desc: "Leo tiếp cầu thang lên Tầng 4 Dãy B" },
 
-  // Tầng 2 Dãy B (Y = 536)
+  // Tầng 2 Dãy B (Y = 536) & Cầu hành lang nối sang Tòa GV (Tầng 2)
   { from: "node_b_stair_t2", to: "node_b_t2_12a5", desc: "Hành lang Tầng 2 qua Phòng 12A5" },
+  { from: "node_b_t2_12a5", to: "node_hl_connect_b_hc_t2", desc: "Từ trước Phòng 12A5 rẽ vào Cầu hành lang nối Tầng 2 sang Tòa GV" },
+  { from: "node_hl_connect_b_hc_t2", to: "node_hc_t2_cb", desc: "Đi thẳng qua Cầu hành lang nối Tầng 2 đến Phòng Chi bộ Dãy Hành Chính" },
   { from: "node_b_t2_12a5", to: "node_b_t2_12a6", desc: "Đi tiếp đến Phòng 12A6" },
   { from: "node_b_stair_t2", to: "node_b_t2_12a4", desc: "Hành lang Tầng 2 qua Phòng 12A4" },
   { from: "node_b_t2_12a4", to: "node_b_t2_12a3", desc: "Đi tiếp qua Phòng 12A3" },
