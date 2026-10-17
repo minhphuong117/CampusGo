@@ -359,7 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function resetMapView() {
     const viewportRect = mapViewport.getBoundingClientRect();
     const mapWidth = 1600;
-    const mapHeight = 1120;
+    const mapHeight = 1200;
 
     const isMobile = window.innerWidth <= 768;
     // Trên iPhone / mobile, vùng bản đồ hiển thị rõ nhất nằm phía trên Bottom Sheet
@@ -983,7 +983,7 @@ document.addEventListener("DOMContentLoaded", () => {
     minX = Math.max(0, minX - padding);
     minY = Math.max(0, minY - padding);
     maxX = Math.min(1600, maxX + padding);
-    maxY = Math.min(1120, maxY + padding);
+    maxY = Math.min(1200, maxY + padding);
 
     const routeWidth = maxX - minX;
     const routeHeight = maxY - minY;

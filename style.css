@@ -1004,7 +1004,7 @@ body.is-resizing .map-viewport {
   top: 0;
   left: 0;
   width: 1600px;
-  height: 1120px;
+  height: 1200px;
   transform-origin: 0 0;
   will-change: transform;
   transition: transform 0.05s ease-out;
@@ -1013,7 +1013,7 @@ body.is-resizing .map-viewport {
 #main-map {
   display: block;
   width: 1600px;
-  height: 1120px;
+  height: 1200px;
   user-select: none;
 }
 
