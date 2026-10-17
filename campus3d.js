@@ -45,6 +45,8 @@ class Campus3DViewer {
     this.walkFov = 72;
     this.lastTime = performance.now();
     this.router = null;
+    this.continuousPanId = null;
+    this.interactionMode = 'unified'; // 'unified' (mặc định), 'pan' (kéo di chuyển), 'rotate' (xoay 360)
 
     this.initScene();
     this.buildCampus();
@@ -3246,7 +3248,15 @@ class Campus3DViewer {
   setInteractionMode(mode) {
     this.interactionMode = mode;
     this.applyInteractionMode();
+    if (window.onInteractionModeChanged) {
+      window.onInteractionModeChanged(this.interactionMode);
+    }
     return this.interactionMode;
+  }
+
+  togglePanMode() {
+    const newMode = (this.interactionMode === 'pan') ? 'unified' : 'pan';
+    return this.setInteractionMode(newMode);
   }
 
   applyInteractionMode() {
@@ -3256,22 +3266,38 @@ class Campus3DViewer {
     this.controls.enableZoom = true;
     this.controls.screenSpacePanning = true; // Kéo di chuyển theo mặt phẳng màn hình: Cho phép di chuyển lên xuống giữa các tầng và sang trái/phải mượt mà!
 
-    // HỆ THỐNG ĐIỀU KHIỂN THỐNG NHẤT TOÀN DIỆN:
-    // - Chuột trái / 1 ngón tay chạm vuốt: Xoay góc nhìn 360 độ tự do quanh trường
-    // - Chuột phải HOẶC Shift + Chuột trái / 2 ngón tay kéo: Di chuyển bản đồ (Pan) theo mọi hướng và lên xuống giữa các tầng
-    // - Con lăn chuột / 2 ngón tay chụm mở: Phóng to / Thu nhỏ mượt mà
-    this.controls.mouseButtons = {
-      LEFT: THREE.MOUSE.ROTATE,
-      MIDDLE: THREE.MOUSE.DOLLY,
-      RIGHT: THREE.MOUSE.PAN
-    };
-    this.controls.touches = {
-      ONE: THREE.TOUCH.ROTATE,
-      TWO: THREE.TOUCH.DOLLY_PAN
-    };
-
-    if (this.renderer && this.renderer.domElement) {
-      this.renderer.domElement.style.cursor = 'grab';
+    if (this.interactionMode === 'pan') {
+      // Chế độ Di Chuyển (Pan Mode):
+      // - Chuột trái / 1 ngón tay chạm vuốt: Di chuyển bản đồ sang trái, phải, trên, dưới tự do
+      // - Chuột phải / 2 ngón tay chạm vuốt: Xoay góc nhìn 360 độ
+      this.controls.mouseButtons = {
+        LEFT: THREE.MOUSE.PAN,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.ROTATE
+      };
+      this.controls.touches = {
+        ONE: THREE.TOUCH.PAN,
+        TWO: THREE.TOUCH.DOLLY_PAN
+      };
+      if (this.renderer && this.renderer.domElement) {
+        this.renderer.domElement.style.cursor = 'move';
+      }
+    } else {
+      // Chế độ Xoay 360° Mặc định (Unified Mode):
+      // - Chuột trái / 1 ngón tay chạm vuốt: Xoay góc nhìn 360 độ tự do quanh trường
+      // - Chuột phải HOẶC Shift + Chuột trái / 2 ngón tay kéo: Di chuyển bản đồ (Pan) theo mọi hướng và lên xuống giữa các tầng
+      this.controls.mouseButtons = {
+        LEFT: THREE.MOUSE.ROTATE,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.PAN
+      };
+      this.controls.touches = {
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN
+      };
+      if (this.renderer && this.renderer.domElement) {
+        this.renderer.domElement.style.cursor = 'grab';
+      }
     }
   }
 
@@ -3391,26 +3417,36 @@ class Campus3DViewer {
     this.tweenCamera(endPos, this.controls.target.clone(), 350);
   }
 
-  // Di chuyển từng bước theo hướng (hỗ trợ phím mũi tên bàn phím hoặc nút điều hướng)
-  panByDirection(dir, distance = 8) {
+  // Di chuyển từng bước theo hướng (hỗ trợ phím mũi tên bàn phím hoặc nút điều hướng D-pad)
+  panByDirection(dir, distance = 8, duration = 220) {
     if (!this.controls || !this.controls.enabled) return;
+
+    // Vector hướng nhìn trên mặt phẳng đất (XZ)
+    const forward = new THREE.Vector3();
+    this.camera.getWorldDirection(forward);
+    forward.y = 0;
+    if (forward.lengthSq() < 0.0001) {
+      forward.set(0, 0, -1);
+    } else {
+      forward.normalize();
+    }
+
+    // Vector sang phải (Right = Forward x Up)
+    const right = new THREE.Vector3().crossVectors(forward, this.camera.up).normalize();
     const v = new THREE.Vector3();
-    const objectMatrix = this.camera.matrix;
 
     switch (dir) {
       case 'left':
-        v.setFromMatrixColumn(objectMatrix, 0).multiplyScalar(-distance);
+        v.copy(right).multiplyScalar(-distance);
         break;
       case 'right':
-        v.setFromMatrixColumn(objectMatrix, 0).multiplyScalar(distance);
+        v.copy(right).multiplyScalar(distance);
         break;
-      case 'up':
-        v.setFromMatrixColumn(objectMatrix, 0);
-        v.crossVectors(this.camera.up, v).multiplyScalar(distance);
+      case 'up': // Di chuyển lên / tới trước
+        v.copy(forward).multiplyScalar(distance);
         break;
-      case 'down':
-        v.setFromMatrixColumn(objectMatrix, 0);
-        v.crossVectors(this.camera.up, v).multiplyScalar(-distance);
+      case 'down': // Di chuyển xuống / lùi sau
+        v.copy(forward).multiplyScalar(-distance);
         break;
       case 'elev_up':
         this.changeFloorElevation(3.6);
@@ -3425,7 +3461,69 @@ class Campus3DViewer {
     const endPos = startPos.clone().add(v);
     const endTarget = startTarget.clone().add(v);
 
-    this.tweenCamera(endPos, endTarget, 280);
+    this.tweenCamera(endPos, endTarget, duration);
+  }
+
+  // Di chuyển liên tục trơn tru khi nhấn giữ phím hoặc nút điều hướng
+  startContinuousPan(dir, speed = 0.55) {
+    this.stopContinuousPan();
+    if (!this.controls || !this.controls.enabled) return;
+
+    const animatePan = () => {
+      const forward = new THREE.Vector3();
+      this.camera.getWorldDirection(forward);
+      forward.y = 0;
+      if (forward.lengthSq() < 0.0001) {
+        forward.set(0, 0, -1);
+      } else {
+        forward.normalize();
+      }
+
+      const right = new THREE.Vector3().crossVectors(forward, this.camera.up).normalize();
+      const v = new THREE.Vector3();
+
+      switch (dir) {
+        case 'left':
+          v.copy(right).multiplyScalar(-speed);
+          break;
+        case 'right':
+          v.copy(right).multiplyScalar(speed);
+          break;
+        case 'up':
+          v.copy(forward).multiplyScalar(speed);
+          break;
+        case 'down':
+          v.copy(forward).multiplyScalar(-speed);
+          break;
+        case 'elev_up':
+          this.controls.target.y = Math.min(this.controls.target.y + 0.14, 17.5);
+          this.camera.position.y = Math.min(this.camera.position.y + 0.14, 55);
+          this.controls.update();
+          this.continuousPanId = requestAnimationFrame(animatePan);
+          return;
+        case 'elev_down':
+          this.controls.target.y = Math.max(this.controls.target.y - 0.14, 1.8);
+          this.camera.position.y = Math.max(this.camera.position.y - 0.14, 3.2);
+          this.controls.update();
+          this.continuousPanId = requestAnimationFrame(animatePan);
+          return;
+      }
+
+      this.camera.position.add(v);
+      this.controls.target.add(v);
+      this.controls.update();
+
+      this.continuousPanId = requestAnimationFrame(animatePan);
+    };
+
+    this.continuousPanId = requestAnimationFrame(animatePan);
+  }
+
+  stopContinuousPan() {
+    if (this.continuousPanId) {
+      cancelAnimationFrame(this.continuousPanId);
+      this.continuousPanId = null;
+    }
   }
 
   setupEvents() {

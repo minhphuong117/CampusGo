@@ -241,6 +241,95 @@
     }
 
     /* =========================================================================
+       CỤM PHÍM ĐIỀU HƯỚNG 4 HƯỚNG: DI CHUYỂN SANG TRÁI, PHẢI, TRÊN, DƯỚI
+       ========================================================================= */
+    .dpad-navigation {
+      position: fixed;
+      left: 18px;
+      bottom: 22px;
+      z-index: 35;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 20px;
+      padding: 7px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      transition: all 0.25s ease;
+    }
+
+    .dpad-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .dpad-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #38bdf8;
+      font-size: 13.5px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      touch-action: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .dpad-btn:hover {
+      background: rgba(56, 189, 248, 0.28);
+      border-color: #38bdf8;
+      color: #ffffff;
+      transform: scale(1.08);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.55);
+    }
+
+    .dpad-btn:active,
+    .dpad-btn.pressed {
+      transform: scale(0.92);
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: white;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+    }
+
+    .dpad-center {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #f8fafc;
+      font-size: 14px;
+    }
+
+    .dpad-center:hover {
+      background: #0284c7;
+      color: white;
+    }
+
+    .dpad-label-hint {
+      font-size: 9px;
+      font-weight: 800;
+      color: #7dd3fc;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-top: 1px;
+      pointer-events: none;
+    }
+
+    /* =========================================================================
        2. BẢNG CHỈ ĐƯỜNG 3D THÔNG MINH - HỖ TRỢ NHẬP TÌM KIẾM CÓ GỢI Ý DROPDOWN
        ========================================================================= */
     .nav-panel-3d {
@@ -1580,6 +1669,25 @@
         border-radius: 7px;
       }
 
+      .dpad-navigation {
+        left: 10px;
+        bottom: 16px;
+        padding: 5px;
+        gap: 2px;
+        border-radius: 16px;
+      }
+
+      .dpad-row {
+        gap: 2px;
+      }
+
+      .dpad-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+        border-radius: 7px;
+      }
+
       /* Bảng chỉ đường mở rộng dạng Bottom Sheet thông minh chuẩn di động */
       .nav-panel-3d {
         top: auto;
@@ -1734,16 +1842,21 @@
 
       <div class="toolbar-divider"></div>
 
+      <!-- Nút Chuyển Chế Độ: Di Chuyển (Pan) / Xoay 360° -->
+      <button class="tool-btn" id="btn-toggle-pan-mode" onclick="togglePanMode()" title="Chế độ Di Chuyển: Kéo chuột trái hoặc vuốt 1 ngón tay để di bản đồ sang trái/phải/trên/dưới (Phím Cách)">
+        <span id="icon-pan-mode">✋</span> <span class="btn-text-full" id="lbl-pan-mode">Di Chuyển</span><span class="btn-text-short">Di Chuyển</span>
+      </button>
+
       <!-- Nút Về Giữa Trường -->
       <button class="tool-btn" id="btn-recenter" onclick="recenterCampusView()" title="Đưa góc nhìn về lại chính giữa trường học (Phím R)">
         🎯 <span class="btn-text-full">Về Giữa</span><span class="btn-text-short">Giữa</span>
       </button>
 
       <!-- Di chuyển lên / xuống giữa các tầng -->
-      <button class="tool-btn" id="btn-elev-up" onclick="if(viewer) viewer.changeFloorElevation(3.6)" title="Nâng góc nhìn lên tầng trên (Phím PageUp / W)">
+      <button class="tool-btn" id="btn-elev-up" onclick="if(viewer) viewer.changeFloorElevation(3.6)" title="Nâng góc nhìn lên tầng trên (Phím PageUp / Q)">
         ⬆️ <span class="btn-text-full">Lên Tầng</span><span class="btn-text-short">Lên</span>
       </button>
-      <button class="tool-btn" id="btn-elev-down" onclick="if(viewer) viewer.changeFloorElevation(-3.6)" title="Hạ góc nhìn xuống tầng dưới (Phím PageDown / S)">
+      <button class="tool-btn" id="btn-elev-down" onclick="if(viewer) viewer.changeFloorElevation(-3.6)" title="Hạ góc nhìn xuống tầng dưới (Phím PageDown / E)">
         ⬇️ <span class="btn-text-full">Xuống Tầng</span><span class="btn-text-short">Xuống</span>
       </button>
 
@@ -1768,13 +1881,26 @@
 
   <!-- DOCK TIỆN ÍCH ĐIỀU HƯỚNG BẢN ĐỒ 3D (ZOOM, VỀ GIỮA, LÊN / XUỐNG TẦNG) -->
   <aside class="map-floating-controls" id="map-floating-controls" aria-label="Điều khiển bản đồ 3D">
+    <button type="button" class="map-float-btn" id="mfc-pan-toggle" onclick="togglePanMode()" title="Chuyển chế độ Di Chuyển (Pan) / Xoay 360°">✋</button>
     <button type="button" class="map-float-btn" id="mfc-zoom-in" onclick="if(viewer) viewer.zoomIn()" title="Phóng to (+)">➕</button>
     <button type="button" class="map-float-btn" id="mfc-zoom-out" onclick="if(viewer) viewer.zoomOut()" title="Thu nhỏ (-)">➖</button>
     <button type="button" class="map-float-btn" id="mfc-recenter" onclick="recenterCampusView()" title="Đưa về giữa trường (R)">🎯</button>
     <div class="map-float-divider"></div>
-    <button type="button" class="map-float-btn" id="mfc-elev-up" onclick="if(viewer) viewer.changeFloorElevation(3.6)" title="Lên tầng trên (PageUp / W)">⬆️</button>
-    <button type="button" class="map-float-btn" id="mfc-elev-down" onclick="if(viewer) viewer.changeFloorElevation(-3.6)" title="Xuống tầng dưới (PageDown / S)">⬇️</button>
+    <button type="button" class="map-float-btn" id="mfc-elev-up" onclick="if(viewer) viewer.changeFloorElevation(3.6)" title="Lên tầng trên (PageUp / Q)">⬆️</button>
+    <button type="button" class="map-float-btn" id="mfc-elev-down" onclick="if(viewer) viewer.changeFloorElevation(-3.6)" title="Xuống tầng dưới (PageDown / E)">⬇️</button>
   </aside>
+
+  <!-- CỤM PHÍM ĐIỀU HƯỚNG 4 HƯỚNG: DI CHUYỂN SANG TRÁI, PHẢI, TRÊN, DƯỚI -->
+  <nav class="dpad-navigation" id="dpad-navigation" aria-label="Điều hướng di chuyển bản đồ 3D">
+    <button type="button" class="dpad-btn dpad-up" id="dpad-up" title="Di chuyển lên trên / tới trước (Giữ để trượt liên tục)">▲</button>
+    <div class="dpad-row">
+      <button type="button" class="dpad-btn dpad-left" id="dpad-left" title="Di chuyển sang trái (Giữ để trượt liên tục)">◀</button>
+      <button type="button" class="dpad-btn dpad-center" id="dpad-center" onclick="recenterCampusView()" title="Về giữa trường (Phím R)">🎯</button>
+      <button type="button" class="dpad-btn dpad-right" id="dpad-right" title="Di chuyển sang phải (Giữ để trượt liên tục)">▶</button>
+    </div>
+    <button type="button" class="dpad-btn dpad-down" id="dpad-down" title="Di chuyển xuống dưới / lùi sau (Giữ để trượt liên tục)">▼</button>
+    <div class="dpad-label-hint">Di Chuyển</div>
+  </nav>
 
   <!-- 2. BẢNG CHỈ ĐƯỜNG 3D THÔNG MINH (CÓ TÌM KIẾM TỰ ĐỘNG GỢI Ý DROPDOWN) -->
   <div class="nav-panel-3d hidden" id="nav-panel-3d">
@@ -2368,6 +2494,9 @@
         if (cong) startCombobox.selectLocation(cong, false);
         if (lop12a1) destCombobox.selectLocation(lop12a1, false);
       }
+
+      // Khởi tạo cụm nút D-Pad điều hướng 4 hướng di chuyển
+      initDpadControls();
     });
 
     let activeTarget3DPos = null;
@@ -2880,19 +3009,92 @@
       }, 2800);
     }
 
-    // Phím tắt bàn phím tiện lợi (Mũi tên: di chuyển, PageUp/W: lên tầng, PageDown/S: xuống tầng, + -: thu phóng, R: về giữa)
+    // 11. ĐIỀU HƯỚNG DI CHUYỂN BẢN ĐỒ 3D (PAN / MOVE)
+    function togglePanMode() {
+      if (!viewer) return;
+      const mode = viewer.togglePanMode();
+      const isPan = (mode === 'pan');
+      const btnTop = document.getElementById("btn-toggle-pan-mode");
+      const lblTop = document.getElementById("lbl-pan-mode");
+      const iconTop = document.getElementById("icon-pan-mode");
+      const btnDock = document.getElementById("mfc-pan-toggle");
+
+      if (isPan) {
+        if (btnTop) btnTop.classList.add("active");
+        if (lblTop) lblTop.textContent = "Đang Di Chuyển";
+        if (iconTop) iconTop.textContent = "✋";
+        if (btnDock) btnDock.classList.add("active");
+        showToast3D("✋", "Chế độ Di Chuyển: Kéo chuột trái hoặc 1 ngón tay để di bản đồ sang trái, phải, trên, dưới");
+      } else {
+        if (btnTop) btnTop.classList.remove("active");
+        if (lblTop) lblTop.textContent = "Di Chuyển";
+        if (iconTop) iconTop.textContent = "✋";
+        if (btnDock) btnDock.classList.remove("active");
+        showToast3D("🔄", "Chế độ Xoay 360°: Kéo chuột trái hoặc 1 ngón tay để xoay góc nhìn");
+      }
+    }
+
+    // Gắn sự kiện cho Cụm nút D-Pad 4 hướng
+    function initDpadControls() {
+      const dirs = [
+        { id: 'dpad-up', dir: 'up' },
+        { id: 'dpad-down', dir: 'down' },
+        { id: 'dpad-left', dir: 'left' },
+        { id: 'dpad-right', dir: 'right' }
+      ];
+
+      dirs.forEach(item => {
+        const btn = document.getElementById(item.id);
+        if (!btn) return;
+
+        let isHolding = false;
+        let holdTimer = null;
+
+        const startPan = (e) => {
+          e.preventDefault();
+          if (e.button !== undefined && e.button !== 0) return;
+          btn.classList.add('pressed');
+          isHolding = true;
+
+          // Thực hiện ngay 1 bước trượt mượt mà
+          if (viewer) viewer.panByDirection(item.dir, 6, 180);
+
+          // Sau 160ms nếu vẫn nhấn giữ thì kích hoạt trượt liên tục
+          holdTimer = setTimeout(() => {
+            if (isHolding && viewer) {
+              viewer.startContinuousPan(item.dir);
+            }
+          }, 160);
+        };
+
+        const stopPan = (e) => {
+          btn.classList.remove('pressed');
+          isHolding = false;
+          if (holdTimer) clearTimeout(holdTimer);
+          if (viewer) viewer.stopContinuousPan();
+        };
+
+        btn.addEventListener('pointerdown', startPan);
+        btn.addEventListener('pointerup', stopPan);
+        btn.addEventListener('pointerleave', stopPan);
+        btn.addEventListener('pointercancel', stopPan);
+      });
+    }
+
+    // Phím tắt bàn phím tiện lợi (Mũi tên / A D W S: di chuyển sang trái, phải, trên, dưới; PageUp/Q: lên tầng; PageDown/E: xuống tầng; Space: chuyển chế độ di chuyển)
     window.addEventListener("keydown", (e) => {
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
       if (!viewer) return;
-      if (e.key === 'ArrowLeft') { viewer.panByDirection('left'); }
-      else if (e.key === 'ArrowRight') { viewer.panByDirection('right'); }
-      else if (e.key === 'ArrowUp') { viewer.panByDirection('up'); }
-      else if (e.key === 'ArrowDown') { viewer.panByDirection('down'); }
-      else if (e.key === 'PageUp' || e.key === 'w' || e.key === 'W') { viewer.changeFloorElevation(3.6); }
-      else if (e.key === 'PageDown' || e.key === 's' || e.key === 'S') { viewer.changeFloorElevation(-3.6); }
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { viewer.panByDirection('left'); }
+      else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { viewer.panByDirection('right'); }
+      else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') { viewer.panByDirection('up'); }
+      else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') { viewer.panByDirection('down'); }
+      else if (e.key === 'PageUp' || e.key === 'q' || e.key === 'Q') { viewer.changeFloorElevation(3.6); }
+      else if (e.key === 'PageDown' || e.key === 'e' || e.key === 'E') { viewer.changeFloorElevation(-3.6); }
       else if (e.key === '+' || e.key === '=') { viewer.zoomIn(); }
       else if (e.key === '-' || e.key === '_') { viewer.zoomOut(); }
       else if (e.key === 'r' || e.key === 'R') { recenterCampusView(); }
+      else if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); togglePanMode(); }
     });
   </script>
 </body>
