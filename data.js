@@ -386,9 +386,9 @@ const CAMPUS_GRAPH_NODES = {
 
   // Đường xe phía Đông (X = 1498)
   "node_pk_11a2": { x: 1498, y: 198, name: "Ô xe 11A2", floor: "Mặt đất" },
-  "node_pk_11a1": { x: 1498, y: 355, name: "Ô xe 11A1", floor: "Mặt đất" },
-  "node_pk_10a12": { x: 1498, y: 728, name: "Ô xe 10A12", floor: "Mặt đất" },
-  "node_goc_xe_dong_nam": { x: 1498, y: 938, name: "Khúc cua Đông Nam", floor: "Mặt đất" },
+  "node_pk_11a1": { x: 1498, y: 460, name: "Ô xe 11A1", floor: "Mặt đất" },
+  "node_pk_10a12": { x: 1498, y: 845, name: "Ô xe 10A12", floor: "Mặt đất" },
+  "node_goc_xe_dong_nam": { x: 1498, y: 985, name: "Khúc cua Đông Nam", floor: "Mặt đất" },
 
   // Nhà xe học sinh Cổng trước (Y = 938)
   "node_pk_10a1": { x: 987, y: 938, name: "Ô xe 10A1", floor: "Mặt đất" },

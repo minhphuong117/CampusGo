@@ -411,32 +411,36 @@
           </g>
 
           <!-- 4. CẠNH PHÍA ĐÔNG (BÊN PHẢI): DÃY XE HỌC SINH (11A2, 11A1 LIỀN NHAU & 10A12) -->
+          <!-- BÃI ĐỂ XE 10A13 LỆCH Ở PHÍA TRÊN LỐI VÀO SÂN BÓNG (CHUẨN 100% THEO HÌNH 2) -->
           <g id="parking-east">
-            <!-- Khung dãy xe liền nhau 11A2 & 11A1 theo đúng Hình 1 -->
+            <!-- Khung dãy xe liền nhau 11A2 & 11A1 chạy dọc dài xuống ngang bãi xe 10A13 theo đúng Hình 2 -->
             <g id="rack-11a2-11a1" transform="translate(1455, 126)">
-              <rect x="0" y="0" width="85" height="314" class="park-box" />
+              <rect x="0" y="0" width="85" height="524" class="park-box" />
               
               <!-- Ô 11A2 phía trên -->
               <rect x="0" y="0" width="85" height="144" class="park-cell map-interactive-room" data-loc-id="park_11a2" />
               <text x="42.5" y="72" class="park-red-text" font-size="12px">11A2</text>
 
-              <!-- Ô 11A1 gắn liền ngay bên dưới (liền nhau) -->
-              <rect x="0" y="144" width="85" height="170" class="park-cell map-interactive-room" data-loc-id="park_11a1" />
-              <text x="42.5" y="229" class="park-red-text" font-size="12px">11A1</text>
+              <!-- Ô 11A1 gắn liền ngay bên dưới, kéo dài xuống ngang bãi xe 10A13 (Y=270..650) -->
+              <rect x="0" y="144" width="85" height="380" class="park-cell map-interactive-room" data-loc-id="park_11a1" />
+              <text x="42.5" y="334" class="park-red-text" font-size="13px" font-weight="bold">11A1</text>
             </g>
 
-            <path d="M 1385,490 L 1535,490" class="arrow-line" />
-            <polygon points="1535,486 1546,490 1535,494" class="arrow-head" />
-            <text x="1460" y="475" class="center-text" font-size="11px" font-weight="700" fill="#0369a1">Lối vào Sân Bóng</text>
+            <!-- Lối vào Sân Bóng: đặt ngay dưới ô 10A13 và ngang ô WC/đỉnh Hội Trường theo đúng Hình 2 -->
+            <path d="M 1375,725 L 1535,725" class="arrow-line" />
+            <polygon points="1535,721 1546,725 1535,729" class="arrow-head" />
+            <text x="1455" y="710" class="center-text" font-size="11px" font-weight="700" fill="#0369a1">Lối vào Sân Bóng</text>
 
-            <rect x="1455" y="650" width="85" height="155" class="park-cell map-interactive-room" data-loc-id="park_10a12" />
-            <text x="1497" y="727" class="park-red-text" font-size="12px">10A12</text>
+            <!-- Ô 10A12: nằm ở phía dưới Lối vào Sân Bóng, đối diện thân Hội Trường theo đúng Hình 2 -->
+            <rect x="1455" y="765" width="85" height="160" class="park-cell map-interactive-room" data-loc-id="park_10a12" />
+            <text x="1497" y="845" class="park-red-text" font-size="12px">10A12</text>
 
-            <text x="1565" y="470" class="center-text" font-size="12px" font-weight="bold" fill="#334155" transform="rotate(90 1565 470)" letter-spacing="1.5px">KHU VỰC XE HỌC SINH</text>
+            <text x="1565" y="560" class="center-text" font-size="12px" font-weight="bold" fill="#334155" transform="rotate(90 1565 560)" letter-spacing="1.5px">KHU VỰC XE HỌC SINH</text>
 
-            <path d="M 1375,815 L 1435,815 L 1435,745" class="arrow-line" />
-            <polygon points="1431,745 1435,734 1439,745" class="arrow-head" />
-            <text x="1405" y="785" class="center-text" font-size="10.5px" fill="#475569">Khúc cua</text>
+            <!-- Mũi tên Khúc cua phía Đông: đi từ dưới chỉ lên ô 10A12 theo đúng Hình 2 -->
+            <path d="M 1375,985 L 1435,985 L 1435,935" class="arrow-line" />
+            <polygon points="1431,935 1435,924 1439,935" class="arrow-head" />
+            <text x="1395" y="970" class="center-text" font-size="10.5px" fill="#475569">Khúc cua</text>
           </g>
 
           <!-- 5. HÀNG DƯỚI CÙNG: NHÀ XE GV, CỔNG TRƯỜNG, NHÀ XE HỌC SINH CỔNG TRƯỚC -->
