@@ -1145,17 +1145,7 @@
     }
 
     .popover-photo-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(15, 23, 42, 0.82);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: #34d399;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
+      display: none !important;
     }
 
     .popover-content {
@@ -2057,7 +2047,6 @@
         <img id="popover-photo-img" src="" alt="Ảnh phòng thực tế" />
         <div class="popover-photo-shimmer" id="popover-photo-shimmer"></div>
         <div class="popover-photo-building" id="popover-photo-building">🏢 Dãy phòng học</div>
-        <div class="popover-photo-badge" id="popover-photo-badge">📷 Chạm xem lớn</div>
       </div>
 
       <!-- NỘI DUNG & THAO TÁC -->
@@ -2599,7 +2588,6 @@
       const photoBox = document.getElementById("popover-photo-box");
       const photoImg = document.getElementById("popover-photo-img");
       const photoBuilding = document.getElementById("popover-photo-building");
-      const photoBadge = document.getElementById("popover-photo-badge");
 
       if (!popover || !loc) return;
 
@@ -2634,8 +2622,9 @@
         const rawSrc = currentPopoverPhotos[0];
         const safeSrc = rawSrc.split("/").map(seg => encodeURIComponent(seg)).join("/");
         photoImg.src = safeSrc;
-        photoBuilding.textContent = loc.building ? `🏢 ${loc.building}` : "🏫 Trường THPT Tam Phước";
-        photoBadge.textContent = currentPopoverPhotos.length > 1 ? `📷 ${currentPopoverPhotos.length} ảnh • Chạm xem lớn` : `📷 Chạm xem lớn`;
+        if (photoBuilding) {
+          photoBuilding.textContent = loc.building ? `🏢 ${loc.building}` : "🏫 Trường THPT Tam Phước";
+        }
       } else {
         photoBox.style.display = "none";
       }
