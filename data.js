@@ -13,10 +13,10 @@
 // ============================================================================
 const CAMPUS_LOCATIONS = [
   // --- KHU VỰC CỔNG & TRUNG TÂM SÂN ---
-  { id: "cong_truong", name: "Cổng Trường", category: "gate", building: "Khu vực Cổng", floor: "Mặt đất", x: 729, y: 1037, node: "node_cong_truong", keywords: ["cổng", "cổng chính", "cổng trường", "vào", "ra"], description: "Cổng chính ra vào trường học" },
+  { id: "cong_truong", name: "Cổng Trường", category: "gate", building: "Khu vực Cổng", floor: "Mặt đất", x: 729, y: 1107, node: "node_cong_truong", keywords: ["cổng", "cổng chính", "cổng trường", "vào", "ra"], description: "Cổng chính ra vào trường học" },
   { id: "cot_co", name: "Cột Cờ (Sân trường)", category: "landmark", building: "Sân trường", floor: "Mặt đất", x: 800, y: 820, node: "node_cot_co", keywords: ["cột cờ", "sân cờ", "chào cờ", "sân trường"], description: "Khu vực Cột Cờ trung tâm sân trường" },
   { id: "canopy_triangle", name: "Mái Tam Giác", category: "landmark", building: "Sân trường", floor: "Mặt đất", x: 800, y: 655, node: "node_mai_tam_giac", keywords: ["mái tam giác", "sảnh tam giác"], description: "Công trình kiến trúc Mái Tam Giác giữa sân trường" },
-  { id: "nha_xe_gv", name: "Nhà xe giáo viên", category: "facility", building: "Khu vực Cổng", floor: "Mặt đất", x: 169, y: 949, node: "node_nha_xe_gv", keywords: ["nhà xe gv", "xe giáo viên", "bãi xe gv"], description: "Khu vực để xe dành riêng cho giáo viên (góc dưới bên trái)" },
+  { id: "nha_xe_gv", name: "Nhà xe giáo viên", category: "facility", building: "Khu vực Cổng", floor: "Mặt đất", x: 169, y: 1019, node: "node_nha_xe_gv", keywords: ["nhà xe gv", "xe giáo viên", "bãi xe gv"], description: "Khu vực để xe dành riêng cho giáo viên (góc dưới bên trái)" },
   { id: "hoi_truong", name: "Hội Trường", category: "facility", building: "Hội Trường", floor: "Tầng trệt", x: 1245, y: 815, node: "node_hoi_truong", keywords: ["hội trường", "nhà đa năng", "sự kiện", "lễ"], description: "Hội trường lớn của trường (phía trước bên phải)" },
   { id: "wc_hoi_truong", name: "WC Hội Trường", category: "facility", building: "Hội Trường", floor: "Tầng trệt", x: 1348, y: 761, node: "node_wc_hoi_truong", keywords: ["wc", "nhà vệ sinh", "wc hội trường"], description: "Nhà vệ sinh cạnh Hội Trường" },
 
@@ -137,17 +137,17 @@ const CAMPUS_LOCATIONS = [
   { id: "cau_thang_a2", name: "Cầu thang A2 (Phải)", category: "stair", building: "Tòa 2 (Khối 10, 11)", floor: "Cầu thang", x: 918, y: 322, node: "node_a2_stair_tret", keywords: ["cầu thang a2"] },
 
   // --- VỊ TRÍ ĐỂ XE HỌC SINH CỔNG TRƯỚC ---
-  { id: "park_10a1", name: "Vị trí để xe 10A1", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 987, y: 978, node: "node_pk_10a1", keywords: ["xe 10a1", "nhà xe 10a1"] },
-  { id: "park_10a2", name: "Vị trí để xe 10A2", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1030, y: 978, node: "node_pk_10a2", keywords: ["xe 10a2", "nhà xe 10a2"] },
-  { id: "park_10a3", name: "Vị trí để xe 10A3", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1074, y: 978, node: "node_pk_10a3", keywords: ["xe 10a3", "nhà xe 10a3"] },
-  { id: "park_10a4", name: "Vị trí để xe 10A4", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1118, y: 978, node: "node_pk_10a4", keywords: ["xe 10a4", "nhà xe 10a4"] },
-  { id: "park_10a5", name: "Vị trí để xe 10A5", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1161, y: 978, node: "node_pk_10a5", keywords: ["xe 10a5", "nhà xe 10a5"] },
-  { id: "park_10a6", name: "Vị trí để xe 10A6", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1205, y: 978, node: "node_pk_10a6", keywords: ["xe 10a6", "nhà xe 10a6"] },
-  { id: "park_10a7", name: "Vị trí để xe 10A7", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1248, y: 978, node: "node_pk_10a7", keywords: ["xe 10a7", "nhà xe 10a7"] },
-  { id: "park_10a8", name: "Vị trí để xe 10A8", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1292, y: 978, node: "node_pk_10a8", keywords: ["xe 10a8", "nhà xe 10a8"] },
-  { id: "park_10a9", name: "Vị trí để xe 10A9", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1336, y: 978, node: "node_pk_10a9", keywords: ["xe 10a9", "nhà xe 10a9"] },
-  { id: "park_10a10", name: "Vị trí để xe 10A10", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1379, y: 978, node: "node_pk_10a10", keywords: ["xe 10a10", "nhà xe 10a10"] },
-  { id: "park_10a11", name: "Vị trí để xe 10A11", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1423, y: 978, node: "node_pk_10a11", keywords: ["xe 10a11", "nhà xe 10a11"] },
+  { id: "park_10a1", name: "Vị trí để xe 10A1", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 987, y: 1048, node: "node_pk_10a1", keywords: ["xe 10a1", "nhà xe 10a1"] },
+  { id: "park_10a2", name: "Vị trí để xe 10A2", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1030, y: 1048, node: "node_pk_10a2", keywords: ["xe 10a2", "nhà xe 10a2"] },
+  { id: "park_10a3", name: "Vị trí để xe 10A3", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1074, y: 1048, node: "node_pk_10a3", keywords: ["xe 10a3", "nhà xe 10a3"] },
+  { id: "park_10a4", name: "Vị trí để xe 10A4", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1118, y: 1048, node: "node_pk_10a4", keywords: ["xe 10a4", "nhà xe 10a4"] },
+  { id: "park_10a5", name: "Vị trí để xe 10A5", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1161, y: 1048, node: "node_pk_10a5", keywords: ["xe 10a5", "nhà xe 10a5"] },
+  { id: "park_10a6", name: "Vị trí để xe 10A6", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1205, y: 1048, node: "node_pk_10a6", keywords: ["xe 10a6", "nhà xe 10a6"] },
+  { id: "park_10a7", name: "Vị trí để xe 10A7", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1248, y: 1048, node: "node_pk_10a7", keywords: ["xe 10a7", "nhà xe 10a7"] },
+  { id: "park_10a8", name: "Vị trí để xe 10A8", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1292, y: 1048, node: "node_pk_10a8", keywords: ["xe 10a8", "nhà xe 10a8"] },
+  { id: "park_10a9", name: "Vị trí để xe 10A9", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1336, y: 1048, node: "node_pk_10a9", keywords: ["xe 10a9", "nhà xe 10a9"] },
+  { id: "park_10a10", name: "Vị trí để xe 10A10", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1379, y: 1048, node: "node_pk_10a10", keywords: ["xe 10a10", "nhà xe 10a10"] },
+  { id: "park_10a11", name: "Vị trí để xe 10A11", category: "parking", building: "Nhà xe Cổng trước", floor: "Mặt đất", x: 1423, y: 1048, node: "node_pk_10a11", keywords: ["xe 10a11", "nhà xe 10a11"] },
 
   // --- VỊ TRÍ ĐỂ XE PHÍA ĐÔNG & PHÍA BẮC ---
   { id: "park_10a12", name: "Vị trí để xe 10A12", category: "parking", building: "Khu vực Xe phía Đông", floor: "Mặt đất", x: 1498, y: 885, node: "node_pk_10a12", keywords: ["xe 10a12", "nhà xe 10a12"] },
@@ -178,8 +178,8 @@ const CAMPUS_LOCATIONS = [
 // ============================================================================
 const CAMPUS_GRAPH_NODES = {
   // === CỔNG & KHU VỰC SÂN ===
-  "node_cong_truong": { x: 729, y: 1037, name: "Cổng Trường", floor: "Mặt đất" },
-  "node_nga_re_cong": { x: 729, y: 978, name: "Ngã ba đường nội bộ trước Cổng", floor: "Mặt đất" },
+  "node_cong_truong": { x: 729, y: 1107, name: "Cổng Trường", floor: "Mặt đất" },
+  "node_nga_re_cong": { x: 729, y: 1048, name: "Ngã ba đường nội bộ trước Cổng", floor: "Mặt đất" },
   "node_truc_cong_bac": { x: 729, y: 817, name: "Trục sân trước Cột Cờ", floor: "Mặt đất" },
   "node_cot_co_entry": { x: 800, y: 817, name: "Lối vào Cột Cờ", floor: "Mặt đất" },
   "node_cot_co": { x: 800, y: 820, name: "Cột Cờ (Sân trường)", floor: "Mặt đất" },
@@ -345,11 +345,11 @@ const CAMPUS_GRAPH_NODES = {
 
   // === NHÀ XE & ĐƯỜNG NGOẠI VI (RING ROADS) ===
   // Nhà xe GV (góc Tây Nam)
-  "node_truoc_nha_xe_gv": { x: 169, y: 978, name: "Đường trước Nhà xe GV", floor: "Mặt đất" },
-  "node_nha_xe_gv": { x: 169, y: 949, name: "Nhà xe giáo viên", floor: "Mặt đất" },
-  "node_khuc_cua_gv": { x: 112, y: 978, name: "Khúc cua Nhà xe GV", floor: "Mặt đất" },
-  "node_khuc_cua_tn": { x: 150, y: 875, name: "Khúc cua Tây Nam", floor: "Mặt đất" },
-  "node_goc_xe_tay_nam": { x: 91, y: 875, name: "Đường xe phía Tây Nam", floor: "Mặt đất" },
+  "node_truoc_nha_xe_gv": { x: 169, y: 1048, name: "Đường trước Nhà xe GV", floor: "Mặt đất" },
+  "node_nha_xe_gv": { x: 169, y: 1019, name: "Nhà xe giáo viên", floor: "Mặt đất" },
+  "node_khuc_cua_gv": { x: 112, y: 1048, name: "Khúc cua Nhà xe GV", floor: "Mặt đất" },
+  "node_khuc_cua_tn": { x: 150, y: 945, name: "Khúc cua Tây Nam", floor: "Mặt đất" },
+  "node_goc_xe_tay_nam": { x: 91, y: 945, name: "Đường xe phía Tây Nam", floor: "Mặt đất" },
 
   // Đường xe phía Tây (X = 91)
   "node_pk_12a10": { x: 91, y: 658, name: "Vị trí để xe 12A10", floor: "Mặt đất" },
@@ -388,20 +388,20 @@ const CAMPUS_GRAPH_NODES = {
   "node_pk_11a2": { x: 1498, y: 198, name: "Ô xe 11A2", floor: "Mặt đất" },
   "node_pk_11a1": { x: 1498, y: 480, name: "Ô xe 11A1", floor: "Mặt đất" },
   "node_pk_10a12": { x: 1498, y: 885, name: "Ô xe 10A12", floor: "Mặt đất" },
-  "node_goc_xe_dong_nam": { x: 1498, y: 1025, name: "Khúc cua Đông Nam", floor: "Mặt đất" },
+  "node_goc_xe_dong_nam": { x: 1498, y: 1048, name: "Khúc cua Đông Nam", floor: "Mặt đất" },
 
-  // Nhà xe học sinh Cổng trước (Y = 978)
-  "node_pk_10a1": { x: 987, y: 978, name: "Ô xe 10A1", floor: "Mặt đất" },
-  "node_pk_10a2": { x: 1030, y: 978, name: "Ô xe 10A2", floor: "Mặt đất" },
-  "node_pk_10a3": { x: 1074, y: 978, name: "Ô xe 10A3", floor: "Mặt đất" },
-  "node_pk_10a4": { x: 1118, y: 978, name: "Ô xe 10A4", floor: "Mặt đất" },
-  "node_pk_10a5": { x: 1161, y: 978, name: "Ô xe 10A5", floor: "Mặt đất" },
-  "node_pk_10a6": { x: 1205, y: 978, name: "Ô xe 10A6", floor: "Mặt đất" },
-  "node_pk_10a7": { x: 1248, y: 978, name: "Ô xe 10A7", floor: "Mặt đất" },
-  "node_pk_10a8": { x: 1292, y: 978, name: "Ô xe 10A8", floor: "Mặt đất" },
-  "node_pk_10a9": { x: 1336, y: 978, name: "Ô xe 10A9", floor: "Mặt đất" },
-  "node_pk_10a10": { x: 1379, y: 978, name: "Ô xe 10A10", floor: "Mặt đất" },
-  "node_pk_10a11": { x: 1423, y: 978, name: "Ô xe 10A11", floor: "Mặt đất" }
+  // Nhà xe học sinh Cổng trước (Y = 1048)
+  "node_pk_10a1": { x: 987, y: 1048, name: "Ô xe 10A1", floor: "Mặt đất" },
+  "node_pk_10a2": { x: 1030, y: 1048, name: "Ô xe 10A2", floor: "Mặt đất" },
+  "node_pk_10a3": { x: 1074, y: 1048, name: "Ô xe 10A3", floor: "Mặt đất" },
+  "node_pk_10a4": { x: 1118, y: 1048, name: "Ô xe 10A4", floor: "Mặt đất" },
+  "node_pk_10a5": { x: 1161, y: 1048, name: "Ô xe 10A5", floor: "Mặt đất" },
+  "node_pk_10a6": { x: 1205, y: 1048, name: "Ô xe 10A6", floor: "Mặt đất" },
+  "node_pk_10a7": { x: 1248, y: 1048, name: "Ô xe 10A7", floor: "Mặt đất" },
+  "node_pk_10a8": { x: 1292, y: 1048, name: "Ô xe 10A8", floor: "Mặt đất" },
+  "node_pk_10a9": { x: 1336, y: 1048, name: "Ô xe 10A9", floor: "Mặt đất" },
+  "node_pk_10a10": { x: 1379, y: 1048, name: "Ô xe 10A10", floor: "Mặt đất" },
+  "node_pk_10a11": { x: 1423, y: 1048, name: "Ô xe 10A11", floor: "Mặt đất" }
 };
 
 // ============================================================================
