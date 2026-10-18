@@ -337,7 +337,7 @@
     }
 
     /* =========================================================================
-       2. BẢNG CHỈ ĐƯỜNG 3D THÔNG MINH - HỖ TRỢ NHẬP TÌM KIẾM CÓ GỢI Ý DROPDOWN
+       2. BẢNG CHỈ ĐƯỜNG 3D - HỖ TRỢ NHẬP TÌM KIẾM CÓ GỢI Ý DROPDOWN
        ========================================================================= */
     .nav-panel-3d {
       position: fixed;
@@ -415,7 +415,7 @@
       gap: 10px;
     }
 
-    /* Combobox Nhập Tìm Kiếm Thông Minh */
+    /* Combobox Nhập Tìm Kiếm */
     .combobox-group {
       display: flex;
       flex-direction: column;
@@ -1723,7 +1723,7 @@
         border-radius: 7px;
       }
 
-      /* Bảng chỉ đường mở rộng dạng Bottom Sheet thông minh chuẩn di động */
+      /* Bảng chỉ đường mở rộng dạng Bottom Sheet chuẩn di động */
       .nav-panel-3d {
         top: auto;
         bottom: 0;
@@ -1937,13 +1937,13 @@
     <div class="dpad-label-hint">Di Chuyển</div>
   </nav>
 
-  <!-- 2. BẢNG CHỈ ĐƯỜNG 3D THÔNG MINH (CÓ TÌM KIẾM TỰ ĐỘNG GỢI Ý DROPDOWN) -->
+  <!-- 2. BẢNG CHỈ ĐƯỜNG 3D (CÓ TÌM KIẾM TỰ ĐỘNG GỢI Ý DROPDOWN) -->
   <div class="nav-panel-3d hidden" id="nav-panel-3d">
     <div class="sheet-handle-bar"></div>
     <div class="nav-panel-header">
       <div class="nav-panel-title">
         <span>🧭</span>
-        <span>Chỉ Đường 3D Thông Minh</span>
+        <span>Chỉ Đường 3D</span>
       </div>
       <button type="button" class="nav-close-btn" onclick="toggleNavPanel(false)" title="Đóng bảng tìm đường">✕</button>
     </div>
@@ -2296,7 +2296,7 @@
       return str.trim();
     }
 
-    // 2. COMBOBOX THÔNG MINH CHO PHÉP NHẬP TÊN LỚP / PHÒNG CÓ TỰ ĐỘNG GỢI Ý
+    // 2. COMBOBOX CHO PHÉP NHẬP TÊN LỚP / PHÒNG CÓ TỰ ĐỘNG GỢI Ý
     class Combobox3D {
       constructor(inputId, dropdownId, clearBtnId, onSelect, getExcludeLocation) {
         this.inputEl = document.getElementById(inputId);
@@ -2539,9 +2539,12 @@
     window.onCampus3DRoomClick = function(locOrData, event, room3DPos) {
       if (!locOrData) return;
       let loc = locOrData;
-      if (viewer && locOrData.name) {
-        const found = viewer.findLocation(locOrData.name);
-        if (found) loc = found;
+      if (viewer) {
+        const searchTarget = locOrData.id || locOrData.locId || locOrData.name;
+        if (searchTarget) {
+          const found = viewer.findLocation(searchTarget, locOrData.floorKey);
+          if (found) loc = found;
+        }
       }
       activeClickedLoc = loc;
       activeTarget3DPos = room3DPos || (viewer ? viewer.getRoomWorldPosition(loc) : null);
@@ -2691,16 +2694,33 @@
       }
     }
 
+    // Helper chuẩn hóa dữ liệu địa điểm từ click 3D sang CAMPUS_LOCATIONS
+    function resolveLocationObject(locOrData) {
+      if (!locOrData) return null;
+      if (locOrData.id && window.CAMPUS_LOCATIONS?.some(l => l.id === locOrData.id)) {
+        return window.CAMPUS_LOCATIONS.find(l => l.id === locOrData.id);
+      }
+      if (viewer) {
+        const searchTarget = locOrData.id || locOrData.locId || locOrData.name;
+        if (searchTarget) {
+          const found = viewer.findLocation(searchTarget, locOrData.floorKey);
+          if (found) return found;
+        }
+      }
+      return locOrData;
+    }
+
     // 6. THAO TÁC GÁN PHÒNG TỪ POPOVER
     function setPopoverLocationAs(type) {
       if (!activeClickedLoc) return;
+      const targetLoc = resolveLocationObject(activeClickedLoc) || activeClickedLoc;
 
       if (type === "start") {
-        startCombobox.selectLocation(activeClickedLoc, true);
-        showToast3D("🟢", `Đã chọn ${activeClickedLoc.name} là Nơi đang đứng`);
+        startCombobox.selectLocation(targetLoc, true);
+        showToast3D("🟢", `Đã chọn ${targetLoc.name} là Nơi đang đứng`);
       } else {
-        destCombobox.selectLocation(activeClickedLoc, true);
-        showToast3D("🔴", `Đã chọn ${activeClickedLoc.name} là Nơi muốn tới`);
+        destCombobox.selectLocation(targetLoc, true);
+        showToast3D("🔴", `Đã chọn ${targetLoc.name} là Nơi muốn tới`);
       }
 
       hideLocationPopover3D();
@@ -2709,15 +2729,16 @@
 
     function routeFromGateToCurrent() {
       if (!activeClickedLoc || !window.CAMPUS_LOCATIONS) return;
+      const targetLoc = resolveLocationObject(activeClickedLoc) || activeClickedLoc;
       const cong = window.CAMPUS_LOCATIONS.find(l => l.id === "cong_truong");
       if (cong) {
         startCombobox.selectLocation(cong, false);
       }
-      destCombobox.selectLocation(activeClickedLoc, false);
+      destCombobox.selectLocation(targetLoc, false);
       hideLocationPopover3D();
       toggleNavPanel(true);
       executeRoute3D();
-      showToast3D("📍", `Đang dẫn đường từ Cổng trường đến ${activeClickedLoc.name}`);
+      showToast3D("📍", `Đang dẫn đường từ Cổng trường đến ${targetLoc.name}`);
     }
 
     // 7. LIGHTBOX XEM ẢNH PHÒNG PHÓNG TO
@@ -2880,18 +2901,13 @@
     }
 
     function startCameraTour() {
+      if (!viewer) return;
       if (!viewer.activeRoute) {
-        const startInput = document.getElementById("nav-start-input");
-        const destInput = document.getElementById("nav-dest-input");
-        const hasStart = startInput && startInput.value.trim().length > 0;
-        const hasDest = destInput && destInput.value.trim().length > 0;
-
-        if (!hasStart || !hasDest) {
-          // Tuyến tham quan mẫu bám sát hành lang và leo cầu thang thực tế (Cổng trường -> Phòng 12A5 Tầng 2 Dãy B)
-          if (startInput) startInput.value = "Cổng Trường";
-          if (destInput) destInput.value = "Phòng 12A5";
-          selectedStartLoc = window.CAMPUS_LOCATIONS ? window.CAMPUS_LOCATIONS.find(l => l.id === 'cong_truong') : null;
-          selectedDestLoc = window.CAMPUS_LOCATIONS ? window.CAMPUS_LOCATIONS.find(l => l.id === 'b_t2_12a5') : null;
+        if (!startCombobox?.selectedLocation || !destCombobox?.selectedLocation) {
+          const cong = window.CAMPUS_LOCATIONS ? window.CAMPUS_LOCATIONS.find(l => l.id === 'cong_truong') : null;
+          const lop12a5 = window.CAMPUS_LOCATIONS ? window.CAMPUS_LOCATIONS.find(l => l.id === 'b_t2_12a5') : null;
+          if (cong && startCombobox) startCombobox.selectLocation(cong, false);
+          if (lop12a5 && destCombobox) destCombobox.selectLocation(lop12a5, false);
         }
         executeRoute3D();
       }

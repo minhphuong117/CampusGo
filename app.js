@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return str.trim();
   }
 
-  // 3. COMBOBOX THÔNG MINH CÓ TÌM KIẾM
+  // 3. COMBOBOX TÌM KIẾM VỊ TRÍ
   class ComboboxController {
     constructor(inputEl, dropdownEl, clearBtnEl, onSelect, getExcludeLocation) {
       this.inputEl = inputEl;
@@ -1395,7 +1395,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // C. KÉO DI BOTTOM SHEET TRÊN MOBILE (SMARTPHONE / TOUCH & CHUỘT)
+  // C. KÉO DI BOTTOM SHEET TRÊN MOBILE (ĐIỆN THOẠI DI ĐỘNG / TOUCH & CHUỘT)
   function setBottomSheetState(state) {
     sidebar.classList.remove("sheet-collapsed", "sheet-half", "sheet-full");
     sidebar.classList.add(state);
@@ -1721,7 +1721,7 @@ document.addEventListener("DOMContentLoaded", () => {
         icon: "🏫",
         label: "Tổng quan",
         placement: "right",
-        desc: `Hệ thống bản đồ chỉ đường nội bộ thông minh trong khuôn viên trường học.<br><br>
+        desc: `Hệ thống bản đồ chỉ đường nội bộ trong khuôn viên trường học.<br><br>
         Giúp học sinh, phụ huynh và giáo viên tra cứu vị trí phòng học, các phòng bộ môn, thư viện, hội trường và nhà xe nhanh chóng, chính xác.`
       },
       {
@@ -1733,7 +1733,7 @@ document.addEventListener("DOMContentLoaded", () => {
         desc: `Nhập nơi bạn đang đứng (ví dụ: <em>Cổng trường, Cột cờ, Lớp 10A1...</em>).<br><br>
         <div class="tour-tip-box">
           <span>📱</span>
-          <span><strong>Mẹo thông minh:</strong> Khi quét mã QR dán tại cửa từng phòng bằng điện thoại, hệ thống sẽ tự động nhận diện và điền ngay điểm xuất phát này cho bạn!</span>
+          <span><strong>Mẹo hữu ích:</strong> Khi quét mã QR dán tại cửa từng phòng bằng điện thoại, hệ thống sẽ tự động nhận diện và điền ngay điểm xuất phát này cho bạn!</span>
         </div>`
       },
       {
@@ -1968,7 +1968,7 @@ document.addEventListener("DOMContentLoaded", () => {
           spotlightLabel.style.right = "auto";
           spotlightLabel.style.transform = "none";
 
-          // Xử lý vị trí thông minh để TUYỆT ĐỐI KHÔNG CHE LẤP các nút bấm và khung tính năng:
+          // Tự động căn chỉnh vị trí để TUYỆT ĐỐI KHÔNG CHE LẤP các nút bấm và khung tính năng:
           if (step.target.includes("view-mode")) {
             // Thanh chuyển 2D / 3D:
             if (isMobile) {

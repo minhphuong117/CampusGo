@@ -2003,7 +2003,7 @@ body.is-resizing .map-viewport {
 }
 
 /* ==========================================================================
-   RESPONSIVE DESIGN CHO IPHONE 16 & CÁC DÒNG SMARTPHONE HIỆN ĐẠI
+   RESPONSIVE DESIGN CHO IPHONE & CÁC DÒNG ĐIỆN THOẠI DI ĐỘNG
    (Tối ưu chuẩn Apple Maps / Google Maps: Bản đồ nền + Bottom Sheet trượt)
    ========================================================================== */
 @media (max-width: 768px) {
