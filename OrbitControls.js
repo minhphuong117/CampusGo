@@ -197,7 +197,14 @@
 
 					spherical.phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, spherical.phi ) );
 					spherical.makeSafe();
+
+					if ( !isFinite( scale ) || scale <= 0 ) {
+						scale = 1;
+					}
 					spherical.radius *= scale; // restrict radius to be between desired limits
+					if ( !isFinite( spherical.radius ) || spherical.radius <= 0 ) {
+						spherical.radius = 80;
+					}
 
 					spherical.radius = Math.max( scope.minDistance, Math.min( scope.maxDistance, spherical.radius ) ); // move target to panned location
 
@@ -211,7 +218,14 @@
 
 					}
 
+					if ( !isFinite( scope.target.x ) || !isFinite( scope.target.y ) || !isFinite( scope.target.z ) ) {
+						scope.target.set( 0, 7, 3 );
+					}
+
 					offset.setFromSpherical( spherical ); // rotate offset back to "camera-up-vector-is-up" space
+					if ( !isFinite( offset.x ) || !isFinite( offset.y ) || !isFinite( offset.z ) ) {
+						offset.set( 0, 48, 70 );
+					}
 
 					offset.applyQuaternion( quatInverse );
 					position.copy( scope.target ).add( offset );
@@ -402,9 +416,12 @@
 
 			function dollyOut( dollyScale ) {
 
+				if ( !isFinite( dollyScale ) || dollyScale <= 0 ) return;
+
 				if ( scope.object.isPerspectiveCamera ) {
 
 					scale /= dollyScale;
+					if ( !isFinite( scale ) || scale <= 0 ) scale = 1;
 
 				} else if ( scope.object.isOrthographicCamera ) {
 
@@ -423,9 +440,12 @@
 
 			function dollyIn( dollyScale ) {
 
+				if ( !isFinite( dollyScale ) || dollyScale <= 0 ) return;
+
 				if ( scope.object.isPerspectiveCamera ) {
 
 					scale *= dollyScale;
+					if ( !isFinite( scale ) || scale <= 0 ) scale = 1;
 
 				} else if ( scope.object.isOrthographicCamera ) {
 
@@ -600,7 +620,7 @@
 				const dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
 				const dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 				const distance = Math.sqrt( dx * dx + dy * dy );
-				dollyStart.set( 0, distance );
+				dollyStart.set( 0, Math.max( distance, 1 ) );
 
 			}
 
@@ -666,9 +686,18 @@
 				const dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
 				const dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 				const distance = Math.sqrt( dx * dx + dy * dy );
-				dollyEnd.set( 0, distance );
-				dollyDelta.set( 0, Math.pow( dollyEnd.y / dollyStart.y, scope.zoomSpeed ) );
-				dollyOut( dollyDelta.y );
+				const safeDist = Math.max( distance, 1 );
+				dollyEnd.set( 0, safeDist );
+
+				if ( dollyStart.y > 0 ) {
+					const ratio = dollyEnd.y / dollyStart.y;
+					if ( isFinite( ratio ) && ratio > 0.05 && ratio < 20 ) {
+						const factor = Math.pow( ratio, scope.zoomSpeed );
+						if ( isFinite( factor ) && factor > 0 ) {
+							dollyOut( factor );
+						}
+					}
+				}
 				dollyStart.copy( dollyEnd );
 
 			}

@@ -17,10 +17,14 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
+      touch-action: none;
+      overscroll-behavior: none;
+      -webkit-overscroll-behavior: none;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #0b1329;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      -webkit-user-select: none;
     }
 
     #canvas3d-container {
@@ -30,6 +34,16 @@
       top: 0;
       left: 0;
       z-index: 1;
+      touch-action: none;
+      overscroll-behavior: none;
+    }
+
+    #canvas3d-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      touch-action: none;
+      overscroll-behavior: none;
     }
 
     /* =========================================================================
@@ -1727,10 +1741,10 @@
         margin: 1px 2px;
       }
 
-      /* Giản lược bớt trên điện thoại: ẩn 2 phím Zoom ➕ / ➖ vì người dùng chạm vuốt 2 ngón tay (pinch-to-zoom) trực tiếp */
+      /* Giữ nút Zoom ➕ / ➖ trên điện thoại để người dùng vừa có thể bấm nút vừa có thể thu phóng bằng tay */
       #mfc-zoom-in,
       #mfc-zoom-out {
-        display: none !important;
+        display: flex;
       }
 
       /* Tự động ẩn D-Pad điều hướng khi mở bảng chỉ đường hoặc mở thẻ phòng để không che chữ hay ô chức năng */
@@ -3240,6 +3254,11 @@
       else if (e.key === 'r' || e.key === 'R') { recenterCampusView(); }
       else if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); togglePanMode(); }
     });
+
+    // Chặn cử chỉ zoom trang web mặc định và pull-to-refresh của trình duyệt khi thao tác 3D
+    document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
+    document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
+    document.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
   </script>
 </body>
 

@@ -63,13 +63,32 @@ class Campus3DViewer {
     this.scene.background = new THREE.Color(0xdbeafe); // Bầu trời xanh nhạt thoáng đãng
     this.scene.fog = new THREE.FogExp2(0xe0f2fe, 0.0022);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    // Tối ưu hóa GPU & chống crash trên thiết bị di động: bỏ preserveDrawingBuffer để giảm thiểu ngốn VRAM
+    const isMobileDevice = (window.innerWidth <= 768) || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: !isMobileDevice,
+      alpha: true,
+      powerPreference: "high-performance"
+    });
     this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobileDevice ? 1.5 : 2));
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = isMobileDevice ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
+
+    // Cơ chế khôi phục WebGL tự động, ngăn trình duyệt trắng xóa hoặc tự reload khi mất GPU context
+    this.renderer.domElement.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      console.warn("Campus3D: WebGL context lost. Tạm dừng render loop an toàn...");
+      this.isContextLost = true;
+    }, false);
+
+    this.renderer.domElement.addEventListener('webglcontextrestored', () => {
+      console.log("Campus3D: WebGL context restored. Tự động phục hồi khung cảnh 3D...");
+      this.isContextLost = false;
+    }, false);
+
     this.container.appendChild(this.renderer.domElement);
     this.scene.add(this.routeGroup);
 
@@ -87,7 +106,7 @@ class Campus3DViewer {
     this.controls.dampingFactor = 0.06;
     this.controls.maxPolarAngle = Math.PI / 2 - 0.03;
     this.controls.minDistance = 8;
-    this.controls.maxDistance = 260;
+    this.controls.maxDistance = 160; // Giới hạn cự ly thu nhỏ tối đa 160m vừa vặn bao quát toàn trường, tránh camera lùi quá xa vào vùng trống
     this.controls.target.set(0, 7, 3);
 
     // Kích hoạt tính năng Di Chuyển (Pan) và Xoay 360 thống nhất
@@ -116,8 +135,9 @@ class Campus3DViewer {
     const sunLight = new THREE.DirectionalLight(0xfff8eb, 1.15);
     sunLight.position.set(-50, 95, 65);
     sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
+    const shadowRes = isMobileDevice ? 1024 : 2048;
+    sunLight.shadow.mapSize.width = shadowRes;
+    sunLight.shadow.mapSize.height = shadowRes;
     sunLight.shadow.camera.near = 10;
     sunLight.shadow.camera.far = 250;
     const d = 85;
@@ -4091,12 +4111,33 @@ class Campus3DViewer {
 
   animate() {
     requestAnimationFrame(() => this.animate());
+    if (this.isContextLost) return;
+
     if (this.controls && this.controls.enabled) {
       // Giới hạn phạm vi tâm nhìn (target) trong ranh giới khuôn viên trường học để không bị trôi quá xa
       this.controls.target.x = THREE.MathUtils.clamp(this.controls.target.x, -85, 85);
       this.controls.target.z = THREE.MathUtils.clamp(this.controls.target.z, -50, 90);
       this.controls.target.y = THREE.MathUtils.clamp(this.controls.target.y, 0, 26);
       this.controls.update();
+    }
+
+    // Kiểm tra tính hợp lệ của camera để đảm bảo không bao giờ bị NaN / Infinity khi thu phóng bằng tay
+    if (this.camera && this.controls) {
+      if (!isFinite(this.camera.position.x) || !isFinite(this.camera.position.y) || !isFinite(this.camera.position.z)) {
+        this.camera.position.set(0, 48, 70);
+      }
+      if (!isFinite(this.controls.target.x) || !isFinite(this.controls.target.y) || !isFinite(this.controls.target.z)) {
+        this.controls.target.set(0, 7, 3);
+      }
+      // Bảo vệ cự ly camera luôn nằm trong khoảng [minDistance, maxDistance]
+      const dist = this.camera.position.distanceTo(this.controls.target);
+      if (dist > this.controls.maxDistance) {
+        const dir = this.camera.position.clone().sub(this.controls.target).normalize();
+        this.camera.position.copy(this.controls.target).addScaledVector(dir, this.controls.maxDistance);
+      } else if (dist < this.controls.minDistance) {
+        const dir = this.camera.position.clone().sub(this.controls.target).normalize();
+        this.camera.position.copy(this.controls.target).addScaledVector(dir, this.controls.minDistance);
+      }
     }
 
     // Cập nhật hiệu ứng xung nhịp của các beacon 3D
@@ -4120,7 +4161,11 @@ class Campus3DViewer {
       window.updateCampus3DPopoverPosition();
     }
 
-    this.renderer.render(this.scene, this.camera);
+    try {
+      this.renderer.render(this.scene, this.camera);
+    } catch (err) {
+      console.warn("Campus3D: Render frame caught error:", err);
+    }
   }
 
   // Chuyển đổi tọa độ 3D Vector3 thành tọa độ pixel 2D trên màn hình
