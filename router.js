@@ -245,7 +245,7 @@ class CampusRouter {
       // Nếu cả X và Y đều lệch nhau (đoạn xiên chéo), chèn điểm bẻ góc 90 độ
       if (Math.abs(dx) > 3 && Math.abs(dy) > 3) {
         // Nhận diện xem điểm đích có nằm trên hành lang ngang (y cố định) hay trục dọc không
-        const isHorizontalCorridor = [938, 835, 777, 697, 612, 536, 498, 460, 378, 301, 263, 225, 186, 144].some(y => Math.abs(curr.y - y) <= 6);
+        const isHorizontalCorridor = [1107, 1048, 875, 817, 737, 652, 576, 538, 500, 418, 341, 303, 265, 192, 144].some(y => Math.abs(curr.y - y) <= 6);
         if (isHorizontalCorridor) {
           // Đi thẳng trục dọc trước để nhập vào hành lang ngang, rồi đi ngang
           clean.push({ x: prev.x, y: curr.y });
