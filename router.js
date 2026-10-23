@@ -19,7 +19,7 @@ class CampusRouter {
     this.buildGraph();
   }
 
-  // Xây dựng danh sách kề có trọng số (khoảng cách Euclidean)
+  // Xây dựng danh sách kề có trọng số (khoảng cách Euclidean + trọng số chuyển tầng/cầu thang)
   buildGraph() {
     for (const nodeId in this.nodes) {
       this.adjList.set(nodeId, []);
@@ -30,7 +30,28 @@ class CampusRouter {
       const n2 = this.nodes[edge.to];
       if (!n1 || !n2) return;
 
-      const dist = Math.hypot(n1.x - n2.x, n1.y - n2.y);
+      let dist = Math.hypot(n1.x - n2.x, n1.y - n2.y);
+
+      // Trọng số chuyển tầng & leo cầu thang:
+      // Trong thực tế, leo/xuống 1 tầng cầu thang tiêu tốn nhiều thời gian và thể lực hơn đi bộ bằng phẳng.
+      // Đặc biệt, khi 3 tòa nhà (Tòa 1, Tòa 2, Tòa 3) đều liên thông với nhau ở mọi tầng (Tầng 2, 3, 4),
+      // lộ trình tối ưu và nhanh nhất là đi thẳng qua hành lang liên thông trên cùng một tầng,
+      // tuyệt đối không xuống lầu rồi lại leo lên lầu ở tòa đích.
+      const f1 = this.getFloorNumber(n1.floor);
+      const f2 = this.getFloorNumber(n2.floor);
+      const floorDiff = Math.abs(f1 - f2);
+
+      const isStair = edge.isStair ||
+                      (edge.from.includes('stair') && edge.to.includes('stair')) ||
+                      (edge.desc && (edge.desc.includes('cầu thang bộ') || edge.desc.includes('Leo cầu thang') || edge.desc.includes('Đi cầu thang bộ'))) ||
+                      floorDiff > 0;
+
+      if (isStair) {
+        // Phạt trọng số leo cầu thang: mỗi tầng tương đương 500 pixel (~60 mét đi bộ bằng phẳng)
+        // Điều này đảm bảo Dijkstra luôn chọn đi hành lang liên thông cùng tầng nếu có lối đi.
+        const floors = Math.max(1, floorDiff);
+        dist += floors * 500;
+      }
 
       // Đồ thị vô hướng (người đi bộ có thể đi cả 2 chiều)
       this.adjList.get(edge.from).push({
@@ -189,9 +210,21 @@ class CampusRouter {
     }
 
     const totalDistanceMeters = Math.max(10, Math.round(totalPixelDist * this.PIXEL_TO_METERS));
-    // Tốc độ đi bộ học sinh ~1.2 m/s (~72m/phút). Mỗi tầng cầu thang cộng thêm ~0.4 phút
-    const floorDiff = Math.abs(this.getFloorNumber(startLoc.floor) - this.getFloorNumber(destLoc.floor));
-    const rawWalkMinutes = (totalDistanceMeters / 70) + (floorDiff * 0.4);
+    // Tốc độ đi bộ học sinh ~1.2 m/s (~72m/phút). Mỗi tầng cầu thang thực tế leo/xuống cộng thêm ~0.4 phút
+    let stairCount = 0;
+    if (routeResult.path && routeResult.path.length > 1) {
+      for (let i = 0; i < routeResult.path.length - 1; i++) {
+        const nodeA = this.nodes[routeResult.path[i]];
+        const nodeB = this.nodes[routeResult.path[i + 1]];
+        if (nodeA && nodeB) {
+          const diff = Math.abs(this.getFloorNumber(nodeA.floor) - this.getFloorNumber(nodeB.floor));
+          if (diff > 0) {
+            stairCount += diff;
+          }
+        }
+      }
+    }
+    const rawWalkMinutes = (totalDistanceMeters / 70) + (stairCount * 0.4);
     const estimatedMinutes = Math.max(1, Math.round(rawWalkMinutes * 10) / 10);
     const estimatedSeconds = Math.round(rawWalkMinutes * 60);
     
@@ -299,11 +332,13 @@ class CampusRouter {
     if (pathSteps && pathSteps.length > 0) {
       pathSteps.forEach((desc, idx) => {
         let icon = "⬆️";
-        if (desc.includes("Cầu Thang") || desc.includes("Cầu thang") || desc.includes("Leo")) {
+        if (desc.includes("Leo cầu thang") || desc.includes("Đi cầu thang bộ") || desc.includes("xuống Tầng") || desc.includes("lên Tầng") || desc.includes("xuống lầu") || desc.includes("lên lầu")) {
           icon = "🪜";
-        } else if (desc.includes("Rẽ trái") || desc.includes("trái")) {
+        } else if (desc.includes("liên thông") || desc.includes("Cầu hành lang") || desc.includes("cánh liên thông")) {
+          icon = "🌉";
+        } else if (desc.includes("Rẽ trái") || desc.includes("rẽ trái") || desc.includes("trái")) {
           icon = "↰";
-        } else if (desc.includes("Rẽ phải") || desc.includes("phải")) {
+        } else if (desc.includes("Rẽ phải") || desc.includes("rẽ phải") || desc.includes("phải")) {
           icon = "↱";
         } else if (desc.includes("Cổng")) {
           icon = "🚪";

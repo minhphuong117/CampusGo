@@ -519,8 +519,8 @@ const CAMPUS_GRAPH_EDGES = [
   // Tầng 2 Dãy B (Tòa 3) & Cầu hành lang nối sang Tòa GV (Tầng 2)
   { from: "node_b_t2_wc", to: "node_b_t2_12a3", desc: "Hành lang Tầng 2 qua Phòng 12A3", descRev: "Đến WC Tòa 3 (T2)" },
   { from: "node_b_t2_12a3", to: "node_b_t2_12a4", desc: "Đi tiếp qua Phòng 12A4", descRev: "Hành lang Tầng 2 qua Phòng 12A3" },
-  { from: "node_b_t2_12a4", to: "node_b_stair_t2", desc: "Đến Cầu thang Tòa 3 (T2)", descRev: "Hành lang Tầng 2 qua Phòng 12A4" },
-  { from: "node_b_stair_t2", to: "node_b_t2_12a5", desc: "Hành lang Tầng 2 qua Phòng 12A5", descRev: "Đến Cầu thang Tòa 3 (T2)" },
+  { from: "node_b_t2_12a4", to: "node_b_stair_t2", desc: "Hành lang Tầng 2 qua khu vực Cầu thang", descRev: "Hành lang Tầng 2 qua Phòng 12A4" },
+  { from: "node_b_stair_t2", to: "node_b_t2_12a5", desc: "Hành lang Tầng 2 qua Phòng 12A5", descRev: "Hành lang Tầng 2 qua khu vực Cầu thang" },
   { from: "node_b_t2_12a5", to: "node_b_t2_12a6", desc: "Đi tiếp qua Phòng 12A6", descRev: "Hành lang Tầng 2 qua Phòng 12A5" },
   { from: "node_b_t2_12a6", to: "node_hl_connect_b_hc_t2", desc: "Từ trước Phòng 12A6 rẽ vào Cầu hành lang nối Tầng 2 sang Tòa GV", descRev: "Từ Cầu hành lang nối Tầng 2 đi về trước Phòng 12A6 Tòa 3" },
   { from: "node_hl_connect_b_hc_t2", to: "node_hc_t2_cb", desc: "Đi thẳng qua Cầu hành lang nối Tầng 2 đến Phòng Chi bộ Dãy Hành Chính", descRev: "Từ Phòng Chi bộ đi qua Cầu hành lang nối Tầng 2 sang Tòa 3" },
@@ -530,8 +530,8 @@ const CAMPUS_GRAPH_EDGES = [
   // Tầng 3 Dãy B (Tòa 3)
   { from: "node_b_t3_wc", to: "node_b_t3_12a1", desc: "Hành lang Tầng 3 qua Phòng 12A1", descRev: "Đến WC Tòa 3 (T3)" },
   { from: "node_b_t3_12a1", to: "node_b_t3_12a2", desc: "Đi tiếp qua Phòng 12A2", descRev: "Hành lang Tầng 3 qua Phòng 12A1" },
-  { from: "node_b_t3_12a2", to: "node_b_stair_t3", desc: "Đến Cầu thang Tòa 3 (T3)", descRev: "Hành lang Tầng 3 qua Phòng 12A2" },
-  { from: "node_b_stair_t3", to: "node_b_t3_10a10", desc: "Hành lang Tầng 3 qua Phòng 10A10", descRev: "Đến Cầu thang Tòa 3 (T3)" },
+  { from: "node_b_t3_12a2", to: "node_b_stair_t3", desc: "Hành lang Tầng 3 qua khu vực Cầu thang", descRev: "Hành lang Tầng 3 qua Phòng 12A2" },
+  { from: "node_b_stair_t3", to: "node_b_t3_10a10", desc: "Hành lang Tầng 3 qua Phòng 10A10", descRev: "Hành lang Tầng 3 qua khu vực Cầu thang" },
   { from: "node_b_t3_10a10", to: "node_b_t3_10a9", desc: "Đi tiếp qua Phòng 10A9", descRev: "Hành lang Tầng 3 qua Phòng 10A10" },
   { from: "node_b_t3_10a9", to: "node_b_t3_nghi_gv", desc: "Đi tiếp qua Phòng nghỉ GV Nữ", descRev: "Hành lang Tầng 3 qua Phòng 10A9" },
   { from: "node_b_t3_nghi_gv", to: "node_hl_west_t3", desc: "Đến đầu hành lang liên thông Tầng 3 sang Tòa 2", descRev: "Hành lang Tầng 3 qua Phòng nghỉ GV Nữ" },
@@ -539,8 +539,8 @@ const CAMPUS_GRAPH_EDGES = [
   // Tầng 4 Dãy B (Tòa 3)
   { from: "node_b_t4_wc", to: "node_b_t4_p14", desc: "Hành lang Tầng 4 qua Phòng P14", descRev: "Đến WC Tòa 3 (T4)" },
   { from: "node_b_t4_p14", to: "node_b_t4_p15", desc: "Đi tiếp qua Phòng P15", descRev: "Hành lang Tầng 4 qua Phòng P14" },
-  { from: "node_b_t4_p15", to: "node_b_stair_t4", desc: "Đến Cầu thang Tòa 3 (T4)", descRev: "Hành lang Tầng 4 qua Phòng P15" },
-  { from: "node_b_stair_t4", to: "node_b_t4_p16", desc: "Hành lang Tầng 4 qua Phòng P16", descRev: "Đến Cầu thang Tòa 3 (T4)" },
+  { from: "node_b_t4_p15", to: "node_b_stair_t4", desc: "Hành lang Tầng 4 qua khu vực Cầu thang", descRev: "Hành lang Tầng 4 qua Phòng P15" },
+  { from: "node_b_stair_t4", to: "node_b_t4_p16", desc: "Hành lang Tầng 4 qua Phòng P16", descRev: "Hành lang Tầng 4 qua khu vực Cầu thang" },
   { from: "node_b_t4_p16", to: "node_b_t4_media", desc: "Đi tiếp qua Phòng Media", descRev: "Hành lang Tầng 4 qua Phòng P16" },
   { from: "node_b_t4_media", to: "node_b_t4_nghi_gv", desc: "Đi tiếp qua Phòng nghỉ GV Nam", descRev: "Hành lang Tầng 4 qua Phòng Media" },
   { from: "node_b_t4_nghi_gv", to: "node_hl_west_t4", desc: "Đến đầu hành lang liên thông Tầng 4 sang Tòa 2", descRev: "Hành lang Tầng 4 qua Phòng nghỉ GV Nam" },
@@ -560,24 +560,24 @@ const CAMPUS_GRAPH_EDGES = [
   { from: "node_bm_stair_t3", to: "node_bm_stair_t4", desc: "Leo tiếp cầu thang lên Tầng 4 Tòa 1 (Bộ Môn)", descRev: "Đi cầu thang bộ xuống Tầng 3 Tòa 1 (Bộ Môn)" },
 
   // Tầng 2 Bộ Môn (Tòa 1)
-  { from: "node_hl_east_t2", to: "node_bm_stair_t2", desc: "Từ hành lang liên thông vào Cầu thang Tòa 1 (T2)", descRev: "Đến ngã rẽ hành lang liên thông Tầng 2 sang Tòa 2" },
-  { from: "node_bm_stair_t2", to: "node_bm_t2_qp", desc: "Hành lang Tầng 2 qua Phòng GDQP", descRev: "Đến Cầu thang Tòa 1 (T2)" },
+  { from: "node_hl_east_t2", to: "node_bm_stair_t2", desc: "Từ hành lang liên thông vào sảnh Tòa 1 (T2)", descRev: "Đến ngã rẽ hành lang liên thông Tầng 2 sang Tòa 2" },
+  { from: "node_bm_stair_t2", to: "node_bm_t2_qp", desc: "Hành lang Tầng 2 qua Phòng GDQP", descRev: "Đến sảnh hành lang Tòa 1 (T2)" },
   { from: "node_bm_t2_qp", to: "node_bm_t2_doan", desc: "Đi tiếp qua VP Đoàn Thanh Niên", descRev: "Hành lang Tầng 2 qua Phòng GDQP" },
   { from: "node_bm_t2_doan", to: "node_bm_t2_tin1", desc: "Đi tiếp qua Phòng Tin 1", descRev: "Hành lang Tầng 2 qua VP Đoàn" },
   { from: "node_bm_t2_tin1", to: "node_bm_t2_tin2", desc: "Đi đến Phòng Tin 2", descRev: "Hành lang Tầng 2 qua Phòng Tin 1" },
   { from: "node_bm_t2_tin2", to: "node_bm_t2_wc", desc: "Đi đến WC Tòa 1 (T2)", descRev: "Hành lang Tầng 2 qua Phòng Tin 2" },
 
   // Tầng 3 Bộ Môn (Tòa 1)
-  { from: "node_hl_east_t3", to: "node_bm_stair_t3", desc: "Từ hành lang liên thông vào Cầu thang Tòa 1 (T3)", descRev: "Đến ngã rẽ hành lang liên thông Tầng 3 sang Tòa 2" },
-  { from: "node_bm_stair_t3", to: "node_bm_t3_tam_ly", desc: "Hành lang Tầng 3 qua Phòng TV Tâm lý", descRev: "Đến Cầu thang Tòa 1 (T3)" },
+  { from: "node_hl_east_t3", to: "node_bm_stair_t3", desc: "Từ hành lang liên thông vào sảnh Tòa 1 (T3)", descRev: "Đến ngã rẽ hành lang liên thông Tầng 3 sang Tòa 2" },
+  { from: "node_bm_stair_t3", to: "node_bm_t3_tam_ly", desc: "Hành lang Tầng 3 qua Phòng TV Tâm lý", descRev: "Đến sảnh hành lang Tòa 1 (T3)" },
   { from: "node_bm_t3_tam_ly", to: "node_bm_t3_anh_van", desc: "Đi tiếp qua Phòng Anh văn (T3)", descRev: "Hành lang Tầng 3 qua Phòng TV Tâm lý" },
   { from: "node_bm_t3_anh_van", to: "node_bm_t3_may1", desc: "Đi tiếp qua Phòng Máy 1", descRev: "Hành lang Tầng 3 qua Phòng Anh văn (T3)" },
   { from: "node_bm_t3_may1", to: "node_bm_t3_may2", desc: "Đi đến Phòng Máy 2", descRev: "Hành lang Tầng 3 qua Phòng Máy 1" },
   { from: "node_bm_t3_may2", to: "node_bm_t3_wc", desc: "Đi đến WC Tòa 1 (T3)", descRev: "Hành lang Tầng 3 qua Phòng Máy 2" },
 
   // Tầng 4 Bộ Môn (Tòa 1)
-  { from: "node_hl_east_t4", to: "node_bm_stair_t4", desc: "Từ hành lang liên thông vào Cầu thang Tòa 1 (T4)", descRev: "Đến ngã rẽ hành lang liên thông Tầng 4 sang Tòa 2" },
-  { from: "node_bm_stair_t4", to: "node_bm_t4_luu_tru", desc: "Hành lang Tầng 4 qua Phòng Lưu trữ", descRev: "Đến Cầu thang Tòa 1 (T4)" },
+  { from: "node_hl_east_t4", to: "node_bm_stair_t4", desc: "Từ hành lang liên thông vào sảnh Tòa 1 (T4)", descRev: "Đến ngã rẽ hành lang liên thông Tầng 4 sang Tòa 2" },
+  { from: "node_bm_stair_t4", to: "node_bm_t4_luu_tru", desc: "Hành lang Tầng 4 qua Phòng Lưu trữ", descRev: "Đến sảnh hành lang Tòa 1 (T4)" },
   { from: "node_bm_t4_luu_tru", to: "node_bm_t4_tin4", desc: "Đi tiếp qua Phòng Tin 4", descRev: "Hành lang Tầng 4 qua Phòng Lưu trữ" },
   { from: "node_bm_t4_tin4", to: "node_bm_t4_av", desc: "Đi đến Phòng Anh văn (T4)", descRev: "Hành lang Tầng 4 qua Phòng Tin 4" },
   { from: "node_bm_t4_av", to: "node_bm_t4_wc", desc: "Đi đến WC Tòa 1 (T4)", descRev: "Hành lang Tầng 4 qua Phòng Anh văn (T4)" },
