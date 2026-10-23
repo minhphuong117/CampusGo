@@ -1578,15 +1578,15 @@ class Campus3DViewer {
     const roomW = 5.2;
 
     const deptFloors = [
-      // Tầng trệt (fl_0)
+      // Tầng trệt (fl_0) - Cân bằng đồng nhất kết thúc tại X = 39.0
       {
         floor: 0,
         label: "Tầng trệt",
         rooms: [
           { isStair: true },
           { name: "P. Y TẾ", locId: "phong_y_te", w: 5.2, color: 0xfee2e2, stroke: '#ef4444', textColor: '#b91c1c', subtext: "Sơ cấp cứu" },
-          { name: "TN LÝ", locId: "bm_tret_ly", w: 5.8, color: 0xfef3c7, stroke: '#d97706', textColor: '#b45309', subtext: "Thí nghiệm Vật lý" },
-          { name: "TN HÓA", locId: "bm_tret_hoa", w: 5.8, color: 0xfef3c7, stroke: '#d97706', textColor: '#b45309', subtext: "Thí nghiệm Hóa học" },
+          { name: "TN LÝ", locId: "bm_tret_ly", w: 7.8, color: 0xfef3c7, stroke: '#d97706', textColor: '#b45309', subtext: "Thí nghiệm Vật lý" },
+          { name: "TN HÓA", locId: "bm_tret_hoa", w: 7.8, color: 0xfef3c7, stroke: '#d97706', textColor: '#b45309', subtext: "Thí nghiệm Hóa học" },
           { name: "WC", locId: "wc_bm_tret", w: 3.5, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' }
         ]
       },
@@ -1596,10 +1596,10 @@ class Campus3DViewer {
         label: "Tầng 2",
         rooms: [
           { isStair: true },
-          { name: "P. GDQP", locId: "bm_t2_qp", w: 5.8, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Thể dục QP" },
-          { name: "VP ĐOÀN", locId: "vp_doan", w: 5.8, color: 0xe0f2fe, stroke: '#38bdf8', textColor: '#0369a1', subtext: "Đoàn thanh niên" },
-          { name: "TIN HỌC 1", locId: "tin_hoc_1", w: 5.8, color: 0xede9fe, stroke: '#7c3aed', textColor: '#6d28d9', subtext: "Phòng máy 1" },
-          { name: "TIN HỌC 2", locId: "tin_hoc_2", w: 5.2, color: 0xede9fe, stroke: '#7c3aed', textColor: '#6d28d9', subtext: "Phòng máy 2" },
+          { name: "P. GDQP", locId: "bm_t2_qp", w: 5.1, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Thể dục QP" },
+          { name: "VP ĐOÀN", locId: "vp_doan", w: 5.1, color: 0xe0f2fe, stroke: '#38bdf8', textColor: '#0369a1', subtext: "Đoàn thanh niên" },
+          { name: "TIN HỌC 1", locId: "tin_hoc_1", w: 5.1, color: 0xede9fe, stroke: '#7c3aed', textColor: '#6d28d9', subtext: "Phòng máy 1" },
+          { name: "TIN HỌC 2", locId: "tin_hoc_2", w: 5.1, color: 0xede9fe, stroke: '#7c3aed', textColor: '#6d28d9', subtext: "Phòng máy 2" },
           { name: "WC", locId: "wc_bm_t2", w: 3.5, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' }
         ]
       },
@@ -1609,10 +1609,10 @@ class Campus3DViewer {
         label: "Tầng 3",
         rooms: [
           { isStair: true },
-          { name: "TÂM LÝ", locId: "bm_t3_tam_ly", w: 5.8, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Tư vấn tâm lý" },
-          { name: "ANH VĂN", locId: "bm_t3_anh_van", w: 5.8, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Ngoại ngữ T3" },
-          { name: "P. MÁY 1", locId: "bm_t3_may1", w: 5.8, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Thực hành 1" },
-          { name: "P. MÁY 2", locId: "bm_t3_may2", w: 5.2, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Thực hành 2" },
+          { name: "TÂM LÝ", locId: "bm_t3_tam_ly", w: 5.1, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Tư vấn tâm lý" },
+          { name: "ANH VĂN", locId: "bm_t3_anh_van", w: 5.1, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Ngoại ngữ T3" },
+          { name: "P. MÁY 1", locId: "bm_t3_may1", w: 5.1, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Thực hành 1" },
+          { name: "P. MÁY 2", locId: "bm_t3_may2", w: 5.1, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Thực hành 2" },
           { name: "WC", locId: "wc_bm_t3", w: 3.5, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' }
         ]
       },
@@ -1622,9 +1622,9 @@ class Campus3DViewer {
         label: "Tầng 4",
         rooms: [
           { isStair: true },
-          { name: "LƯU TRỮ", locId: "bm_t4_luu_tru", w: 5.8, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Kho lưu trữ" },
-          { name: "TIN HỌC 4", locId: "bm_t4_tin4", w: 5.8, color: 0xede9fe, stroke: '#7c3aed', textColor: '#6d28d9', subtext: "Phòng máy 4" },
-          { name: "ANH VĂN", locId: "bm_t4_anh_van", w: 5.8, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Ngoại ngữ T4" },
+          { name: "LƯU TRỮ", locId: "bm_t4_luu_tru", w: 5.2, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Kho lưu trữ" },
+          { name: "TIN HỌC 4", locId: "bm_t4_tin4", w: 7.8, color: 0xede9fe, stroke: '#7c3aed', textColor: '#6d28d9', subtext: "Phòng máy 4" },
+          { name: "ANH VĂN", locId: "bm_t4_anh_van", w: 7.8, color: 0xf8fafc, stroke: '#94a3b8', textColor: '#1e293b', subtext: "Ngoại ngữ T4" },
           { name: "WC", locId: "wc_bm_t4", w: 3.5, color: 0xccfbf1, textColor: '#0f766e', stroke: '#0d9488' }
         ]
       }
@@ -1689,13 +1689,13 @@ class Campus3DViewer {
     const bannerDept = this.createSloganBanner("TẤT CẢ VÌ HỌC SINH THÂN YÊU", 22.5, 11.2, zPos + roomD / 2 + 3.3, 15, 1.3, 0);
     building.add(bannerDept);
 
-    // Đầu hồi bên phải (X = +39.2): Tường có lưới ô vuông thông gió màu trắng/xám
+    // Đầu hồi bên phải (X = +39.1): Tường có lưới ô vuông thông gió màu trắng/xám ốp khít đầu hồi 4 tầng
     const ventTexRight = this.createVentilationTexture(3, 5);
     const ventWallRight = new THREE.Mesh(
       new THREE.PlaneGeometry(roomD, 4 * floorH * 0.8),
       new THREE.MeshStandardMaterial({ map: ventTexRight, side: THREE.DoubleSide })
     );
-    ventWallRight.position.set(39.2, (4 * floorH) / 2, zPos);
+    ventWallRight.position.set(39.1, (4 * floorH) / 2, zPos);
     ventWallRight.rotation.y = Math.PI / 2;
     building.add(ventWallRight);
 
@@ -4755,10 +4755,10 @@ class Campus3DViewer {
 
       // Dãy Bộ Môn (Tòa 1) - Tầng Trệt (Hành lang z = 1.0)
       "node_bm_stair_tret": { x: 10.5, y: 0.15, z: 1.0 },
-      "node_bm_tret_yte": { x: 14.0, y: 0.15, z: 1.0 },
-      "node_bm_tret_ly": { x: 21.0, y: 0.15, z: 1.0 },
-      "node_bm_tret_hoa": { x: 28.0, y: 0.15, z: 1.0 },
-      "node_bm_tret_wc": { x: 34.0, y: 0.15, z: 1.0 },
+      "node_bm_tret_yte": { x: 16.1, y: 0.15, z: 1.0 },
+      "node_bm_tret_ly": { x: 23.0, y: 0.15, z: 1.0 },
+      "node_bm_tret_hoa": { x: 31.2, y: 0.15, z: 1.0 },
+      "node_bm_tret_wc": { x: 37.25, y: 0.15, z: 1.0 },
 
       // Cầu thang Dãy Bộ Môn (Tòa 1)
       "node_bm_stair_t2": { x: 10.5, y: 3.75, z: 1.0 },
@@ -4766,24 +4766,24 @@ class Campus3DViewer {
       "node_bm_stair_t4": { x: 10.5, y: 10.95, z: 1.0 },
 
       // Dãy Bộ Môn (Tòa 1) - Tầng 2
-      "node_bm_t2_qp": { x: 14.0, y: 3.75, z: 1.0 },
-      "node_bm_t2_doan": { x: 15.5, y: 3.75, z: 1.0 },
-      "node_bm_t2_tin1": { x: 21.0, y: 3.75, z: 1.0 },
-      "node_bm_t2_tin2": { x: 28.0, y: 3.75, z: 1.0 },
-      "node_bm_t2_wc": { x: 34.0, y: 3.75, z: 1.0 },
+      "node_bm_t2_qp": { x: 16.05, y: 3.75, z: 1.0 },
+      "node_bm_t2_doan": { x: 21.55, y: 3.75, z: 1.0 },
+      "node_bm_t2_tin1": { x: 27.05, y: 3.75, z: 1.0 },
+      "node_bm_t2_tin2": { x: 32.55, y: 3.75, z: 1.0 },
+      "node_bm_t2_wc": { x: 37.25, y: 3.75, z: 1.0 },
 
       // Dãy Bộ Môn (Tòa 1) - Tầng 3
-      "node_bm_t3_tam_ly": { x: 14.0, y: 7.35, z: 1.0 },
-      "node_bm_t3_anh_van": { x: 15.5, y: 7.35, z: 1.0 },
-      "node_bm_t3_may1": { x: 21.0, y: 7.35, z: 1.0 },
-      "node_bm_t3_may2": { x: 28.0, y: 7.35, z: 1.0 },
-      "node_bm_t3_wc": { x: 34.0, y: 7.35, z: 1.0 },
+      "node_bm_t3_tam_ly": { x: 16.05, y: 7.35, z: 1.0 },
+      "node_bm_t3_anh_van": { x: 21.55, y: 7.35, z: 1.0 },
+      "node_bm_t3_may1": { x: 27.05, y: 7.35, z: 1.0 },
+      "node_bm_t3_may2": { x: 32.55, y: 7.35, z: 1.0 },
+      "node_bm_t3_wc": { x: 37.25, y: 7.35, z: 1.0 },
 
       // Dãy Bộ Môn (Tòa 1) - Tầng 4
-      "node_bm_t4_luu_tru": { x: 14.0, y: 10.95, z: 1.0 },
-      "node_bm_t4_tin4": { x: 21.0, y: 10.95, z: 1.0 },
-      "node_bm_t4_av": { x: 28.0, y: 10.95, z: 1.0 },
-      "node_bm_t4_wc": { x: 34.0, y: 10.95, z: 1.0 },
+      "node_bm_t4_luu_tru": { x: 16.1, y: 10.95, z: 1.0 },
+      "node_bm_t4_tin4": { x: 23.0, y: 10.95, z: 1.0 },
+      "node_bm_t4_av": { x: 31.2, y: 10.95, z: 1.0 },
+      "node_bm_t4_wc": { x: 37.25, y: 10.95, z: 1.0 },
 
       // Cầu thang Dãy A (Tòa 2) - Hỗ trợ cả mã a1/a2 và a_stair1/a_stair2
       "node_a1_stair_tret": { x: -14.0, y: 0.15, z: -26.5 },
@@ -4868,7 +4868,7 @@ class Campus3DViewer {
       if (nid.startsWith('node_bm_')) {
         let x = 21.0;
         if (fallbackNode) {
-          x = 10.5 + ((fallbackNode.x - 928) / (1245 - 928)) * 24.0;
+          x = 10.5 + ((fallbackNode.x - 973) / (1290 - 973)) * (37.25 - 10.5);
         }
         return new THREE.Vector3(x, floorY, 1.0);
       }
