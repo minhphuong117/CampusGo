@@ -3736,7 +3736,7 @@ class Campus3DViewer {
       };
       this.controls.touches = {
         ONE: THREE.TOUCH.PAN,
-        TWO: THREE.TOUCH.DOLLY_PAN
+        TWO: THREE.TOUCH.DOLLY
       };
       if (this.renderer && this.renderer.domElement) {
         this.renderer.domElement.style.cursor = 'move';
@@ -3744,7 +3744,8 @@ class Campus3DViewer {
     } else {
       // Chế độ Xoay 360° Mặc định (Unified Mode):
       // - Chuột trái / 1 ngón tay chạm vuốt: Xoay góc nhìn 360 độ tự do quanh trường
-      // - Chuột phải HOẶC Shift + Chuột trái / 2 ngón tay kéo: Di chuyển bản đồ (Pan) theo mọi hướng và lên xuống giữa các tầng
+      // - Chuột phải HOẶC Shift + Chuột trái: Di chuyển bản đồ (Pan) theo mọi hướng và lên xuống giữa các tầng
+      // - 2 ngón tay chạm chụm / mở rộng: Thu phóng (Zoom) mượt mà không bị giật hay lệch vị trí
       this.controls.mouseButtons = {
         LEFT: THREE.MOUSE.ROTATE,
         MIDDLE: THREE.MOUSE.DOLLY,
@@ -3752,7 +3753,7 @@ class Campus3DViewer {
       };
       this.controls.touches = {
         ONE: THREE.TOUCH.ROTATE,
-        TWO: THREE.TOUCH.DOLLY_PAN
+        TWO: THREE.TOUCH.DOLLY
       };
       if (this.renderer && this.renderer.domElement) {
         this.renderer.domElement.style.cursor = 'grab';
@@ -3986,27 +3987,54 @@ class Campus3DViewer {
   }
 
   setupEvents() {
-    window.addEventListener('resize', () => {
-      if (!this.container) return;
+    let lastWidth = 0;
+    let lastHeight = 0;
+    let resizeTimer = null;
+
+    const handleResize = () => {
+      if (!this.container || !this.renderer) return;
       const w = this.container.clientWidth;
       const h = this.container.clientHeight;
-      this.camera.aspect = w / h;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(w, h);
+      if (w <= 0 || h <= 0) return;
+      // Chỉ tái cấp phát kích thước renderer khi thay đổi kích thước đáng kể (tránh realloc VRAM liên tục khi pinch zoom)
+      if (Math.abs(w - lastWidth) > 6 || Math.abs(h - lastHeight) > 6) {
+        lastWidth = w;
+        lastHeight = h;
+        this.camera.aspect = w / h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(w, h);
+      }
+    };
+
+    window.addEventListener('resize', () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(handleResize, 120);
     });
 
-    // Bắt sự kiện chạm / click vào phòng để xem ảnh và thông tin chi tiết
+    // Bắt sự kiện chạm / click vào phòng để xem ảnh và thông tin chi tiết (quản lý đa điểm chạm để không kích hoạt nhầm khi pinch zoom)
     let pointerDownPos = { x: 0, y: 0 };
     let isDraggingCanvas = false;
+    let activePointerCount = 0;
+    let hadMultiTouch = false;
 
     this.renderer.domElement.addEventListener('pointerdown', (e) => {
-      pointerDownPos = { x: e.clientX, y: e.clientY };
-      isDraggingCanvas = false;
+      activePointerCount++;
+      if (activePointerCount > 1) {
+        hadMultiTouch = true;
+        isDraggingCanvas = true;
+      } else {
+        pointerDownPos = { x: e.clientX, y: e.clientY };
+        isDraggingCanvas = false;
+        hadMultiTouch = false;
+      }
       this.renderer.domElement.style.cursor = 'grabbing';
     });
 
     this.renderer.domElement.addEventListener('pointermove', (e) => {
-      if (Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y) > 8) {
+      if (activePointerCount > 1) {
+        hadMultiTouch = true;
+        isDraggingCanvas = true;
+      } else if (Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y) > 8) {
         isDraggingCanvas = true;
       }
     });
@@ -4019,8 +4047,13 @@ class Campus3DViewer {
 
     this.renderer.domElement.addEventListener('pointerup', (e) => {
       resetCursor();
+      const multi = hadMultiTouch || activePointerCount > 1;
+      activePointerCount = Math.max(0, activePointerCount - 1);
+      if (activePointerCount === 0) {
+        hadMultiTouch = false;
+      }
       if (e.button !== undefined && e.button !== 0) return;
-      if (isDraggingCanvas) return; // Nếu đang kéo xoay camera hoặc di chuyển map thì không coi là click
+      if (isDraggingCanvas || multi) return; // Nếu đang kéo xoay camera hoặc chụm thu phóng map thì không coi là click
       if (this.tourActive) return; // Đang đi thử không bật popover để đảm bảo tầm nhìn
 
       const rect = this.renderer.domElement.getBoundingClientRect();

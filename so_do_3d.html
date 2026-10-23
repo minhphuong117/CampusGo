@@ -3255,10 +3255,23 @@
       else if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); togglePanMode(); }
     });
 
-    // Chặn cử chỉ zoom trang web mặc định và pull-to-refresh của trình duyệt khi thao tác 3D
+    // Chặn hoàn toàn cử chỉ zoom trang web mặc định, pull-to-refresh và gesture scaling của Safari/Chrome iOS
     document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
     document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
     document.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
+
+    // Ngăn chặn trình duyệt di động kích hoạt zoom trang / reload khi người dùng chụm 2 ngón tay thu phóng
+    document.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches.length > 1) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (e) => {
+      if (e.touches && e.touches.length > 1) {
+        e.preventDefault();
+      }
+    }, { passive: false });
   </script>
 </body>
 
