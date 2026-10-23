@@ -2398,26 +2398,45 @@ class Campus3DViewer {
     const buntingGroup = this.createFrontFestiveBunting(pFL, pFR, apexPos);
     canopyGroup.add(buntingGroup);
 
-    // 5. HAI CÁNH MÁI DỐC XIÊN XANH CHẠY DÀI XUỐNG MẶT ĐẤT (CỰC KỲ ĐẶC TRƯNG CHUẨN ẢNH 2 & 3)
-    // Cánh dốc xiên bên trái
-    const topInL = new THREE.Vector3(-5.2, 4.8, 1.3);
-    const topOutL = new THREE.Vector3(-5.2, 4.8, -1.1);
-    const botOutL = new THREE.Vector3(-14.5, 0.15, 0.8);
-    const botInL = new THREE.Vector3(-14.5, 0.15, 3.2);
-    const leftChute = this.createCanopyRampChute(topInL, topOutL, botInL, botOutL, polyRoofMat, -1);
-    canopyGroup.add(leftChute);
+    // 5. BỐN CHÂN TRỤ MÁI DỐC XIÊN POLYCARBONATE XANH (CHUẨN ẢNH THỰC TẾ & YÊU CẦU NGƯỜI DÙNG)
+    // 2 chân trước nhô ra trước sân trường (vượt ra trước hàng cột đỏ, không cắt vào hành lang/phòng học)
+    // 2 chân sau nhô ra sân phía sau lễ đài
+    
+    // Chân trước - Trái: Bắt đầu từ góc trước trái vươn ra phía trước sân trường
+    const topInFL = new THREE.Vector3(-4.2, 4.8, 1.3);
+    const topOutFL = new THREE.Vector3(-5.4, 4.8, 0.5);
+    const botInFL = new THREE.Vector3(-6.0, 0.15, 6.4);
+    const botOutFL = new THREE.Vector3(-7.2, 0.15, 5.6);
+    const frontLeftChute = this.createCanopyRampChute(topInFL, topOutFL, botInFL, botOutFL, polyRoofMat, -1);
+    canopyGroup.add(frontLeftChute);
 
-    // Cánh dốc xiên bên phải
-    const topInR = new THREE.Vector3(5.2, 4.8, 1.3);
-    const topOutR = new THREE.Vector3(5.2, 4.8, -1.1);
-    const botOutR = new THREE.Vector3(14.5, 0.15, 0.8);
-    const botInR = new THREE.Vector3(14.5, 0.15, 3.2);
-    const rightChute = this.createCanopyRampChute(topInR, topOutR, botInR, botOutR, polyRoofMat, 1);
-    canopyGroup.add(rightChute);
+    // Chân trước - Phải: Bắt đầu từ góc trước phải vươn ra phía trước sân trường
+    const topInFR = new THREE.Vector3(4.2, 4.8, 1.3);
+    const topOutFR = new THREE.Vector3(5.4, 4.8, 0.5);
+    const botInFR = new THREE.Vector3(6.0, 0.15, 6.4);
+    const botOutFR = new THREE.Vector3(7.2, 0.15, 5.6);
+    const frontRightChute = this.createCanopyRampChute(topInFR, topOutFR, botInFR, botOutFR, polyRoofMat, 1);
+    canopyGroup.add(frontRightChute);
 
-    // Chậu cây kiểng bonsai thế lớn đặt cạnh chân cánh dốc mái che (Chuẩn ảnh 2 & 3 thực tế)
-    canopyGroup.add(this.createLargeBonsaiPot(-12.8, 0, 3.8));
-    canopyGroup.add(this.createLargeBonsaiPot(12.8, 0, 3.8));
+    // Chân sau - Trái: Bắt đầu từ góc sau trái vươn dốc ra sân phía sau
+    const topInRL = new THREE.Vector3(-4.2, 4.8, -4.4);
+    const topOutRL = new THREE.Vector3(-5.4, 4.8, -3.6);
+    const botInRL = new THREE.Vector3(-6.0, 0.15, -9.5);
+    const botOutRL = new THREE.Vector3(-7.2, 0.15, -8.7);
+    const rearLeftChute = this.createCanopyRampChute(topInRL, topOutRL, botInRL, botOutRL, polyRoofMat, -1);
+    canopyGroup.add(rearLeftChute);
+
+    // Chân sau - Phải: Bắt đầu từ góc sau phải vươn dốc ra sân phía sau
+    const topInRR = new THREE.Vector3(4.2, 4.8, -4.4);
+    const topOutRR = new THREE.Vector3(5.4, 4.8, -3.6);
+    const botInRR = new THREE.Vector3(6.0, 0.15, -9.5);
+    const botOutRR = new THREE.Vector3(7.2, 0.15, -8.7);
+    const rearRightChute = this.createCanopyRampChute(topInRR, topOutRR, botInRR, botOutRR, polyRoofMat, 1);
+    canopyGroup.add(rearRightChute);
+
+    // Chậu cây kiểng bonsai thế lớn đặt cạnh 2 chân trụ phía trước trên sân trường (Chuẩn ảnh 2 & 3 thực tế)
+    canopyGroup.add(this.createLargeBonsaiPot(-8.2, 0, 6.0));
+    canopyGroup.add(this.createLargeBonsaiPot(8.2, 0, 6.0));
 
     // 6. DẦM HÀNH LANG KẾT NỐI VÀ CÁC CỘT TRỤ ĐỎ GẠCH NẰM NGAY SAU LỄ ĐÀI (CHUẨN ẢNH 1 & 4)
     // Dầm đỡ bê tông nằm ngang chạy dài ở độ cao 4.2m kết nối giữa Cánh Trái (Dãy B) và Cánh Phải (Dãy Bộ Môn)
@@ -2796,21 +2815,26 @@ class Campus3DViewer {
     }
 
     // 4. Chân đế móng bê tông giữ chân máng dốc sát mặt sân gạch (chuẩn ảnh 2 & 3)
+    const midTop = new THREE.Vector3().addVectors(topInner, topOuter).multiplyScalar(0.5);
     const midBot = new THREE.Vector3().addVectors(botInner, botOuter).multiplyScalar(0.5);
+    const angleY = Math.atan2(midBot.x - midTop.x, midBot.z - midTop.z);
+
     const footing = new THREE.Mesh(
-      new THREE.BoxGeometry(1.6, 0.35, 2.8),
+      new THREE.BoxGeometry(1.9, 0.35, 1.4),
       new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.85 })
     );
     footing.position.set(midBot.x, 0.175, midBot.z);
+    footing.rotation.y = angleY;
     footing.castShadow = true;
     group.add(footing);
 
     // Bản mã thép neo chân máng dốc
     const steelBase = new THREE.Mesh(
-      new THREE.BoxGeometry(1.2, 0.08, 2.4),
+      new THREE.BoxGeometry(1.5, 0.08, 1.0),
       new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8, roughness: 0.3 })
     );
     steelBase.position.set(midBot.x, 0.38, midBot.z);
+    steelBase.rotation.y = angleY;
     group.add(steelBase);
 
     return group;
