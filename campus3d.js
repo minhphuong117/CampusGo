@@ -2221,50 +2221,54 @@ class Campus3DViewer {
     const canopyGroup = new THREE.Group();
     canopyGroup.position.set(0, 0, -2);
 
-    // 1. SÂN KHẤU LỄ ĐÀI BẬC TAM CẤP BÁN NGUYỆT LÁT ĐÁ VÀ THẢM ĐỎ (CHUẨN ẢNH 1, 3, 4)
-    // Bậc 1 (dưới cùng): Bán nguyệt bán kính 7.2m
+    // 1. SÀN SÂN KHẤU LỄ ĐÀI: GẠCH LÁT MEN TRẮNG ĐỒNG NHẤT VÀ BẬC TAM CẤP BÁN NGUYỆT TOÀN PHẦN (CHUẨN ẢNH THỰC TẾ)
+    // Vật liệu gạch men trắng sáng bóng thống nhất toàn bộ sàn lễ đài (chuẩn ảnh thực tế trường học)
+    const stageTileTex = this.createWhiteTileTexture();
+    const stageTileMat = new THREE.MeshStandardMaterial({
+      map: stageTileTex,
+      color: 0xffffff,
+      roughness: 0.35,
+      metalness: 0.05
+    });
+
+    // A. Khối sàn chữ nhật phía sau dưới mái che (từ z = -3.8 đến z = 0, rộng 9.2m, cao 0.66m, mặt sàn ở y = 0.66m)
+    const stageRearGeo = new THREE.BoxGeometry(9.2, 0.66, 3.8);
+    const stageRear = new THREE.Mesh(stageRearGeo, stageTileMat);
+    stageRear.position.set(0, 0.33, -1.9);
+    stageRear.receiveShadow = true;
+    canopyGroup.add(stageRear);
+
+    // B. Các bậc tam cấp bán nguyệt toàn phần đối xứng hai bên vươn ra sân trường (z >= 0, thetaStart = -Math.PI / 2, thetaLength = Math.PI)
+    // Bậc 1 (dưới cùng): Bán kính 7.0m, cao 0.22m (mặt bậc ở y = 0.22m)
     const stageBase1 = new THREE.Mesh(
-      new THREE.CylinderGeometry(6.6, 7.2, 0.28, 36, 1, false, 0, Math.PI),
-      new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.75 }) // Đá đỏ gạch viền
+      new THREE.CylinderGeometry(6.6, 7.0, 0.22, 48, 1, false, -Math.PI / 2, Math.PI),
+      stageTileMat
     );
-    stageBase1.position.set(0, 0.14, 0);
-    stageBase1.rotation.y = Math.PI;
+    stageBase1.position.set(0, 0.11, 0);
     stageBase1.receiveShadow = true;
     canopyGroup.add(stageBase1);
 
-    // Bậc 2: Bán kính 5.6m
+    // Bậc 2: Bán kính 5.8m, cao 0.22m (mặt bậc ở y = 0.44m)
     const stageBase2 = new THREE.Mesh(
-      new THREE.CylinderGeometry(5.2, 5.6, 0.28, 36, 1, false, 0, Math.PI),
-      new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.6 }) // Đá hoa cương sáng
+      new THREE.CylinderGeometry(5.4, 5.8, 0.22, 48, 1, false, -Math.PI / 2, Math.PI),
+      stageTileMat
     );
-    stageBase2.position.set(0, 0.42, 0);
-    stageBase2.rotation.y = Math.PI;
+    stageBase2.position.set(0, 0.33, 0);
     stageBase2.receiveShadow = true;
     canopyGroup.add(stageBase2);
 
-    // Bậc 3 (Sàn chính lễ đài): Bán kính 4.4m trải thảm đỏ lễ tân
+    // Bậc 3 (Sàn chính bán nguyệt): Bán kính 4.6m, cao 0.22m (mặt sàn ở y = 0.66m, khớp liền mạch hoàn hảo với sàn chữ nhật phía sau)
     const stageBase3 = new THREE.Mesh(
-      new THREE.CylinderGeometry(4.0, 4.4, 0.28, 36, 1, false, 0, Math.PI),
-      new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.65 }) // Thảm đỏ lễ đài
+      new THREE.CylinderGeometry(4.4, 4.6, 0.22, 48, 1, false, -Math.PI / 2, Math.PI),
+      stageTileMat
     );
-    stageBase3.position.set(0, 0.70, 0);
-    stageBase3.rotation.y = Math.PI;
+    stageBase3.position.set(0, 0.55, 0);
     stageBase3.receiveShadow = true;
     canopyGroup.add(stageBase3);
 
-    // Bờ gạch thẻ viền bồn hoa bên hông sân khấu (Chuẩn ảnh 1)
-    const brickBorderMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.8 });
-    const brickCurvedBorder = new THREE.Mesh(
-      new THREE.BoxGeometry(0.35, 0.4, 6.2),
-      brickBorderMat
-    );
-    brickCurvedBorder.position.set(5.5, 0.2, -1.0);
-    brickCurvedBorder.rotation.y = 0.25;
-    canopyGroup.add(brickCurvedBorder);
-
-    // Chậu cây kiểng và chậu hoa dáng thế đặt viền quanh chân sân khấu (Chuẩn ảnh 1, 3, 4)
-    [-5.6, -4.2, -2.8, 2.8, 4.2, 5.6].forEach(px => {
-      canopyGroup.add(this.createPottedPlant(px, 1.4, 0.95));
+    // Chậu cây kiểng và hoa trang trí chân lễ đài đặt đối xứng trên mặt sân trước bậc 1
+    [-7.6, -6.0, 6.0, 7.6].forEach(px => {
+      canopyGroup.add(this.createPottedPlant(px, 0.8, 0));
     });
 
     // 2. VÁCH PHÔNG LỄ ĐÀI CHÀO CỜ (MẶT TRƯỚC VẢI ĐỎ BÚA LIỀM, MẶT SAU KHUNG SẮT ĐEN - CHUẨN ẢNH 1, 3, 4)
@@ -2617,6 +2621,41 @@ class Campus3DViewer {
     ctx.fill();
 
     return new THREE.CanvasTexture(canvas);
+  }
+
+  // Helper tạo hoa văn gạch lát men trắng sứ sáng bóng đồng nhất cho toàn bộ sàn lễ đài (chuẩn ảnh thực tế)
+  createWhiteTileTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // Nền gạch men trắng sứ sáng bóng, sạch sẽ
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Đường ron gạch màu xám sáng tinh tế
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 2.5;
+    const tileSize = 64; // Đại diện gạch lát 60x60cm
+    for (let x = 0; x <= 512; x += tileSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 512);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= 512; y += tileSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y);
+      ctx.stroke();
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(6, 6);
+    return tex;
   }
 
   // Helper tạo hoa văn phông lễ đài chào cờ (Mặt trước: Cờ đỏ búa liềm - chuẩn ảnh 2 & 4 thực tế)
