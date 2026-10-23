@@ -4775,6 +4775,7 @@ class Campus3DViewer {
     // 5. Mở thanh Walkthrough HUD
     const hud = document.getElementById('tour-hud-bar');
     if (hud) hud.classList.remove('hidden');
+    document.body.classList.add('tour-active-3d');
 
     const pauseIcon = document.getElementById('tour-icon-pause');
     const pauseText = document.getElementById('tour-text-pause');
@@ -4989,6 +4990,7 @@ class Campus3DViewer {
     // Ẩn thanh HUD
     const hud = document.getElementById('tour-hud-bar');
     if (hud) hud.classList.add('hidden');
+    document.body.classList.remove('tour-active-3d');
   }
 
   // Xuất ảnh PNG 3D sắc nét
